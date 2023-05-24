@@ -45,6 +45,9 @@ devDependencies:
   '@capacitor/cli':
     specifier: 5.0.3
     version: 5.0.3
+  '@ionic/prettier-config':
+    specifier: ^3.0.0
+    version: 3.0.0(prettier@2.8.8)
   '@vitejs/plugin-legacy':
     specifier: ^4.0.2
     version: 4.0.2(terser@5.17.6)(vite@4.1.0)
@@ -1623,6 +1626,14 @@ packages:
       ionicons: 7.1.1
       tslib: 2.5.2
     dev: false
+
+  /@ionic/prettier-config@3.0.0(prettier@2.8.8):
+    resolution: {integrity: sha512-dg5ovuMjfE5h3WW3kzfe9+7IflH9M9F7qlVYfpyONYlgs+4M2JZh628Csal4lWeyWGwugqMDk2zy7/fM7ygB8A==}
+    peerDependencies:
+      prettier: ^2.4.0
+    dependencies:
+      prettier: 2.8.8
+    dev: true
 
   /@ionic/utils-array@2.1.6:
     resolution: {integrity: sha512-0JZ1Zkp3wURnv8oq6Qt7fMPo5MpjbLoUoa9Bu2Q4PJuSDWM8H8gwF3dQO7VTeUj3/0o1IB1wGkFWZZYgUXZMUg==}
@@ -4530,6 +4541,12 @@ packages:
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+    dev: true
+
+  /prettier@2.8.8:
+    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
     dev: true
 
   /pretty-bytes@5.6.0:
