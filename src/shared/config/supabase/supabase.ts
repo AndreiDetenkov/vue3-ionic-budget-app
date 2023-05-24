@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/shared/config/supabase/types';
+import type { Database } from '@/shared/config/supabase/types';
+import { API_KEY, SUPABASE_URL } from '@/shared/config';
 
-const supabaseUrl = process.env.VUE_APP_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.VUE_APP_SUPABASE_ANON_KEY as string;
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(SUPABASE_URL, API_KEY);
