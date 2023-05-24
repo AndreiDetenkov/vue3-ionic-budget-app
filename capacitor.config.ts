@@ -5,8 +5,10 @@ const config: CapacitorConfig = {
   appName: 'vue-ionic-budget-app',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
-  }
+    androidScheme: 'https',
+    url: 'http://10.203.60.21:5173',
+    cleartext: true,
+  },
 };
 
 export default config;
