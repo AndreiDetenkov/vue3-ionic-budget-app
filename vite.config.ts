@@ -1,9 +1,9 @@
 import legacy from '@vitejs/plugin-legacy'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
-import { defineConfig } from 'vite'
 
-// https://vitejs.dev/config/
+import { defineConfig } from 'vitest/config'
+
 export default defineConfig({
   plugins: [
     vue(),
