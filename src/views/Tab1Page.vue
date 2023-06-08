@@ -1,49 +1,34 @@
-<template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Transactions</ion-title>
-        <ion-buttons slot="end">
-          <ion-button>
-            <ion-icon slot="icon-only" :icon="add"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-progress-bar v-if="loading" type="indeterminate"></ion-progress-bar>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content :fullscreen="true"></ion-content>
-  </ion-page>
-</template>
-
 <script setup lang="ts">
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonProgressBar,
-  IonButtons,
-  IonButton,
-  IonIcon,
-} from '@ionic/vue';
-import { add } from 'ionicons/icons';
-import { onMounted, ref } from 'vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, onIonViewDidEnter } from '@ionic/vue';
+import { storeToRefs } from 'pinia';
 import { getCurrentMonthDates } from '@/shared/dates';
 import { useTransactionStore } from '@/entities/transactions';
+import TransactionList from '@/entities/transactions/ui/TransactionList.vue';
 
 const store = useTransactionStore();
-const loading = ref(false);
+const { transactionList, transactions, loading } = storeToRefs(store);
 
-onMounted(() => {
-  getTransactions();
+onIonViewDidEnter(() => {
+  if (!transactions.value) getTransactions();
 });
 
 const getTransactions = async () => {
   const { startDate, endDate } = getCurrentMonthDates();
-  loading.value = true;
   await store.getTransactionsByRange({ from: startDate, to: endDate });
-  loading.value = false;
 };
 </script>
+
+<template>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar mode="md">
+        <ion-title>Transactions</ion-title>
+        <ion-progress-bar v-if="loading" type="indeterminate" />
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content :fullscreen="true">
+      <TransactionList :list="transactionList" />
+    </ion-content>
+  </ion-page>
+</template>
