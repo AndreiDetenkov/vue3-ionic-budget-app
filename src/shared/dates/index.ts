@@ -11,10 +11,10 @@ export const getCurrentMonthDates = (): MonthDates => {
   return { startDate, endDate };
 };
 
-const formatDateByTemplate = (template: string): string => {
+export const formatDateByTemplate = (template: string): string => {
   return dayjs().format(template);
 };
 
-const formatDate = (date: string): string => {
+export const formatDate = (date: string): string => {
   return dayjs(date).format('DD.MM.YYYY');
 };
