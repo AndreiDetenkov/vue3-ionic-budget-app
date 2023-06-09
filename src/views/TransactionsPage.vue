@@ -4,9 +4,10 @@ import { storeToRefs } from 'pinia';
 import { getCurrentMonthDates } from '@/shared/dates';
 import { useTransactionStore } from '@/entities/transactions';
 import TransactionList from '@/entities/transactions/ui/TransactionList.vue';
+import TotalAmount from '@/entities/transactions/ui/TotalAmount.vue';
 
 const store = useTransactionStore();
-const { transactionList, transactions, loading } = storeToRefs(store);
+const { recentTransactions, transactions, loading } = storeToRefs(store);
 
 onIonViewDidEnter(() => {
   if (!transactions.value) getTransactions();
@@ -28,7 +29,8 @@ const getTransactions = async () => {
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <TransactionList :list="transactionList" />
+      <TotalAmount v-if="!loading" />
+      <TransactionList :list="recentTransactions" />
     </ion-content>
   </ion-page>
 </template>

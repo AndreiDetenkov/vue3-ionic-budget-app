@@ -9,8 +9,8 @@ defineProps<{
 </script>
 
 <template>
-  <ion-list lines="full">
-    <ion-item v-for="{ name, value, categories, created_at, id } in list" :key="id" class="list__item">
+  <ion-list lines="none">
+    <ion-item v-for="{ name, value, categories, created_at, id } in list" :key="id">
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
@@ -37,6 +37,7 @@ defineProps<{
 <style scoped>
 ion-grid {
   --ion-grid-padding: 0;
+  color: var(--ion-color-dark);
 }
 
 ion-thumbnail {

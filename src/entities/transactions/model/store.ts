@@ -19,10 +19,16 @@ export const useTransactionStore = defineStore('transactionStore', {
     loading: false,
   }),
   getters: {
-    transactionList(state): TransactionsResponseSuccess {
+    recentTransactions(state: State): TransactionsResponseSuccess {
       if (!state.transactions) return [];
       const list = [...state.transactions];
-      return list.splice(0, 10);
+      return list.splice(0, 20);
+    },
+    total(state: State): number {
+      if (!state.transactions) return 0;
+      return state.transactions.reduce((acc, item) => {
+        return acc + item.value;
+      }, 0);
     },
   },
   actions: {
