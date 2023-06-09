@@ -28,7 +28,7 @@ const getTransactions = async () => {
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content fullscreen>
       <TotalAmount v-if="!loading" />
       <TransactionList :list="recentTransactions" />
     </ion-content>
