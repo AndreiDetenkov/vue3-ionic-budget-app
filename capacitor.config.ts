@@ -1,12 +1,12 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'vue-ionic-budget-app',
+  appId: 'io.personal.budget',
+  appName: 'budget-app',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    url: 'http://10.203.60.21:5173',
+    url: 'http://10.203.60.55:5173',
     cleartext: true,
   },
 };
