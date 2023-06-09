@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
+import { list, apps } from 'ionicons/icons';
+</script>
+
 <template>
   <ion-page>
     <ion-tabs>
@@ -17,8 +22,3 @@
     </ion-tabs>
   </ion-page>
 </template>
-
-<script setup lang="ts">
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { list, apps } from 'ionicons/icons';
-</script>
