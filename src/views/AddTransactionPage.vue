@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonItem, IonList } from '@ionic/vue';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonInput,
+  IonItem,
+  IonList,
+  IonGrid,
+  IonRow,
+  IonCol,
+} from '@ionic/vue';
 </script>
 
 <template>

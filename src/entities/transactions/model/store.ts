@@ -5,6 +5,7 @@ import {
   TransactionsResponseError,
   TransactionsResponseSuccess,
 } from '@/entities/transactions/';
+import { useCategoryStore } from '@/entities/categories';
 
 interface State {
   transactions: TransactionsResponseSuccess | null;
@@ -45,6 +46,9 @@ export const useTransactionStore = defineStore('transactionStore', {
         console.error(error.error_description || error.message);
       } finally {
         this.loading = false;
+
+        const categoryStore = useCategoryStore();
+        await categoryStore.getCategoryList();
       }
     },
   },
