@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { IonInput, IonItem, IonList } from '@ionic/vue';
-import CategoryList from '@/entities/categories/ui/CategoryList.vue';
+import { IonCol, IonGrid, IonImg, IonInput, IonItem, IonLabel, IonList, IonRow } from '@ionic/vue';
+import { storeToRefs } from 'pinia';
+import { useCategoryStore } from '@/entities/categories';
+
+const categoryStore = useCategoryStore();
+const { pressedCategories } = storeToRefs(categoryStore);
 </script>
 
 <template>
@@ -14,7 +18,16 @@ import CategoryList from '@/entities/categories/ui/CategoryList.vue';
     </ion-item>
   </ion-list>
 
-  <category-list />
+  <ion-grid>
+    <ion-row>
+      <ion-col v-for="{ id, title, icon } in pressedCategories" :key="id" size="4">
+        <div class="card">
+          <ion-img :src="icon" :alt="title" />
+          <ion-label>{{ title }}</ion-label>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </template>
 
 <style scoped>
@@ -25,5 +38,30 @@ ion-list {
 ion-item {
   margin-bottom: 16px;
   margin-right: 16px;
+}
+
+.card {
+  padding: 4px;
+  margin: 4px;
+  border: 1px solid var(--ion-color-medium-tint);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  color: var(--ion-color-dark);
+  min-height: 72px;
+}
+
+ion-img {
+  width: 32px;
+  height: auto;
+  margin-bottom: 4px;
+}
+
+ion-label {
+  font-size: 12px;
+  font-weight: 500;
 }
 </style>
