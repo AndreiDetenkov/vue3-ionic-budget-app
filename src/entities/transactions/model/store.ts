@@ -47,8 +47,8 @@ export const useTransactionStore = defineStore('transactionStore', {
       } finally {
         this.loading = false;
 
-        const categoryStore = useCategoryStore();
-        await categoryStore.getCategoryList();
+        // const categoryStore = useCategoryStore();
+        // await categoryStore.getCategoryList();
       }
     },
   },

@@ -9,6 +9,7 @@ import {
 
 interface State {
   categories: CategoriesResponseSuccess | null;
+  pressedCategories: PressedCategory[] | null;
   error: CategoriesResponseError | null;
   loading: boolean;
 }
@@ -16,17 +17,10 @@ interface State {
 export const useCategoryStore = defineStore('categoryStore', {
   state: (): State => ({
     categories: null,
+    pressedCategories: null,
     error: null,
     loading: false,
   }),
-  getters: {
-    pressedCategories(state: State): PressedCategory[] {
-      if (!state.categories) return [];
-      return state.categories.map((category: Category): PressedCategory => {
-        return { ...category, isPressed: false };
-      });
-    },
-  },
   actions: {
     async getCategoryList(): Promise<void> {
       try {
@@ -37,6 +31,9 @@ export const useCategoryStore = defineStore('categoryStore', {
           return;
         }
         this.categories = data;
+        this.pressedCategories = data.map((category: Category): PressedCategory => {
+          return { ...category, isPressed: false };
+        });
       } catch (error: any) {
         console.error(error.error_description || error.message);
       } finally {

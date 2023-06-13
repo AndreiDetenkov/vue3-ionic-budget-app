@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonInput,
-  IonItem,
-  IonList,
-  IonGrid,
-  IonRow,
-  IonCol,
-} from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewDidEnter } from '@ionic/vue';
+import AddTransaction from '@/features/transaction/AddTransaction.vue';
+import { useCategoryStore } from '@/entities/categories';
+import { storeToRefs } from 'pinia';
+
+const categoryStore = useCategoryStore();
+const { categories, loading } = storeToRefs(categoryStore);
+
+onIonViewDidEnter(() => {
+  if (!categories.value) categoryStore.getCategoryList();
+});
 </script>
 
 <template>
@@ -19,32 +17,12 @@ import {
     <ion-header>
       <ion-toolbar mode="md">
         <ion-title>Add transaction</ion-title>
+        <ion-progress-bar v-if="loading" type="indeterminate" />
       </ion-toolbar>
     </ion-header>
 
     <ion-content>
-      <ion-list>
-        <ion-item>
-          <ion-input label="Transaction" label-placement="floating" autocapitalize="on" :autofocus="true" />
-        </ion-item>
-
-        <ion-item>
-          <ion-input type="number" inputmode="numeric" label="Amount" label-placement="floating" />
-        </ion-item>
-      </ion-list>
-
-      <ion-grid> </ion-grid>
+      <add-transaction />
     </ion-content>
   </ion-page>
 </template>
-
-<style scoped>
-ion-list {
-  margin: 12px 0 24px;
-}
-
-ion-item {
-  margin-bottom: 16px;
-  margin-right: 16px;
-}
-</style>
