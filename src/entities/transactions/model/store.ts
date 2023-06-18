@@ -50,10 +50,14 @@ export const useTransactionStore = defineStore('transactionStore', {
     },
     async createTransaction(payload: CreateTransactionPayload): Promise<{ success: boolean }> {
       const { error } = await createTransactionApi(payload);
-      if (!error) {
-        const { startDate, endDate } = getCurrentMonthDates();
-        getTransactionsByRangeApi({ from: startDate, to: endDate });
+
+      if (error) {
+        this.error = error;
+        return { success: false };
       }
+
+      const { startDate, endDate } = getCurrentMonthDates();
+      getTransactionsByRangeApi({ from: startDate, to: endDate });
       return { success: !error };
     },
   },

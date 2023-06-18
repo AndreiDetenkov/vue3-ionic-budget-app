@@ -14,6 +14,7 @@ import {
   IonButton,
   IonLoading,
   loadingController,
+  onIonViewDidEnter,
 } from '@ionic/vue';
 import { PressedCategory, useCategoryStore } from '@/entities/categories';
 import { CreateTransactionPayload, useTransactionStore } from '@/entities/transactions';
@@ -46,53 +47,56 @@ async function handleSubmit() {
     category_id: categoryId.value,
   };
 
-  await loadingController.create({ keyboardClose: true });
+  await loadingController.create({ mode: 'md' });
   const { success } = await transactionStore.createTransaction(payload);
-  if (success) {
-    await router.push('/tabs/transactions').catch(() => {});
-  }
-  await loadingController.dismiss();
+  if (!success) return;
+
+  router.push('/tabs/transactions').catch(() => {});
+  clearState();
+  loadingController.dismiss();
+}
+function clearState() {
+  form.value.transaction = form.value.amount = null;
+  categoryId.value = null;
 }
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit">
-    <ion-list>
-      <ion-item>
-        <ion-input
-          v-model="form.transaction"
-          label="Transaction"
-          label-placement="floating"
-          autocapitalize="on"
-          :autofocus="true"
-        />
-      </ion-item>
+  <ion-list>
+    <ion-item>
+      <ion-input
+        v-model="form.transaction"
+        label="Transaction"
+        label-placement="floating"
+        autocapitalize="on"
+        :autofocus="true"
+      />
+    </ion-item>
 
-      <ion-item>
-        <ion-input v-model="form.amount" type="number" inputmode="numeric" label="Amount" label-placement="floating" />
-      </ion-item>
-    </ion-list>
+    <ion-item>
+      <ion-input v-model="form.amount" type="number" inputmode="numeric" label="Amount" label-placement="floating" />
+    </ion-item>
+  </ion-list>
 
-    <ion-grid>
-      <ion-row>
-        <ion-col v-for="{ id, title, icon, isPressed } in pressedCategories" :key="id" size="4">
-          <div
-            @click.stop="handleTap(id)"
-            class="ion-activatable ripple-parent card"
-            :class="{ 'pressed-card': isPressed }"
-          >
-            <ion-ripple-effect class="custom-ripple" />
-            <ion-img :src="icon" :alt="title" />
-            <ion-label>{{ title }}</ion-label>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+  <ion-grid>
+    <ion-row>
+      <ion-col v-for="{ id, title, icon, isPressed } in pressedCategories" :key="id" size="4">
+        <div
+          @click.stop="handleTap(id)"
+          class="ion-activatable ripple-parent card"
+          :class="{ 'pressed-card': isPressed }"
+        >
+          <ion-ripple-effect class="custom-ripple" />
+          <ion-img :src="icon" :alt="title" />
+          <ion-label>{{ title }}</ion-label>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
-    <ion-button id="open-loading" expand="block" type="submit"> Add transaction </ion-button>
+  <ion-button expand="block" @click.stop="handleSubmit"> Add transaction </ion-button>
 
-    <ion-loading trigger="open-loading" message="Saving transaction..." />
-  </form>
+  <ion-loading message="Saving transaction..." />
 </template>
 
 <style scoped>
