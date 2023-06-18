@@ -10,7 +10,7 @@ const store = useTransactionStore();
 const { recentTransactions, transactions, loading } = storeToRefs(store);
 
 onIonViewDidEnter(() => {
-  if (!transactions.value) getTransactions();
+  getTransactions();
 });
 
 const getTransactions = async () => {

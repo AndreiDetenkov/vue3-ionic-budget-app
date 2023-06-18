@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewDidEnter } from '@ionic/vue';
-import AddTransaction from '@/features/transaction/AddTransaction.vue';
+import AddTransactionForm from '@/features/transaction/AddTransactionForm.vue';
 import { useCategoryStore } from '@/entities/categories';
 import { storeToRefs } from 'pinia';
 
@@ -22,7 +22,7 @@ onIonViewDidEnter(() => {
     </ion-header>
 
     <ion-content>
-      <add-transaction />
+      <add-transaction-form />
     </ion-content>
   </ion-page>
 </template>

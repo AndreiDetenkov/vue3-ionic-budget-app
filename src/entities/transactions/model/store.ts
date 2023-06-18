@@ -4,8 +4,10 @@ import {
   getTransactionsByRangeApi,
   TransactionsResponseError,
   TransactionsResponseSuccess,
+  CreateTransactionPayload,
+  createTransactionApi,
 } from '@/entities/transactions/';
-import { useCategoryStore } from '@/entities/categories';
+import { getCurrentMonthDates } from '@/shared/dates';
 
 interface State {
   transactions: TransactionsResponseSuccess | null;
@@ -42,14 +44,17 @@ export const useTransactionStore = defineStore('transactionStore', {
           return;
         }
         this.transactions = data;
-      } catch (error: any) {
-        console.error(error.error_description || error.message);
       } finally {
         this.loading = false;
-
-        // const categoryStore = useCategoryStore();
-        // await categoryStore.getCategoryList();
       }
+    },
+    async createTransaction(payload: CreateTransactionPayload): Promise<{ success: boolean }> {
+      const { error } = await createTransactionApi(payload);
+      if (!error) {
+        const { startDate, endDate } = getCurrentMonthDates();
+        getTransactionsByRangeApi({ from: startDate, to: endDate });
+      }
+      return { success: !error };
     },
   },
 });

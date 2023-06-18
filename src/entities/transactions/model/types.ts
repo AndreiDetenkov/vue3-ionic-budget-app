@@ -22,3 +22,9 @@ export interface TransactionWithCategory {
     title: string;
   };
 }
+
+export interface CreateTransactionPayload {
+  name: string;
+  value: number;
+  category_id: string;
+}
