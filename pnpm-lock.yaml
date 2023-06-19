@@ -13,6 +13,9 @@ dependencies:
   '@capacitor/haptics':
     specifier: 5.0.2
     version: 5.0.2(@capacitor/core@5.0.3)
+  '@capacitor/ios':
+    specifier: 5.0.3
+    version: 5.0.3(@capacitor/core@5.0.3)
   '@capacitor/keyboard':
     specifier: 5.0.2
     version: 5.0.2(@capacitor/core@5.0.3)
@@ -1294,6 +1297,14 @@ packages:
 
   /@capacitor/haptics@5.0.2(@capacitor/core@5.0.3):
     resolution: {integrity: sha512-HGkvL3a8yW26YVR7pfgMpkJrspD0+9sUrBB77SWR/GqQV+m32FTx9ECGlw+sHhwLnv0XtFx4PocIL5SlU1m3Vw==}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
+    dependencies:
+      '@capacitor/core': 5.0.3
+    dev: false
+
+  /@capacitor/ios@5.0.3(@capacitor/core@5.0.3):
+    resolution: {integrity: sha512-4U+mfiT0x2oYEJN9NAxcYKdrK4szROMe8SgIiG2lXDG7t7FK1OY4BnB1euZc8c+49VcBSk9x2EiYQg5Nshi5iQ==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
     dependencies:
