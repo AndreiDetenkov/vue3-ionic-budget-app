@@ -12,23 +12,23 @@ import {
   IonRow,
   IonRippleEffect,
   IonButton,
-  IonLoading,
-  loadingController,
-  onIonViewDidEnter,
 } from '@ionic/vue';
 import { PressedCategory, useCategoryStore } from '@/entities/categories';
 import { CreateTransactionPayload, useTransactionStore } from '@/entities/transactions';
-import router from '@/app/router';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const transactionStore = useTransactionStore();
 const categoryStore = useCategoryStore();
 const { pressedCategories } = storeToRefs(categoryStore);
 
-const form = ref<{ transaction: string | null; amount: number | null }>({
-  transaction: null,
-  amount: null,
+const form = ref<{ transaction: string | undefined; amount: number | undefined }>({
+  transaction: undefined,
+  amount: undefined,
 });
 const categoryId = ref<string | null>(null);
+const loading = ref<boolean>(false);
 
 function handleTap(id: string): void {
   if (!pressedCategories.value) return;
@@ -47,16 +47,16 @@ async function handleSubmit() {
     category_id: categoryId.value,
   };
 
-  await loadingController.create({ mode: 'md' });
+  loading.value = true;
   const { success } = await transactionStore.createTransaction(payload);
   if (!success) return;
 
-  router.push('/tabs/transactions').catch(() => {});
+  router.push('/tabs/transactions');
   clearState();
-  loadingController.dismiss();
+  loading.value = false;
 }
 function clearState() {
-  form.value.transaction = form.value.amount = null;
+  form.value.transaction = form.value.amount = undefined;
   categoryId.value = null;
 }
 </script>
@@ -80,23 +80,24 @@ function clearState() {
 
   <ion-grid>
     <ion-row>
-      <ion-col v-for="{ id, title, icon, isPressed } in pressedCategories" :key="id" size="4">
+      <ion-col v-for="category in pressedCategories" :key="category.id" size="4">
         <div
-          @click.stop="handleTap(id)"
+          @click.stop="handleTap(category.id)"
           class="ion-activatable ripple-parent card"
-          :class="{ 'pressed-card': isPressed }"
+          :class="{ 'pressed-card': category.isPressed }"
         >
           <ion-ripple-effect class="custom-ripple" />
-          <ion-img :src="icon" :alt="title" />
-          <ion-label>{{ title }}</ion-label>
+          <ion-img :src="category.icon" :alt="category.title" />
+          <ion-label>{{ category.title }}</ion-label>
         </div>
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <ion-button expand="block" @click.stop="handleSubmit"> Add transaction </ion-button>
-
-  <ion-loading message="Saving transaction..." />
+  <ion-button expand="block" @click.stop="handleSubmit" :disabled="loading">
+    <ion-spinner name="lines" v-if="loading" />
+    <span v-else>Create transaction</span>
+  </ion-button>
 </template>
 
 <style scoped>
@@ -144,7 +145,7 @@ ion-button {
 }
 
 .custom-ripple {
-  width: 98px;
+  width: calc(100% - 16px);
   height: 70px;
   border-radius: 8px;
   color: #501ace;

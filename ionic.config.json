@@ -1,5 +1,5 @@
 {
-  "name": "vue-ionic-budget-app",
+  "name": "budget-app",
   "integrations": {
     "capacitor": {}
   },
