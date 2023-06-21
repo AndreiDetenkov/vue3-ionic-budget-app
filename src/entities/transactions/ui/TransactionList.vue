@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { IonItem, IonLabel, IonList, IonGrid, IonRow, IonCol, IonThumbnail } from '@ionic/vue';
-import { TransactionWithCategory } from '@/entities/transactions';
+import { useTransactionStore } from '@/entities/transactions';
 import { formatDate } from '@/shared/dates';
+import { storeToRefs } from 'pinia';
 
-defineProps<{
-  list: TransactionWithCategory[];
-}>();
+const store = useTransactionStore();
+const { recentTransactions } = storeToRefs(store);
 </script>
 
 <template>
   <ion-list lines="none">
-    <ion-item v-for="{ name, value, categories, created_at, id } in list" :key="id">
+    <ion-item v-for="{ name, value, categories, created_at, id } in recentTransactions" :key="id">
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
@@ -39,28 +39,22 @@ ion-grid {
   --ion-grid-padding: 0;
   color: var(--ion-color-dark);
 }
-
 ion-thumbnail {
   --size: 24px;
   --border-radius: 4px;
   margin-right: 10px;
 }
-
 .title {
-  font-size: 14px;
-  margin-bottom: 2px;
+  font-size: 16px;
 }
-
 .category {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--ion-color-medium-shade);
 }
-
 .amount {
-  font-size: 14px;
-  margin-bottom: 2px;
+  font-size: 16px;
+  text-align: right;
 }
-
 .date {
   font-size: 10px;
   color: var(--ion-color-medium-shade);

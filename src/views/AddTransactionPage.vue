@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewDidEnter } from '@ionic/vue';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonProgressBar,
+  IonTitle,
+  IonToolbar,
+  onIonViewDidEnter,
+  onIonViewWillEnter,
+} from '@ionic/vue';
 import AddTransactionForm from '@/features/transaction/AddTransactionForm.vue';
 import { useCategoryStore } from '@/entities/categories';
 import { storeToRefs } from 'pinia';
@@ -7,7 +16,7 @@ import { storeToRefs } from 'pinia';
 const categoryStore = useCategoryStore();
 const { categories, loading } = storeToRefs(categoryStore);
 
-onIonViewDidEnter(() => {
+onIonViewWillEnter(() => {
   if (!categories.value) categoryStore.getCategoryList();
 });
 </script>

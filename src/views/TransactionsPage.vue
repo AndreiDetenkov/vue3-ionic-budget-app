@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, onIonViewDidEnter } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { getCurrentMonthDates } from '@/shared/dates';
-import { useTransactionStore } from '@/entities/transactions';
-import TransactionList from '@/entities/transactions/ui/TransactionList.vue';
-import TotalAmount from '@/entities/transactions/ui/TotalAmount.vue';
+import { useTransactionStore, TransactionList, TotalAmount } from '@/entities/transactions';
 
 const store = useTransactionStore();
-const { recentTransactions, transactions, loading } = storeToRefs(store);
+const { recentTransactions, loading, transactions } = storeToRefs(store);
+const { startDate, endDate } = getCurrentMonthDates();
 
-onIonViewDidEnter(() => {
-  getTransactions();
+onIonViewWillEnter(() => {
+  if (!transactions.value) getTransactions(startDate, endDate);
 });
 
-const getTransactions = async () => {
-  const { startDate, endDate } = getCurrentMonthDates();
-  await store.getTransactionsByRange({ from: startDate, to: endDate });
+const getTransactions = async (startDate: string, endDate: string) => {
+  store.getTransactionsByRange({ from: startDate, to: endDate });
 };
 </script>
 
@@ -29,8 +27,8 @@ const getTransactions = async () => {
     </ion-header>
 
     <ion-content fullscreen>
-      <TotalAmount v-if="!loading" />
-      <TransactionList :list="recentTransactions" />
+      <TotalAmount v-if="recentTransactions?.length" />
+      <TransactionList />
     </ion-content>
   </ion-page>
 </template>

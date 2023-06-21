@@ -3,13 +3,6 @@ export interface RangeInterface {
   to: string;
 }
 
-// type Transaction = Database['public']['Tables']['transactions']['Row'];
-// type Category = Database['public']['Tables']['categories']['Row'];
-
-// export type TransactionWithCategory = Transaction & {
-//   categories: Category | Category[];
-// };
-
 export interface TransactionWithCategory {
   category_id: string;
   created_at: string;

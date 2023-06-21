@@ -12,6 +12,7 @@ import {
   IonRow,
   IonRippleEffect,
   IonButton,
+  IonSpinner,
 } from '@ionic/vue';
 import { PressedCategory, useCategoryStore } from '@/entities/categories';
 import { CreateTransactionPayload, useTransactionStore } from '@/entities/transactions';
@@ -49,11 +50,11 @@ async function handleSubmit() {
 
   loading.value = true;
   const { success } = await transactionStore.createTransaction(payload);
-  if (!success) return;
-
-  router.push('/tabs/transactions');
-  clearState();
-  loading.value = false;
+  if (success) {
+    router.push('/tabs/transactions');
+    clearState();
+    loading.value = false;
+  }
 }
 function clearState() {
   form.value.transaction = form.value.amount = undefined;

@@ -30,7 +30,7 @@ const formattedTotal = computed<string>(() => {
 <style scoped>
 .card {
   padding: 8px;
-  margin: 16px 8px;
+  margin: 16px 8px 0;
   border: 1px solid var(--ion-color-medium-tint);
   border-radius: 16px;
   display: flex;

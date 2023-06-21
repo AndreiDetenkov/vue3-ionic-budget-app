@@ -6,12 +6,13 @@ import {
   TransactionsResponseSuccess,
   CreateTransactionPayload,
   createTransactionApi,
+  TransactionWithCategory,
 } from '@/entities/transactions/';
 import { getCurrentMonthDates } from '@/shared/dates';
 
 interface State {
-  transactions: TransactionsResponseSuccess | null;
-  error: TransactionsResponseError | null;
+  transactions: TransactionsResponseSuccess;
+  error: TransactionsResponseError;
   loading: boolean;
 }
 
@@ -22,12 +23,14 @@ export const useTransactionStore = defineStore('transactionStore', {
     loading: false,
   }),
   getters: {
-    recentTransactions(state: State): TransactionsResponseSuccess {
+    recentTransactions(state): TransactionWithCategory[] {
       if (!state.transactions) return [];
-      const list = [...state.transactions];
-      return list.splice(0, 20);
+      else {
+        const list = [...state.transactions];
+        return list.splice(0, 20) as TransactionWithCategory[];
+      }
     },
-    total(state: State): number {
+    total(state): number {
       if (!state.transactions) return 0;
       return state.transactions.reduce((acc, item) => {
         return acc + item.value;
@@ -57,8 +60,8 @@ export const useTransactionStore = defineStore('transactionStore', {
       }
 
       const { startDate, endDate } = getCurrentMonthDates();
-      getTransactionsByRangeApi({ from: startDate, to: endDate });
-      return { success: !error };
+      await getTransactionsByRangeApi({ from: startDate, to: endDate });
+      return { success: true };
     },
   },
 });
