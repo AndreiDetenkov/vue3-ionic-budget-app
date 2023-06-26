@@ -14,9 +14,11 @@ import {
   IonButton,
   IonSpinner,
 } from '@ionic/vue';
+import { useRouter } from 'vue-router';
+
 import { PressedCategory, useCategoryStore } from '@/entities/categories';
 import { CreateTransactionPayload, useTransactionStore } from '@/entities/transactions';
-import { useRouter } from 'vue-router';
+import { AddTransactionFormValues } from '@/features/transaction';
 
 const router = useRouter();
 
@@ -24,7 +26,7 @@ const transactionStore = useTransactionStore();
 const categoryStore = useCategoryStore();
 const { pressedCategories } = storeToRefs(categoryStore);
 
-const form = ref<{ transaction: string | undefined; amount: number | undefined }>({
+const form = ref<AddTransactionFormValues>({
   transaction: undefined,
   amount: undefined,
 });
@@ -51,11 +53,12 @@ async function handleSubmit() {
   loading.value = true;
   const { success } = await transactionStore.createTransaction(payload);
   if (success) {
-    router.push('/tabs/transactions');
+    await router.push('/tabs/transactions');
     clearState();
     loading.value = false;
   }
 }
+
 function clearState() {
   form.value.transaction = form.value.amount = undefined;
   categoryId.value = null;
@@ -81,15 +84,15 @@ function clearState() {
 
   <ion-grid>
     <ion-row>
-      <ion-col v-for="category in pressedCategories" :key="category.id" size="4">
+      <ion-col v-for="{ id, title, icon, isPressed } in pressedCategories" :key="id" size="4">
         <div
-          @click.stop="handleTap(category.id)"
+          @click.stop="handleTap(id)"
           class="ion-activatable ripple-parent card"
-          :class="{ 'pressed-card': category.isPressed }"
+          :class="{ 'pressed-card': isPressed }"
         >
           <ion-ripple-effect class="custom-ripple" />
-          <ion-img :src="category.icon" :alt="category.title" />
-          <ion-label>{{ category.title }}</ion-label>
+          <ion-img :src="icon" :alt="title" />
+          <ion-label>{{ title }}</ion-label>
         </div>
       </ion-col>
     </ion-row>

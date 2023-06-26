@@ -1,17 +1,8 @@
 <script setup lang="ts">
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonProgressBar,
-  IonTitle,
-  IonToolbar,
-  onIonViewDidEnter,
-  onIonViewWillEnter,
-} from '@ionic/vue';
-import AddTransactionForm from '@/features/transaction/AddTransactionForm.vue';
-import { useCategoryStore } from '@/entities/categories';
+import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
+import { useCategoryStore } from '@/entities/categories';
+import { AddTransactionForm } from '@/features/transaction';
 
 const categoryStore = useCategoryStore();
 const { categories, loading } = storeToRefs(categoryStore);
