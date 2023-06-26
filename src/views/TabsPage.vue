@@ -32,7 +32,8 @@ import { list, apps, add } from 'ionicons/icons';
   font-size: 30px;
   border-width: 1px;
   border-style: solid;
-  padding: 4px;
+  padding: 1px;
   border-radius: 10px;
+  color: var(--ion-color-primary);
 }
 </style>
