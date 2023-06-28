@@ -58,9 +58,9 @@ export const useTransactionStore = defineStore('transactionStore', {
         this.error = error;
         return { success: false };
       }
-
-      const { startDate, endDate } = getCurrentMonthDates();
-      await getTransactionsByRangeApi({ from: startDate, to: endDate });
+      //
+      // const { startDate, endDate } = getCurrentMonthDates();
+      // await getTransactionsByRangeApi({ from: startDate, to: endDate });
       return { success: true };
     },
   },

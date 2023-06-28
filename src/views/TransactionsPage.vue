@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonProgressBar,
+  IonRefresher,
+  IonRefresherContent,
+  onIonViewWillEnter,
+} from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { getCurrentMonthDates } from '@/shared/dates';
 import { useTransactionStore, TransactionList, TotalAmount } from '@/entities/transactions';
@@ -15,6 +25,11 @@ onIonViewWillEnter(() => {
 const getTransactions = async (startDate: string, endDate: string) => {
   store.getTransactionsByRange({ from: startDate, to: endDate });
 };
+
+const handleRefresh = async (event: CustomEvent) => {
+  await getTransactions(startDate, endDate);
+  event.detail.complete();
+};
 </script>
 
 <template>
@@ -27,7 +42,11 @@ const getTransactions = async (startDate: string, endDate: string) => {
     </ion-header>
 
     <ion-content fullscreen>
-      <TotalAmount v-if="recentTransactions?.length" />
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+
+      <TotalAmount v-if="recentTransactions.length" />
       <TransactionList />
     </ion-content>
   </ion-page>
