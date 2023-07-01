@@ -2,7 +2,7 @@
 import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/entities/categories';
-import { AddTransactionForm } from '@/features/transaction';
+import { AddTransaction } from '@/features/transaction';
 
 const categoryStore = useCategoryStore();
 const { categories, loading } = storeToRefs(categoryStore);
@@ -22,7 +22,7 @@ onIonViewWillEnter(() => {
     </ion-header>
 
     <ion-content>
-      <add-transaction-form />
+      <add-transaction />
     </ion-content>
   </ion-page>
 </template>
