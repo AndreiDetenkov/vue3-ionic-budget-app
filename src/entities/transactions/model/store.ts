@@ -24,11 +24,13 @@ export const useTransactionStore = defineStore('transactionStore', {
   }),
   getters: {
     recentTransactions(state): TransactionWithCategory[] {
-      if (!state.transactions) return [];
-      else {
-        const list = [...state.transactions];
-        return list.splice(0, 20) as TransactionWithCategory[];
+      if (!state.transactions) {
+        return [];
       }
+
+      const list = [...state.transactions];
+
+      return list.splice(0, 20);
     },
     total(state): number {
       if (!state.transactions) return 0;

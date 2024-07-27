@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import Tab1Page from '../../src/views/TransactionsPage.vue';
+import Tab1Page from '../../src/views/Transactions.vue';
 import { describe, expect, test } from 'vitest';
 
 describe('Tab1Page.vue', () => {

@@ -3,17 +3,19 @@ export interface RangeInterface {
   to: string;
 }
 
+interface Category {
+  icon: string;
+  id: string;
+  title: string;
+}
+
 export interface TransactionWithCategory {
   category_id: string;
   created_at: string;
   id: string;
   name: string;
   value: number;
-  categories: {
-    icon: string;
-    id: string;
-    title: string;
-  };
+  categories: Category | Category[];
 }
 
 export interface CreateTransactionPayload {
