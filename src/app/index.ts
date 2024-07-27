@@ -24,6 +24,4 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import '@/app/theme/variables.css';
 
-const pinia = createPinia();
-
-export const app = createApp(App).use(IonicVue).use(router).use(pinia);
+export const app = createApp(App).use(IonicVue).use(router).use(createPinia());
