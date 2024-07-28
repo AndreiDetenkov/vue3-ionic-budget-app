@@ -5,7 +5,7 @@ import { formatDate } from '@/shared/dates';
 import { storeToRefs } from 'pinia';
 
 const store = useTransactionStore();
-const { recentTransactions } = storeToRefs(store);
+const { transactions } = storeToRefs(store);
 </script>
 
 <template>
@@ -16,7 +16,7 @@ const { recentTransactions } = storeToRefs(store);
   </ion-list-header>
 
   <ion-list lines="none">
-    <ion-item v-for="{ name, value, categories, created_at, id } in recentTransactions" :key="id">
+    <ion-item v-for="{ name, value, categories, created_at, id } in transactions" :key="id">
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">

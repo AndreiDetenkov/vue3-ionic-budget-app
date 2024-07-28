@@ -23,3 +23,9 @@ export interface CreateTransactionPayload {
   value: number;
   category_id: string;
 }
+
+export const rangeUnits = {
+  day: 'day',
+  week: 'week',
+  month: 'month',
+};

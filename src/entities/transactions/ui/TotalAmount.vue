@@ -19,7 +19,7 @@ const formattedTotal = computed<string>(() => {
       <ion-col>
         <div class="card">
           <ion-label class="card__title">Expense</ion-label>
-          <ion-label class="card__total">{{ formattedTotal }}&nbsp;cом</ion-label>
+          <ion-label class="card__total">{{ formattedTotal }}&nbsp;&#8838;</ion-label>
           <ion-label class="card__date">{{ currentDate }}</ion-label>
         </div>
       </ion-col>

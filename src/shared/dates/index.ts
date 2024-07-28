@@ -1,12 +1,18 @@
-import dayjs from 'dayjs';
+import dayjs, { OpUnitType } from 'dayjs';
+import ru from 'dayjs/locale/ru';
+import localeData from 'dayjs/plugin/localeData';
 
-interface MonthDates {
+dayjs.extend(localeData);
+dayjs.locale(ru);
+
+interface RangeDates {
   startDate: string;
   endDate: string;
 }
-export const getCurrentMonthDates = (): MonthDates => {
-  const startDate = dayjs().startOf('month').format();
-  const endDate = dayjs().endOf('month').format();
+
+export const getRangeDates = (unit: OpUnitType): RangeDates => {
+  const startDate = dayjs().startOf(unit).format();
+  const endDate = dayjs().endOf(unit).format();
 
   return { startDate, endDate };
 };
