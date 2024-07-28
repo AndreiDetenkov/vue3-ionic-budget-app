@@ -8,6 +8,9 @@ import {
   IonProgressBar,
   IonRefresher,
   IonRefresherContent,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
@@ -22,9 +25,8 @@ onIonViewWillEnter(() => {
   if (!transactions.value) getTransactions(startDate, endDate);
 });
 
-const getTransactions = async (startDate: string, endDate: string) => {
+const getTransactions = async (startDate: string, endDate: string) =>
   store.getTransactionsByRange({ from: startDate, to: endDate });
-};
 
 const handleRefresh = async (event: CustomEvent) => {
   await getTransactions(startDate, endDate);
@@ -46,7 +48,20 @@ const handleRefresh = async (event: CustomEvent) => {
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <TotalAmount v-if="recentTransactions.length" />
+      <TotalAmount />
+
+      <ion-segment value="daily">
+        <ion-segment-button value="daily">
+          <ion-label>Daily</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="weekly">
+          <ion-label>Weekly</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="monthly">
+          <ion-label>Monthly</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
       <TransactionList />
     </ion-content>
   </ion-page>

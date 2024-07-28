@@ -22,23 +22,25 @@ export const useTransactionStore = defineStore('transactionStore', {
     error: null,
     loading: false,
   }),
+
   getters: {
     recentTransactions(state): TransactionWithCategory[] {
       if (!state.transactions) {
         return [];
       }
 
-      const list = [...state.transactions];
-
-      return list.splice(0, 20);
+      return state.transactions.slice(0, 20);
     },
+
     total(state): number {
       if (!state.transactions) return 0;
+
       return state.transactions.reduce((acc, item) => {
         return acc + item.value;
       }, 0);
     },
   },
+
   actions: {
     async getTransactionsByRange({ from, to }: RangeInterface): Promise<void> {
       try {
@@ -53,6 +55,7 @@ export const useTransactionStore = defineStore('transactionStore', {
         this.loading = false;
       }
     },
+
     async createTransaction(payload: CreateTransactionPayload): Promise<{ success: boolean }> {
       const { error } = await createTransactionApi(payload);
 
