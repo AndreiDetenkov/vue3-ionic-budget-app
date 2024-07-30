@@ -18,7 +18,6 @@ const formattedTotal = computed<string>(() => {
     <ion-row class="ion-align-items-center ion-justify-content-center">
       <ion-col>
         <div class="card">
-          <ion-label class="card__title">Expense</ion-label>
           <ion-label class="card__total">{{ formattedTotal }}&nbsp;&#8838;</ion-label>
           <ion-label class="card__date">{{ currentDate }}</ion-label>
         </div>
@@ -40,16 +39,12 @@ const formattedTotal = computed<string>(() => {
   color: var(--ion-color-dark);
 }
 
-.card__title {
-  text-transform: uppercase;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
 .card__total {
   font-size: 28px;
   font-weight: 600;
   margin-bottom: 4px;
 }
+
 .card__date {
   font-size: 14px;
 }
