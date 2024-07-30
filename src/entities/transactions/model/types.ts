@@ -1,3 +1,5 @@
+import { TransactionsResponseSuccess } from '@/entities/transactions';
+
 export interface RangeInterface {
   from: string;
   to: string;
@@ -29,3 +31,5 @@ export const rangeUnits = {
   week: 'week',
   month: 'month',
 };
+
+export type Transactions = TransactionsResponseSuccess;

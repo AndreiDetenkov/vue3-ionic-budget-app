@@ -5,8 +5,6 @@ import {
   IonLabel,
   IonPage,
   IonProgressBar,
-  IonRefresher,
-  IonRefresherContent,
   IonSegment,
   IonSegmentButton,
   IonTitle,

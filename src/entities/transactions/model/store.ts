@@ -2,15 +2,14 @@ import { defineStore } from 'pinia';
 import {
   RangeInterface,
   TransactionsResponseError,
-  TransactionsResponseSuccess,
   CreateTransactionPayload,
-  TransactionWithCategory,
   createTransactionApi,
   getTransactionsByRangeApi,
+  TransactionWithCategory,
 } from '@/entities/transactions/';
 
 interface State {
-  transactions: TransactionsResponseSuccess;
+  transactions: TransactionWithCategory[] | null;
   error: TransactionsResponseError;
   loading: boolean;
 }
@@ -23,14 +22,6 @@ export const useTransactionStore = defineStore('transactionStore', {
   }),
 
   getters: {
-    recentTransactions(state): TransactionWithCategory[] {
-      if (!state.transactions) {
-        return [];
-      }
-
-      return state.transactions.slice(0, 20);
-    },
-
     total(state): number {
       if (!state.transactions) return 0;
 
