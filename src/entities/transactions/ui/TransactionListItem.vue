@@ -1,30 +1,31 @@
 <script setup lang="ts">
+import { IonLabel, IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
 import { formatDate } from '@/shared/dates';
-import { TransactionWithCategory } from '@/entities/transactions';
+import { Transaction } from '@/entities/transactions';
 
 defineProps<{
-  transactions: TransactionWithCategory[];
+  transaction: Transaction;
 }>();
 </script>
 
 <template>
-  <ion-item v-for="{ categories, name, value, created_at, id } in transactions" :key="id">
+  <ion-item>
     <ion-grid>
       <ion-row class="ion-align-items-center">
         <ion-col size="auto">
           <ion-thumbnail>
-            <img :alt="categories.title" :src="categories.icon" />
+            <img alt="" :src="transaction.category.icon" />
           </ion-thumbnail>
         </ion-col>
 
         <ion-col>
-          <ion-label class="title">{{ name }}</ion-label>
-          <ion-label class="category">{{ categories.title }}</ion-label>
+          <ion-label class="title">{{ transaction.name }}</ion-label>
+          <ion-label class="category">{{ transaction.category.title }}</ion-label>
         </ion-col>
 
         <ion-col size="auto">
-          <ion-label class="amount">{{ value }}</ion-label>
-          <ion-label class="date">{{ formatDate(created_at) }}</ion-label>
+          <ion-label class="amount">{{ transaction.value }}</ion-label>
+          <ion-label class="date">{{ formatDate(transaction.createdAt) }}</ion-label>
         </ion-col>
       </ion-row>
     </ion-grid>

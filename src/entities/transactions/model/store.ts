@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
 import {
-  RangeInterface,
-  TransactionsResponseError,
-  CreateTransactionPayload,
   createTransactionApi,
+  CreateTransactionPayload,
   getTransactionsByRangeApi,
-  TransactionWithCategory,
+  RangeInterface,
+  Transaction,
+  TransactionsResponseError,
 } from '@/entities/transactions/';
+import { Category } from '@/entities/categories';
 
 interface State {
-  transactions: TransactionWithCategory[] | null;
+  transactions: Transaction[] | null;
   error: TransactionsResponseError | null;
   loading: boolean;
 }
@@ -36,11 +37,20 @@ export const useTransactionStore = defineStore('transactionStore', {
       try {
         this.loading = true;
         const { data, error } = await getTransactionsByRangeApi({ from, to });
+
         if (error) {
           this.error = error;
           return;
         }
-        this.transactions = data;
+
+        this.transactions = data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          value: item.value,
+          createdAt: item.created_at,
+          categoryId: item.category_id,
+          category: { ...item.categories } as unknown as Category,
+        }));
       } finally {
         this.loading = false;
       }

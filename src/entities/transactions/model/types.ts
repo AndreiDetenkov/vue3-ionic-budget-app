@@ -1,4 +1,4 @@
-import { TransactionsResponseSuccess } from '@/entities/transactions';
+import { Database } from '@/shared/config/supabase';
 
 export interface RangeInterface {
   from: string;
@@ -11,13 +11,13 @@ interface Category {
   title: string;
 }
 
-export interface TransactionWithCategory {
-  category_id: string;
-  created_at: string;
+export interface Transaction {
+  categoryId: string;
+  createdAt: string;
   id: string;
   name: string;
   value: number;
-  categories: Category | Category[];
+  category: Category;
 }
 
 export interface CreateTransactionPayload {
@@ -31,5 +31,3 @@ export const rangeUnits = {
   week: 'week',
   month: 'month',
 };
-
-export type Transactions = TransactionsResponseSuccess;

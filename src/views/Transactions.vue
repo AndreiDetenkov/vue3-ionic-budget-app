@@ -5,18 +5,17 @@ import {
   IonLabel,
   IonPage,
   IonProgressBar,
-  IonSegment,
-  IonSegmentButton,
   IonTitle,
   IonToolbar,
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { getRangeDates } from '@/shared/dates';
-import { rangeUnits, TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import { OpUnitType } from 'dayjs';
+import { rangeUnits, TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import AppRefresher from '@/shared/ui/AppRefresher.vue';
+import { getRangeDates } from '@/shared/dates';
+import TransactionTabs from '@/entities/transactions/ui/TransactionTabs.vue';
 
 const store = useTransactionStore();
 const { loading, transactions } = storeToRefs(store);
@@ -38,7 +37,7 @@ const refreshView = () => {
 
 const frequency = ref<OpUnitType>('day');
 
-const onChangeSegment = async () => {
+const onChangeTab = async () => {
   await getTransactions(frequency.value);
 };
 </script>
@@ -57,17 +56,7 @@ const onChangeSegment = async () => {
 
       <total-amount />
 
-      <ion-segment v-model="frequency" @ion-change="onChangeSegment" class="ion-padding-horizontal">
-        <ion-segment-button :value="rangeUnits.day" class="ion-text-capitalize">
-          <ion-label>Daily</ion-label>
-        </ion-segment-button>
-        <ion-segment-button :value="rangeUnits.week" class="ion-text-capitalize">
-          <ion-label>Weekly</ion-label>
-        </ion-segment-button>
-        <ion-segment-button :value="rangeUnits.month" class="ion-text-capitalize">
-          <ion-label>Monthly</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+      <transaction-tabs v-model="frequency" @update:modelValue="onChangeTab" />
 
       <transaction-list />
     </ion-content>
