@@ -10,7 +10,7 @@ import {
 
 interface State {
   transactions: TransactionWithCategory[] | null;
-  error: TransactionsResponseError;
+  error: TransactionsResponseError | null;
   loading: boolean;
 }
 

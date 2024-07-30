@@ -2,6 +2,7 @@
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
 import { useTransactionStore } from '@/entities/transactions';
 import TransactionListItem from '@/entities/transactions/ui/TransactionListItem.vue';
+import TransactionsEmpty from '@/entities/transactions/ui/TransactionsEmpty.vue';
 
 const store = useTransactionStore();
 </script>
@@ -19,7 +20,9 @@ const store = useTransactionStore();
     </ion-list>
   </template>
 
-  <template v-else> No Transactions in this moment </template>
+  <template v-else>
+    <transactions-empty />
+  </template>
 </template>
 
 <style scoped>
