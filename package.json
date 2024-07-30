@@ -15,8 +15,8 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint",
-    "sync": "ionic capacitor copy android",
-    "open": "ionic capacitor open android -l --external"
+    "sync": "npx cap sync android",
+    "open": "npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "6.1.0",
