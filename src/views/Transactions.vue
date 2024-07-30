@@ -13,11 +13,12 @@ import {
   IonToolbar,
   onIonViewWillEnter,
 } from '@ionic/vue';
-import { ref, UnwrapRef } from 'vue';
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { getRangeDates } from '@/shared/dates';
 import { rangeUnits, TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import { OpUnitType } from 'dayjs';
+import AppRefresher from '@/shared/ui/AppRefresher.vue';
 
 const store = useTransactionStore();
 const { loading, transactions } = storeToRefs(store);
@@ -33,9 +34,8 @@ const getTransactions = async (range: OpUnitType) => {
   await store.getTransactionsByRange({ from: startDate, to: endDate });
 };
 
-const handleRefresh = async (event: CustomEvent) => {
-  await getTransactions(frequency.value);
-  event.detail.complete();
+const refreshView = () => {
+  getTransactions(frequency.value);
 };
 
 const frequency = ref<OpUnitType>('day');
@@ -55,11 +55,9 @@ const onChangeSegment = async () => {
     </ion-header>
 
     <ion-content fullscreen>
-      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
+      <app-refresher @refresh="refreshView" />
 
-      <TotalAmount />
+      <total-amount />
 
       <ion-segment v-model="frequency" @ion-change="onChangeSegment" class="ion-padding-horizontal">
         <ion-segment-button :value="rangeUnits.day" class="ion-text-capitalize">
@@ -73,7 +71,7 @@ const onChangeSegment = async () => {
         </ion-segment-button>
       </ion-segment>
 
-      <TransactionList />
+      <transaction-list />
     </ion-content>
   </ion-page>
 </template>
