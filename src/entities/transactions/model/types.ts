@@ -1,5 +1,3 @@
-import { Database } from '@/shared/config/supabase';
-
 export interface RangeInterface {
   from: string;
   to: string;

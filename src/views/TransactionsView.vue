@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import {
-  IonContent,
-  IonHeader,
-  IonLabel,
-  IonPage,
-  IonProgressBar,
-  IonTitle,
-  IonToolbar,
-  onIonViewWillEnter,
-} from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { OpUnitType } from 'dayjs';
-import { rangeUnits, TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
+import { TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import AppRefresher from '@/shared/ui/AppRefresher.vue';
 import { getRangeDates } from '@/shared/dates';
 import TransactionTabs from '@/entities/transactions/ui/TransactionTabs.vue';
