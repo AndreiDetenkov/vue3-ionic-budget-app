@@ -55,8 +55,8 @@ importers:
         version: 4.4.0(vue@3.4.31(typescript@5.5.3))
     devDependencies:
       '@capacitor/cli':
-        specifier: 6.1.1
-        version: 6.1.1
+        specifier: 6.1.0
+        version: 6.1.0
       '@ionic/prettier-config':
         specifier: ^4.0.0
         version: 4.0.0(prettier@3.3.3)
@@ -698,8 +698,8 @@ packages:
     peerDependencies:
       '@capacitor/core': ^6.0.0
 
-  '@capacitor/cli@6.1.1':
-    resolution: {integrity: sha512-rsRqEadfnBSUX90RZj59oXvi30bpSusLMfIcgbOIArOloTgfaaWr9R471F6m3gGWF7BhNoskJpZcCgSUsfywwA==}
+  '@capacitor/cli@6.1.0':
+    resolution: {integrity: sha512-HEKDh3+FuNZKFHmSDZ7nAnaX3bzhtznYk9GsZBMac1y4CTAxIykPX9wzZ3DzLeM/EbMBGFClUbefkIkimAyfYg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -4346,7 +4346,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 6.1.0
 
-  '@capacitor/cli@6.1.1':
+  '@capacitor/cli@6.1.0':
     dependencies:
       '@ionic/cli-framework-output': 2.2.8
       '@ionic/utils-fs': 3.1.7
