@@ -9,8 +9,8 @@ export async function getTransactionsByRangeApi({ from, to }: RangeInterface) {
   return supabase
     .from('transactions')
     .select(`*,categories(*)`)
-    .gt('created_at', from)
-    .lt('created_at', to)
+    .gte('created_at', from)
+    .lte('created_at', to)
     .order('created_at', { ascending: false });
 }
 
