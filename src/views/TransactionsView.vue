@@ -53,14 +53,3 @@ const onChangeTab = async () => {
     </ion-content>
   </ion-page>
 </template>
-
-<style scoped>
-ion-segment {
-  margin-bottom: 16px;
-}
-
-ion-segment-button {
-  letter-spacing: 0;
-  font-size: 16px;
-}
-</style>

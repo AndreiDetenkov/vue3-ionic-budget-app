@@ -1,3 +1,11 @@
+import { TransactionsResponseError } from '@/entities/transactions';
+
+export interface TransactionStoreState {
+  transactions: Transaction[] | null;
+  error: TransactionsResponseError | null;
+  loading: boolean;
+}
+
 export interface RangeInterface {
   from: string;
   to: string;

@@ -22,4 +22,13 @@ const model = defineModel<OpUnitType>('day');
   </ion-segment>
 </template>
 
-<style scoped></style>
+<style scoped>
+ion-segment {
+  margin-bottom: 16px;
+}
+
+ion-segment-button {
+  letter-spacing: 0;
+  font-size: 16px;
+}
+</style>

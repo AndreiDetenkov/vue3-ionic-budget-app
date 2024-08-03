@@ -1,22 +1,15 @@
 import { defineStore } from 'pinia';
 import {
   createTransactionApi,
-  CreateTransactionPayload,
   getTransactionsByRangeApi,
+  CreateTransactionPayload,
   RangeInterface,
-  Transaction,
-  TransactionsResponseError,
+  TransactionStoreState,
 } from '@/entities/transactions/';
 import { Category } from '@/entities/categories';
 
-interface State {
-  transactions: Transaction[] | null;
-  error: TransactionsResponseError | null;
-  loading: boolean;
-}
-
 export const useTransactionStore = defineStore('transactionStore', {
-  state: (): State => ({
+  state: (): TransactionStoreState => ({
     transactions: null,
     error: null,
     loading: false,
