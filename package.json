@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "pnpm vite --open --host",
+    "dev": "pnpm vite --open",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "test:e2e": "cypress run",
@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "sync": "npx cap sync android",
     "open": "npx cap open android",
-    "run:android": "npx cap run android --livereload --external"
+    "run:android": "npx cap run android --target=Pixel_7_API_35  --livereload --external"
   },
   "dependencies": {
     "@capacitor/android": "6.1.0",
@@ -55,5 +55,9 @@
     "vitest": "^2.0.2",
     "vue-tsc": "^2.0.26"
   },
-  "prettier": "@ionic/prettier-config"
+  "prettier": "@ionic/prettier-config",
+  "engines": {
+    "node": "20",
+    "pnpm": "9"
+  }
 }

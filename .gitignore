@@ -32,7 +32,5 @@ npm-debug.log*
 /www
 
 .env
-budget-app
+budget-app-keystore
 
-./android
-./ios
