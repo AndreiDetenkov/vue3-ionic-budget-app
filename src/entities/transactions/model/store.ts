@@ -3,6 +3,7 @@ import {
   createTransactionApi,
   getTransactionsByRangeApi,
   RangeInterface,
+  removeTransactionApi,
   TransactionPayload,
   TransactionStoreState,
 } from '@/entities/transactions/';
@@ -65,8 +66,20 @@ export const useTransactionStore = defineStore('transactionStore', {
       }
     },
 
-    async removeTransaction(id: number): Promise<void> {
-      console.log(id);
+    async removeTransaction(id: string): Promise<{ success: boolean }> {
+      try {
+        this.loading = true;
+        const { error } = await removeTransactionApi(id);
+
+        if (error) {
+          this.error = error;
+          return { success: false };
+        }
+
+        return { success: true };
+      } finally {
+        this.loading = false;
+      }
     },
   },
 });

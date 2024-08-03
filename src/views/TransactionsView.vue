@@ -10,26 +10,26 @@ import { getRangeDates } from '@/shared/dates';
 const store = useTransactionStore();
 const { loading, transactions } = storeToRefs(store);
 
+const frequency = ref<OpUnitType>('day');
+
+async function getTransactions(range: OpUnitType) {
+  const { startDate, endDate } = getRangeDates(range);
+  await store.getTransactionsByRange({ from: startDate, to: endDate });
+}
+
 onIonViewWillEnter(() => {
   if (!transactions.value) {
     getTransactions(frequency.value);
   }
 });
 
-const getTransactions = async (range: OpUnitType) => {
-  const { startDate, endDate } = getRangeDates(range);
-  await store.getTransactionsByRange({ from: startDate, to: endDate });
-};
-
-const refreshView = () => {
+function refreshView() {
   getTransactions(frequency.value);
-};
+}
 
-const frequency = ref<OpUnitType>('day');
-
-const onChangeTab = async () => {
+async function onChangeTab() {
   await getTransactions(frequency.value);
-};
+}
 </script>
 
 <template>

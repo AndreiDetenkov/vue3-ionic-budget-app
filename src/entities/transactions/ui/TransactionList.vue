@@ -21,7 +21,6 @@ const showList = computed(() => store.transactions?.length);
         v-for="transaction in store.transactions"
         :key="transaction.id"
         :transaction="transaction"
-        @remove-transaction="store.removeTransaction"
       />
     </ion-list>
   </template>

@@ -17,3 +17,7 @@ export async function getTransactionsByRangeApi({ from, to }: RangeInterface) {
 export async function createTransactionApi(payload: TransactionPayload) {
   return supabase.from('transactions').insert([payload]).select();
 }
+
+export async function removeTransactionApi(id: string) {
+  return supabase.from('transactions').delete().eq('id', id);
+}
