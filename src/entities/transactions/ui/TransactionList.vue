@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
-import { useTransactionStore } from '@/entities/transactions';
-import TransactionListItem from '@/entities/transactions/ui/TransactionListItem.vue';
-import TransactionsEmpty from '@/entities/transactions/ui/TransactionsEmpty.vue';
+import { useTransactionStore, TransactionsEmpty, TransactionListItemSlide } from '@/entities/transactions';
+import { computed } from 'vue';
 
 const store = useTransactionStore();
-const { transactions } = storeToRefs(store);
+
+const showList = computed(() => store.transactions?.length);
 </script>
 
 <template>
-  <template v-if="transactions?.length">
+  <template v-if="showList">
     <ion-list-header>
       <ion-label>
         <h2 class="header-title">Recent Transactions</h2>
@@ -18,7 +17,12 @@ const { transactions } = storeToRefs(store);
     </ion-list-header>
 
     <ion-list lines="none">
-      <transaction-list-item v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
+      <transaction-list-item-slide
+        v-for="transaction in store.transactions"
+        :key="transaction.id"
+        :transaction="transaction"
+        @remove-transaction="store.removeTransaction"
+      />
     </ion-list>
   </template>
 

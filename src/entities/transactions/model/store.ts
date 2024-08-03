@@ -64,5 +64,9 @@ export const useTransactionStore = defineStore('transactionStore', {
         this.loading = false;
       }
     },
+
+    async removeTransaction(id: number): Promise<void> {
+      console.log(id);
+    },
   },
 });
