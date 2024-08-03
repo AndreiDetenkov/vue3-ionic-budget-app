@@ -1,5 +1,5 @@
 import { supabase } from '@/shared/config/supabase';
-import { CreateTransactionPayload, RangeInterface } from '@/entities/transactions';
+import { TransactionPayload, RangeInterface } from '@/entities/transactions';
 
 type TransactionsResponse = Awaited<ReturnType<typeof getTransactionsByRangeApi>>;
 export type TransactionsResponseSuccess = TransactionsResponse['data'];
@@ -14,6 +14,6 @@ export async function getTransactionsByRangeApi({ from, to }: RangeInterface) {
     .order('created_at', { ascending: false });
 }
 
-export async function createTransactionApi(payload: CreateTransactionPayload) {
-  return supabase.from('transactions').insert([payload]);
+export async function createTransactionApi(payload: TransactionPayload) {
+  return supabase.from('transactions').insert([payload]).select();
 }

@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 import {
   createTransactionApi,
   getTransactionsByRangeApi,
-  CreateTransactionPayload,
   RangeInterface,
+  TransactionPayload,
   TransactionStoreState,
 } from '@/entities/transactions/';
 import { Category } from '@/entities/categories';
@@ -49,15 +49,20 @@ export const useTransactionStore = defineStore('transactionStore', {
       }
     },
 
-    async createTransaction(payload: CreateTransactionPayload): Promise<{ success: boolean }> {
-      const { error } = await createTransactionApi(payload);
+    async createTransaction(payload: TransactionPayload): Promise<{ success: boolean }> {
+      try {
+        this.loading = true;
+        const { error } = await createTransactionApi(payload);
 
-      if (error) {
-        this.error = error;
-        return { success: false };
+        if (error) {
+          this.error = error;
+          return { success: false };
+        }
+
+        return { success: true };
+      } finally {
+        this.loading = false;
       }
-
-      return { success: true };
     },
   },
 });

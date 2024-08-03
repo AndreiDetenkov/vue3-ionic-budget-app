@@ -3,10 +3,9 @@ import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, o
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { OpUnitType } from 'dayjs';
-import { TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
+import { TotalAmount, TransactionList, TransactionTabs, useTransactionStore } from '@/entities/transactions';
 import AppRefresher from '@/shared/ui/AppRefresher.vue';
 import { getRangeDates } from '@/shared/dates';
-import TransactionTabs from '@/entities/transactions/ui/TransactionTabs.vue';
 
 const store = useTransactionStore();
 const { loading, transactions } = storeToRefs(store);

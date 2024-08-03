@@ -1,4 +1,4 @@
-import Form from './Form.vue';
+import TransactionForm from './ui/TransactionForm.vue';
 
-export * from './types';
-export { Form as AddTransactionForm };
+export * from './config/types';
+export { TransactionForm as AddTransactionForm };

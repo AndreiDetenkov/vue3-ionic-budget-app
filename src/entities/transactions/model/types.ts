@@ -26,7 +26,7 @@ export interface Transaction {
   category: Category;
 }
 
-export interface CreateTransactionPayload {
+export interface TransactionPayload {
   name: string;
   value: number;
   category_id: string;
