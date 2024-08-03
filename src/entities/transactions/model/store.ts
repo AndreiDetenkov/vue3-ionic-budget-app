@@ -2,18 +2,20 @@ import { defineStore } from 'pinia';
 import {
   createTransactionApi,
   getTransactionsByRangeApi,
-  RangeInterface,
   removeTransactionApi,
+  RangeInterface,
   TransactionPayload,
   TransactionStoreState,
 } from '@/entities/transactions/';
 import { Category } from '@/entities/categories';
+import { getRangeDates } from '@/shared/dates';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
     transactions: null,
     error: null,
     loading: false,
+    transactionsFilterUnit: 'month',
   }),
 
   getters: {
@@ -60,23 +62,27 @@ export const useTransactionStore = defineStore('transactionStore', {
           return { success: false };
         }
 
+        const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
+        await this.getTransactionsByRange({ from: startDate, to: endDate });
+
         return { success: true };
       } finally {
         this.loading = false;
       }
     },
 
-    async removeTransaction(id: string): Promise<{ success: boolean }> {
+    async removeTransaction(id: string) {
       try {
         this.loading = true;
         const { error } = await removeTransactionApi(id);
 
         if (error) {
           this.error = error;
-          return { success: false };
+          return;
         }
 
-        return { success: true };
+        const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
+        await this.getTransactionsByRange({ from: startDate, to: endDate });
       } finally {
         this.loading = false;
       }

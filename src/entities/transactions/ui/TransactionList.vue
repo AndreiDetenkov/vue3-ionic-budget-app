@@ -1,11 +1,18 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
 import { useTransactionStore, TransactionsEmpty, TransactionListItemSlide } from '@/entities/transactions';
-import { computed } from 'vue';
 
 const store = useTransactionStore();
 
+const list = ref();
+
 const showList = computed(() => store.transactions?.length);
+
+function removeTransaction(id: string) {
+  store.removeTransaction(id);
+  list.value?.$el.closeSlidingItems();
+}
 </script>
 
 <template>
@@ -16,11 +23,12 @@ const showList = computed(() => store.transactions?.length);
       </ion-label>
     </ion-list-header>
 
-    <ion-list lines="none">
+    <ion-list lines="none" ref="list">
       <transaction-list-item-slide
         v-for="transaction in store.transactions"
         :key="transaction.id"
         :transaction="transaction"
+        @remove-transaction="removeTransaction"
       />
     </ion-list>
   </template>

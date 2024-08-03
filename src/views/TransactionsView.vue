@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
-import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { OpUnitType } from 'dayjs';
+import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
 import { TotalAmount, TransactionList, TransactionTabs, useTransactionStore } from '@/entities/transactions';
 import AppRefresher from '@/shared/ui/AppRefresher.vue';
 import { getRangeDates } from '@/shared/dates';
@@ -10,26 +9,22 @@ import { getRangeDates } from '@/shared/dates';
 const store = useTransactionStore();
 const { loading, transactions } = storeToRefs(store);
 
-const frequency = ref<OpUnitType>('day');
-
-async function getTransactions(range: OpUnitType) {
-  const { startDate, endDate } = getRangeDates(range);
-  await store.getTransactionsByRange({ from: startDate, to: endDate });
-}
-
 onIonViewWillEnter(() => {
   if (!transactions.value) {
-    getTransactions(frequency.value);
+    getTransactions(store.transactionsFilterUnit);
   }
 });
 
-function refreshView() {
-  getTransactions(frequency.value);
-}
+const getTransactions = async (range: OpUnitType) => {
+  const { startDate, endDate } = getRangeDates(range);
+  await store.getTransactionsByRange({ from: startDate, to: endDate });
+};
 
-async function onChangeTab() {
-  await getTransactions(frequency.value);
-}
+const refreshView = () => getTransactions(store.transactionsFilterUnit);
+
+const onChangeTab = () => {
+  getTransactions(store.transactionsFilterUnit);
+};
 </script>
 
 <template>
@@ -46,7 +41,7 @@ async function onChangeTab() {
 
       <total-amount />
 
-      <transaction-tabs v-model="frequency" @update:modelValue="onChangeTab" />
+      <transaction-tabs v-model="store.transactionsFilterUnit" @update:modelValue="onChangeTab" />
 
       <transaction-list />
     </ion-content>
