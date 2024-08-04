@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "pnpm vite --open --host",
+    "dev": "pnpm vite --host",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "test:e2e": "cypress run",
