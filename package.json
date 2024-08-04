@@ -1,6 +1,6 @@
 {
   "name": "vue-ionic-budget-app",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": {
     "name": "AndreiDetenkov",
     "email": "a.detenkov@gmail.com"
@@ -17,7 +17,8 @@
     "lint": "eslint .",
     "sync": "npx cap sync android",
     "open": "npx cap open android",
-    "run:android": "npx cap run android --target=Pixel_7_API_35  --livereload --external"
+    "run:android": "npx cap run android --target=Pixel_7_API_35  --livereload --external",
+    "release": "npx changelogen@latest --release --push"
   },
   "dependencies": {
     "@capacitor/android": "6.1.0",
