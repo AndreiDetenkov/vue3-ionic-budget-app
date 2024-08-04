@@ -7,7 +7,7 @@ const model = defineModel<OpUnitType>();
 </script>
 
 <template>
-  <ion-segment v-model="model" class="ion-padding-horizontal">
+  <ion-segment v-model="model" class="ion-padding-horizontal" color="primary">
     <ion-segment-button :value="rangeUnits.month" class="ion-text-capitalize">
       <ion-label>Monthly</ion-label>
     </ion-segment-button>

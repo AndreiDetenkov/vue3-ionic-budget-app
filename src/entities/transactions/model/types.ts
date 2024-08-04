@@ -1,11 +1,11 @@
-import { UnitType } from 'dayjs';
+import { OpUnitType } from 'dayjs';
 import { TransactionsResponseError } from '@/entities/transactions';
 
 export interface TransactionStoreState {
   transactions: Transaction[] | null;
   error: TransactionsResponseError | null;
   loading: boolean;
-  transactionsFilterUnit: UnitType | 'week';
+  transactionsFilterUnit: OpUnitType;
 }
 
 export interface RangeInterface {

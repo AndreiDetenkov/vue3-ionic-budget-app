@@ -1,34 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
 import { useTransactionStore, TransactionsEmpty, TransactionListItemSlide } from '@/entities/transactions';
 
 const store = useTransactionStore();
+const { transactions } = storeToRefs(store);
 
-const list = ref();
-
-const showList = computed(() => store.transactions?.length);
-
-function removeTransaction(id: string) {
-  store.removeTransaction(id);
-  list.value?.$el.closeSlidingItems();
-}
+const showList = computed(() => transactions.value?.length);
 </script>
 
 <template>
   <template v-if="showList">
     <ion-list-header>
       <ion-label>
-        <h2 class="header-title">Recent Transactions</h2>
+        <h2>Recent Transactions</h2>
       </ion-label>
     </ion-list-header>
 
-    <ion-list lines="none" ref="list">
+    <ion-list lines="full">
       <transaction-list-item-slide
-        v-for="transaction in store.transactions"
+        v-for="transaction in transactions"
         :key="transaction.id"
         :transaction="transaction"
-        @remove-transaction="removeTransaction"
       />
     </ion-list>
   </template>
@@ -37,16 +31,3 @@ function removeTransaction(id: string) {
     <transactions-empty />
   </template>
 </template>
-
-<style scoped>
-ion-grid {
-  --ion-grid-padding: 0;
-  color: var(--ion-color-dark);
-}
-
-ion-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-</style>

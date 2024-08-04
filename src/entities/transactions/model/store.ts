@@ -3,7 +3,6 @@ import {
   createTransactionApi,
   getTransactionsByRangeApi,
   removeTransactionApi,
-  RangeInterface,
   TransactionPayload,
   TransactionStoreState,
 } from '@/entities/transactions/';
@@ -29,10 +28,15 @@ export const useTransactionStore = defineStore('transactionStore', {
   },
 
   actions: {
-    async getTransactionsByRange({ from, to }: RangeInterface): Promise<void> {
+    async getTransactionsByRange() {
+      const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
+
       try {
         this.loading = true;
-        const { data, error } = await getTransactionsByRangeApi({ from, to });
+        const { data, error } = await getTransactionsByRangeApi({
+          from: startDate,
+          to: endDate,
+        });
 
         if (error) {
           this.error = error;
@@ -62,8 +66,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return { success: false };
         }
 
-        const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
-        await this.getTransactionsByRange({ from: startDate, to: endDate });
+        await this.getTransactionsByRange();
 
         return { success: true };
       } finally {
@@ -81,8 +84,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return;
         }
 
-        const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
-        await this.getTransactionsByRange({ from: startDate, to: endDate });
+        await this.getTransactionsByRange();
       } finally {
         this.loading = false;
       }
