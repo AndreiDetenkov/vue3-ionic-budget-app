@@ -18,9 +18,9 @@ import { list, apps, add } from 'ionicons/icons';
           <ion-icon aria-hidden="true" :icon="add" class="add-btn-icon" />
         </ion-tab-button>
 
-        <ion-tab-button tab="categories" href="/tabs/categories">
+        <ion-tab-button tab="categories" href="/tabs/calculations">
           <ion-icon aria-hidden="true" :icon="apps" />
-          <ion-label>Categories</ion-label>
+          <ion-label>Calculation</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>

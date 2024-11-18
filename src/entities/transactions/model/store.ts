@@ -25,6 +25,30 @@ export const useTransactionStore = defineStore('transactionStore', {
         return acc + item.value;
       }, 0);
     },
+
+    calculateTransactionsByCategory(state) {
+      if (!state.transactions) return [];
+
+      const result = state.transactions.reduce(
+        (acc, item) => {
+          const category = item.category.title;
+
+          if (!acc[category]) {
+            acc[category] = 0;
+          }
+
+          acc[category] += item.value;
+
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      return Object.entries(result).map(([name, value]) => ({
+        name,
+        value,
+      }));
+    },
   },
 
   actions: {
