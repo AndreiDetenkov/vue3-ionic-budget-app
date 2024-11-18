@@ -3,6 +3,7 @@ import {
   createTransactionApi,
   getTransactionsByRangeApi,
   removeTransactionApi,
+  Transaction,
   TransactionPayload,
   TransactionStoreState,
 } from '@/entities/transactions/';
@@ -26,11 +27,11 @@ export const useTransactionStore = defineStore('transactionStore', {
       }, 0);
     },
 
-    calculateTransactionsByCategory(state) {
+    calculatedTransactionsByCategory(state) {
       if (!state.transactions) return [];
 
       const result = state.transactions.reduce(
-        (acc, item) => {
+        (acc: Record<string, number>, item: Transaction) => {
           const category = item.category.title;
 
           if (!acc[category]) {

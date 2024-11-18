@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia';
 // const tab = ref('day');
 
 const store = useTransactionStore();
-const { calculateTransactionsByCategory } = storeToRefs(store);
+const { calculatedTransactionsByCategory } = storeToRefs(store);
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const { calculateTransactionsByCategory } = storeToRefs(store);
     <ion-content fullscreen class="ion-padding">
       <!--      <app-tabs v-model="tab" />-->
 
-      <pre>{{ calculateTransactionsByCategory }}</pre>
+      <pre>{{ calculatedTransactionsByCategory }}</pre>
     </ion-content>
   </ion-page>
 </template>
