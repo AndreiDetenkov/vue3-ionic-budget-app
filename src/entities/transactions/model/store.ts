@@ -14,7 +14,7 @@ export const useTransactionStore = defineStore('transactionStore', {
     transactions: null,
     error: null,
     loading: false,
-    transactionsFilterUnit: 'month',
+    transactionsFilterUnit: 'day',
   }),
 
   getters: {
