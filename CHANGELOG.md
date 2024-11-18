@@ -1,6 +1,30 @@
 # Changelog
 
 
+## v0.0.4
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.3...v0.0.4)
+
+### 🚀 Enhancements
+
+- Save categories into storage ([fbc602a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/fbc602a))
+- Calculate value of transactions by category ([d0cc734](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d0cc734))
+
+### 💅 Refactors
+
+- Change tabs order ([ef55f81](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ef55f81))
+- Rename tabs to AppTabs and move to shared ([026d4d6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/026d4d6))
+- Naming updates ([c8c42bc](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c8c42bc))
+
+### 🏡 Chore
+
+- Update libs version ([914153b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/914153b))
+- Upgrade Gradle plugin version ([cbac397](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/cbac397))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.0.3
 
 
