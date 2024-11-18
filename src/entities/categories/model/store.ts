@@ -1,31 +1,48 @@
 import { defineStore } from 'pinia';
 import { Category, CategoryStoreState, getCategoriesApi, PressedCategory } from '@/entities/categories';
+import { getItem, setItem } from '@/shared/utils/storage';
 
 export const useCategoryStore = defineStore('categoryStore', {
   state: (): CategoryStoreState => ({
-    categories: null,
-    pressedCategories: null,
+    categories: [],
+    pressedCategories: [],
     error: null,
     loading: false,
   }),
 
   actions: {
+    checkCategoriesInStorage(): boolean {
+      const localCategories = getItem('categories');
+      this.categories = localCategories ?? [];
+      this.setCategoriesToPressed(localCategories);
+
+      return !!localCategories;
+    },
+
+    setCategoriesToPressed(categories: Category[]): void {
+      this.pressedCategories = categories.map(
+        (category: Category): PressedCategory => ({ ...category, isPressed: false }),
+      );
+    },
+
     async getCategoryList(): Promise<void> {
+      const result = this.checkCategoriesInStorage();
+      if (result) {
+        return;
+      }
+
       try {
         this.loading = true;
         const { data, error } = await getCategoriesApi();
+
         if (error) {
           this.error = error;
           return;
         }
 
         this.categories = data;
-        this.pressedCategories = data.map((category: Category): PressedCategory => {
-          return { ...category, isPressed: false };
-        });
-      } catch (error: any) {
-        console.error(error.error_description || error.message);
-        this.error = error.error_description || error.message;
+        this.setCategoriesToPressed(data);
+        setItem('categories', data);
       } finally {
         this.loading = false;
       }

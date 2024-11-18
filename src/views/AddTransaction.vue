@@ -15,11 +15,9 @@ import { useCategoryStore } from '@/entities/categories';
 import { AddTransactionForm } from '@/features/AddTransaction';
 
 const categoryStore = useCategoryStore();
-const { categories, loading } = storeToRefs(categoryStore);
+const { loading } = storeToRefs(categoryStore);
 
-onIonViewWillEnter(() => {
-  if (!categories.value) categoryStore.getCategoryList();
-});
+onIonViewWillEnter(() => categoryStore.getCategoryList());
 </script>
 
 <template>

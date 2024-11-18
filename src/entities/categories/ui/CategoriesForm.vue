@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { IonCol, IonGrid, IonImg, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
+import { IonCol, IonGrid, IonImg, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
 import { PressedCategory, useCategoryStore } from '@/entities/categories';
 
 const emit = defineEmits<{
@@ -11,7 +11,7 @@ const categoryStore = useCategoryStore();
 const { pressedCategories } = storeToRefs(categoryStore);
 
 function onTapHandler(id: string): void {
-  if (!id || !pressedCategories.value) {
+  if (!id) {
     return;
   }
 
@@ -44,7 +44,7 @@ function onTapHandler(id: string): void {
 <style scoped>
 .card {
   padding: 8px;
-  border: 2px solid var(--ion-color-light-shade);
+  border: 1px solid var(--ion-color-light-shade);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -76,7 +76,7 @@ function onTapHandler(id: string): void {
 }
 
 .pressed-card {
-  border: 2px solid var(--ion-color-tertiary);
+  border: 1px solid var(--ion-color-tertiary);
   background-color: var(--ion-color-tertiary-light);
 }
 </style>

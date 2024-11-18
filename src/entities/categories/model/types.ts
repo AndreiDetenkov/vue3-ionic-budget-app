@@ -1,5 +1,5 @@
 import { Database } from '@/shared/config/supabase';
-import { CategoriesResponseError, CategoriesResponseSuccess } from '@/entities/categories';
+import { CategoriesResponseError } from '@/entities/categories';
 
 export type Category = Database['public']['Tables']['categories']['Row'];
 
@@ -8,8 +8,8 @@ export interface PressedCategory extends Category {
 }
 
 export interface CategoryStoreState {
-  categories: CategoriesResponseSuccess | null;
-  pressedCategories: PressedCategory[] | null;
+  categories: Category[] | [];
+  pressedCategories: PressedCategory[] | [];
   error: CategoriesResponseError | null;
   loading: boolean;
 }
