@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
-import { TotalAmount, TransactionList, TransactionTabs, useTransactionStore } from '@/entities/transactions';
+import { TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import AppRefresher from '@/shared/ui/AppRefresher.vue';
+import AppTabs from '@/shared/ui/AppTabs.vue';
 
 const store = useTransactionStore();
 const { loading, transactions, transactionsFilterUnit } = storeToRefs(store);
@@ -33,7 +34,7 @@ const onChangeTab = () => getTransactionsByRange();
 
       <total-amount />
 
-      <transaction-tabs v-model="transactionsFilterUnit" @update:modelValue="onChangeTab" />
+      <app-tabs v-model="transactionsFilterUnit" @update:modelValue="onChangeTab" />
 
       <transaction-list />
     </ion-content>

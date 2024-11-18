@@ -6,7 +6,7 @@ import { computed } from 'vue';
 
 const store = useTransactionStore();
 
-const currentDate = formatDateByTemplate('MMMM YYYY');
+const currentDate = formatDateByTemplate('DD MMMM YYYY');
 
 const formattedTotal = computed<string>(() => {
   return store.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, `$1 `);
