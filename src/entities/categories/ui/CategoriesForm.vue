@@ -68,8 +68,8 @@ function onTapHandler(id: string): void {
 }
 
 .card-custom-ripple {
-  width: calc(100% - 12px);
-  height: 80px;
+  width: calc(100% - 10px);
+  height: 78px;
   border-radius: 8px;
   color: var(--ion-color-tertiary);
   transform: translateX(6px) translateY(6px);
@@ -77,6 +77,6 @@ function onTapHandler(id: string): void {
 
 .pressed-card {
   border: 1px solid var(--ion-color-tertiary);
-  background-color: var(--ion-color-tertiary-light);
+  background: var(--ion-color-tertiary-light);
 }
 </style>

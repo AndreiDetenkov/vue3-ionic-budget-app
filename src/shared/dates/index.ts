@@ -21,6 +21,6 @@ export const formatDateByTemplate = (template: string): string => {
   return dayjs().format(template);
 };
 
-export const formatDate = (date: string): string => {
-  return dayjs(date).format('DD.MM.YYYY');
+export const formatDate = (date: string, template = 'DD.MM.YYYY'): string => {
+  return dayjs(date).format(template);
 };
