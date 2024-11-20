@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.0.5
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.4...v0.0.5)
+
+### 🩹 Fixes
+
+- Remove deprecated meta tag ([9950b12](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9950b12))
+- Fetch categories if it aren't in storage ([6f63c8b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6f63c8b))
+
+### 💅 Refactors
+
+- Small improvements ([f1ecf68](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f1ecf68))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.0.4
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.3...v0.0.4)
