@@ -14,7 +14,7 @@ export const useCategoryStore = defineStore('categoryStore', {
     checkCategoriesInStorage(): boolean {
       const localCategories = getItem('categories');
       this.categories = localCategories ?? [];
-      this.setCategoriesToPressed(localCategories);
+      if (localCategories) this.setCategoriesToPressed(localCategories);
 
       return !!localCategories;
     },
@@ -26,8 +26,8 @@ export const useCategoryStore = defineStore('categoryStore', {
     },
 
     async getCategoryList(): Promise<void> {
-      const result = this.checkCategoriesInStorage();
-      if (result) {
+      const isCategoriesInStorage = this.checkCategoriesInStorage();
+      if (isCategoriesInStorage) {
         return;
       }
 
