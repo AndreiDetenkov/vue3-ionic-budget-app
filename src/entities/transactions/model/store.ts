@@ -6,6 +6,7 @@ import {
   Transaction,
   TransactionPayload,
   TransactionStoreState,
+  updateTransactionApi,
 } from '@/entities/transactions/';
 import { Category } from '@/entities/categories';
 import { getRangeDates } from '@/shared/dates';
@@ -53,7 +54,7 @@ export const useTransactionStore = defineStore('transactionStore', {
   },
 
   actions: {
-    async getTransactionsByRange() {
+    async getTransactionsByRange(): Promise<void> {
       const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
 
       try {
@@ -99,10 +100,26 @@ export const useTransactionStore = defineStore('transactionStore', {
       }
     },
 
-    async removeTransaction(id: string) {
+    async removeTransaction(id: string): Promise<void> {
       try {
         this.loading = true;
         const { error } = await removeTransactionApi(id);
+
+        if (error) {
+          this.error = error;
+          return;
+        }
+
+        await this.getTransactionsByRange();
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updateTransaction(payload: Transaction): Promise<void> {
+      try {
+        this.loading = true;
+        const { error } = await updateTransactionApi(payload);
 
         if (error) {
           this.error = error;
