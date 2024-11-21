@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { ComponentPublicInstance, useTemplateRef } from 'vue';
-import { IonItemSliding, IonItemOptions, IonItemOption, IonIcon, IonLabel, alertController } from '@ionic/vue';
+import {
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonIcon,
+  IonLabel,
+  alertController,
+  modalController,
+} from '@ionic/vue';
 import { pencil, trash } from 'ionicons/icons';
 import { Transaction, TransactionListItem, useTransactionStore } from '@/entities/transactions';
+import { UpdateItemModal } from '@/features/SlideTransaction';
 
 const { transaction } = defineProps<{
   transaction: Transaction;
@@ -42,9 +51,18 @@ const onRemoveHandler = async () => {
   closeSlidingItems();
 };
 
-const editHandler = async () => {
-  await updateTransaction({});
-  closeSlidingItems();
+const openModal = async () => {
+  const modal = await modalController.create({
+    component: UpdateItemModal,
+  });
+
+  modal.present().then(() => closeSlidingItems());
+
+  const { data, role } = await modal.onWillDismiss();
+
+  if (role === 'confirm') {
+    console.log(data);
+  }
 };
 </script>
 
@@ -53,7 +71,7 @@ const editHandler = async () => {
     <transaction-list-item :transaction="transaction" />
 
     <ion-item-options>
-      <ion-item-option @click.stop="editHandler">
+      <ion-item-option @click.stop="openModal">
         <ion-icon slot="start" :icon="pencil"></ion-icon>
         <ion-label>Edit</ion-label>
       </ion-item-option>
