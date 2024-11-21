@@ -1,32 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ComponentPublicInstance, useTemplateRef } from 'vue';
 import { IonItemSliding, IonItemOptions, IonItemOption, IonIcon, IonLabel, alertController } from '@ionic/vue';
-import { trash } from 'ionicons/icons';
+import { pencil, trash } from 'ionicons/icons';
 import { Transaction, TransactionListItem, useTransactionStore } from '@/entities/transactions';
 
-const prop = defineProps<{
+const { transaction } = defineProps<{
   transaction: Transaction;
 }>();
 
-const itemSliding = ref();
-
 const store = useTransactionStore();
-const { removeTransaction } = store;
+const { removeTransaction, updateTransaction } = store;
+const itemSliding = useTemplateRef<ComponentPublicInstance>('item-sliding');
 
-const onRemoveHandler = () => {
-  removeTransaction(prop.transaction.id);
+const closeSlidingItems = () => {
   itemSliding.value?.$el.close();
 };
 
-const presentAlert = async () => {
+const alertHandler = async () => {
   const alert = await alertController.create({
     subHeader: 'Submit your action',
-    message: `${prop.transaction.name} will be removed.`,
+    message: `${transaction.name} will be removed.`,
     buttons: [
       {
         text: 'Cancel',
         role: 'cancel',
-        handler: () => itemSliding.value?.$el.close(),
+        handler: closeSlidingItems,
       },
       {
         text: 'Remove',
@@ -38,14 +36,28 @@ const presentAlert = async () => {
 
   await alert.present();
 };
+
+const onRemoveHandler = async () => {
+  await removeTransaction(transaction.id);
+  closeSlidingItems();
+};
+
+const editHandler = async () => {
+  await updateTransaction({});
+  closeSlidingItems();
+};
 </script>
 
 <template>
-  <ion-item-sliding ref="itemSliding">
+  <ion-item-sliding ref="item-sliding">
     <transaction-list-item :transaction="transaction" />
 
     <ion-item-options>
-      <ion-item-option @click.stop="presentAlert" color="danger">
+      <ion-item-option @click.stop="editHandler">
+        <ion-icon slot="start" :icon="pencil"></ion-icon>
+        <ion-label>Edit</ion-label>
+      </ion-item-option>
+      <ion-item-option @click.stop="alertHandler" color="danger">
         <ion-icon slot="start" :icon="trash"></ion-icon>
         <ion-label>Remove</ion-label>
       </ion-item-option>

@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
-import { useTransactionStore, TransactionsEmpty, TransactionListItemSlide } from '@/entities/transactions';
+import { useTransactionStore, TransactionsEmpty } from '@/entities/transactions';
+import { SlideListItem } from '@/features/SlideTransaction';
 
 const store = useTransactionStore();
 const { transactions } = storeToRefs(store);
@@ -19,11 +20,7 @@ const showList = computed(() => transactions.value?.length);
     </ion-list-header>
 
     <ion-list lines="full">
-      <transaction-list-item-slide
-        v-for="transaction in transactions"
-        :key="transaction.id"
-        :transaction="transaction"
-      />
+      <slide-list-item v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
     </ion-list>
   </template>
 
