@@ -2,10 +2,11 @@ import { OpUnitType } from 'dayjs';
 import { TransactionsResponseError } from '@/entities/transactions';
 
 export interface TransactionStoreState {
-  transactions: Transaction[] | null;
+  transactions: Transaction[] | [];
   error: TransactionsResponseError | null;
   loading: boolean;
   transactionsFilterUnit: OpUnitType;
+  transactionItems: TransactionItemsForUpdate;
 }
 
 export interface RangeInterface {
@@ -17,6 +18,13 @@ interface Category {
   icon: string;
   id: string;
   title: string;
+}
+
+export interface TransactionItemsForUpdate {
+  id: string;
+  name: string;
+  value: number;
+  categoryId: string;
 }
 
 export interface Transaction {

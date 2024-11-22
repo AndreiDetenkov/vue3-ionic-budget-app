@@ -13,10 +13,11 @@ import { getRangeDates } from '@/shared/dates';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
-    transactions: null,
+    transactions: [],
     error: null,
     loading: false,
     transactionsFilterUnit: 'day',
+    transactionItems: { id: '', name: '', value: 0, categoryId: '' },
   }),
 
   getters: {
@@ -116,17 +117,19 @@ export const useTransactionStore = defineStore('transactionStore', {
       }
     },
 
-    async updateTransaction(payload: Transaction): Promise<void> {
+    async updateTransaction(): Promise<{ success: boolean }> {
       try {
         this.loading = true;
-        const { error } = await updateTransactionApi(payload);
+        const { error } = await updateTransactionApi(this.transactionItems);
 
         if (error) {
           this.error = error;
-          return;
+          return { success: false };
         }
 
         await this.getTransactionsByRange();
+
+        return { success: true };
       } finally {
         this.loading = false;
       }

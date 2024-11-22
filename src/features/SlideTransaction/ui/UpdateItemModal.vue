@@ -6,33 +6,91 @@ import {
   IonToolbar,
   IonButtons,
   IonButton,
-  IonItem,
   IonInput,
   modalController,
+  IonSpinner,
+  IonSelect,
+  IonSelectOption,
+  toastController,
 } from '@ionic/vue';
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useTransactionStore } from '@/entities/transactions';
+import { useCategoryStore } from '@/entities/categories';
 
-const name = ref();
+const transactionStore = useTransactionStore();
+const { transactionItems } = storeToRefs(transactionStore);
+const categoryStore = useCategoryStore();
 
-const cancel = () => modalController.dismiss(null, 'cancel');
-const confirm = () => modalController.dismiss(name.value, 'confirm');
+const cancelHandler = async () => modalController.dismiss();
+
+const confirmHandler = async () => {
+  await transactionStore.updateTransaction();
+
+  const toast = await toastController.create({
+    message: 'Successfully updated!',
+    duration: 2000,
+  });
+  await toast.present();
+  await modalController.dismiss();
+};
 </script>
 
 <template>
   <ion-header>
     <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button color="medium" @click="cancel">Cancel</ion-button>
-      </ion-buttons>
-      <ion-title>Modal</ion-title>
+      <ion-title>Update transaction</ion-title>
       <ion-buttons slot="end">
-        <ion-button @click="confirm" :strong="true">Confirm</ion-button>
+        <ion-button color="primary" @click="cancelHandler">Cancel</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
+
   <ion-content class="ion-padding">
-    <ion-item>
-      <ion-input label-placement="stacked" label="Enter your name" v-model="name" placeholder="Your name"></ion-input>
-    </ion-item>
+    <form @submit.prevent="confirmHandler" v-if="transactionItems">
+      <ion-input
+        v-model="transactionItems.name"
+        label="Transaction"
+        label-placement="floating"
+        fill="outline"
+        autocapitalize="on"
+        :autofocus="true"
+        :clear-input="true"
+        class="ion-margin-vertical"
+      />
+
+      <ion-input
+        v-model="transactionItems.value"
+        inputmode="numeric"
+        label="Amount"
+        label-placement="floating"
+        fill="outline"
+        class="ion-margin-bottom"
+      />
+
+      <ion-select
+        v-model="transactionItems.categoryId"
+        label="Category"
+        placeholder="Select category"
+        label-placement="floating"
+        fill="outline"
+        interface="action-sheet"
+        class="ion-margin-bottom"
+      >
+        <ion-select-option v-for="category in categoryStore.categories" :key="category.id" :value="category.id">
+          {{ category.title }}
+        </ion-select-option>
+      </ion-select>
+
+      <ion-button expand="block" type="submit" :disabled="transactionStore.loading">
+        <ion-spinner name="lines" v-if="transactionStore.loading" />
+        <span v-else>Update transaction</span>
+      </ion-button>
+    </form>
   </ion-content>
 </template>
+
+<style scoped>
+ion-button {
+  height: 48px;
+}
+</style>

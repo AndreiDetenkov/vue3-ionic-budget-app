@@ -1,5 +1,5 @@
 import { supabase } from '@/shared/config/supabase';
-import { TransactionPayload, RangeInterface, Transaction } from '@/entities/transactions';
+import { TransactionPayload, RangeInterface, TransactionItemsForUpdate } from '@/entities/transactions';
 
 type TransactionsResponse = Awaited<ReturnType<typeof getTransactionsByRangeApi>>;
 export type TransactionsResponseSuccess = TransactionsResponse['data'];
@@ -22,6 +22,6 @@ export async function removeTransactionApi(id: string) {
   return supabase.from('transactions').delete().eq('id', id);
 }
 
-export async function updateTransactionApi(payload: Transaction) {
+export async function updateTransactionApi(payload: TransactionItemsForUpdate) {
   return supabase.from('transactions').update(payload).eq('id', payload.id);
 }

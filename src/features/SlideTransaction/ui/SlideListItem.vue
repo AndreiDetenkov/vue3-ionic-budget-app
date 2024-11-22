@@ -18,7 +18,7 @@ const { transaction } = defineProps<{
 }>();
 
 const store = useTransactionStore();
-const { removeTransaction, updateTransaction } = store;
+const { removeTransaction } = store;
 const itemSliding = useTemplateRef<ComponentPublicInstance>('item-sliding');
 
 const closeSlidingItems = () => {
@@ -51,30 +51,36 @@ const onRemoveHandler = async () => {
   closeSlidingItems();
 };
 
+const setTransactionItems = () => {
+  const { transactionItems } = store;
+  transactionItems.id = transaction.id;
+  transactionItems.name = transaction.name;
+  transactionItems.value = transaction.value;
+  transactionItems.categoryId = transaction.categoryId;
+};
+
 const openModal = async () => {
+  setTransactionItems();
+
   const modal = await modalController.create({
     component: UpdateItemModal,
   });
-
   modal.present().then(() => closeSlidingItems());
-
-  const { data, role } = await modal.onWillDismiss();
-
-  if (role === 'confirm') {
-    console.log(data);
-  }
 };
 </script>
 
 <template>
   <ion-item-sliding ref="item-sliding">
-    <transaction-list-item :transaction="transaction" />
-
-    <ion-item-options>
+    <ion-item-options side="start">
       <ion-item-option @click.stop="openModal">
         <ion-icon slot="start" :icon="pencil"></ion-icon>
         <ion-label>Edit</ion-label>
       </ion-item-option>
+    </ion-item-options>
+
+    <transaction-list-item :transaction="transaction" />
+
+    <ion-item-options side="end">
       <ion-item-option @click.stop="alertHandler" color="danger">
         <ion-icon slot="start" :icon="trash"></ion-icon>
         <ion-label>Remove</ion-label>
