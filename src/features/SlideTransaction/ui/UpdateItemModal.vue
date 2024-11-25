@@ -11,7 +11,6 @@ import {
   IonSpinner,
   IonSelect,
   IonSelectOption,
-  toastController,
 } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { useTransactionStore } from '@/entities/transactions';
@@ -21,17 +20,11 @@ const transactionStore = useTransactionStore();
 const { transactionItems } = storeToRefs(transactionStore);
 const categoryStore = useCategoryStore();
 
-const cancelHandler = async () => modalController.dismiss();
+const cancelHandler = async () => modalController.dismiss(null, 'cancel');
 
 const confirmHandler = async () => {
-  await transactionStore.updateTransaction();
-
-  const toast = await toastController.create({
-    message: 'Successfully updated!',
-    duration: 2000,
-  });
-  await toast.present();
-  await modalController.dismiss();
+  const { success } = await transactionStore.updateTransaction();
+  await modalController.dismiss(success, 'confirm');
 };
 </script>
 

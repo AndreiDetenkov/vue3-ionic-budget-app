@@ -8,6 +8,8 @@ import {
   IonLabel,
   alertController,
   modalController,
+  toastController,
+  ToastOptions,
 } from '@ionic/vue';
 import { pencil, trash } from 'ionicons/icons';
 import { Transaction, TransactionListItem, useTransactionStore } from '@/entities/transactions';
@@ -59,6 +61,14 @@ const setTransactionItems = () => {
   transactionItems.categoryId = transaction.categoryId;
 };
 
+const toastHandler = async (options: ToastOptions): Promise<void> => {
+  const toast = await toastController.create({
+    duration: 2000,
+    ...options
+  });
+  await toast.present();
+}
+
 const openModal = async () => {
   setTransactionItems();
 
@@ -66,6 +76,13 @@ const openModal = async () => {
     component: UpdateItemModal,
   });
   modal.present().then(() => closeSlidingItems());
+
+  const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'confirm') {
+      if (data) toastHandler({message: 'Successfully updated!', color: 'success'})
+      else toastHandler({message: 'Oops...Something went wrong', color: 'danger'})
+    }
 };
 </script>
 

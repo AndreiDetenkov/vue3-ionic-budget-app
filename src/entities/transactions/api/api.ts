@@ -22,6 +22,6 @@ export async function removeTransactionApi(id: string) {
   return supabase.from('transactions').delete().eq('id', id);
 }
 
-export async function updateTransactionApi(payload: TransactionItemsForUpdate) {
-  return supabase.from('transactions').update(payload).eq('id', payload.id);
+export async function updateTransactionApi({ id, name, value, categoryId }: TransactionItemsForUpdate) {
+  return supabase.from('transactions').update({ name, value, category_id: categoryId }).eq('id', id);
 }
