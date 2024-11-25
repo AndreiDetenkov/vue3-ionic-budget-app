@@ -4,6 +4,7 @@ import {
   getTransactionsByRangeApi,
   removeTransactionApi,
   Transaction,
+  TransactionItemsForUpdate,
   TransactionPayload,
   TransactionStoreState,
   updateTransactionApi,
@@ -133,6 +134,13 @@ export const useTransactionStore = defineStore('transactionStore', {
       } finally {
         this.loading = false;
       }
+    },
+
+    setTransactionItems({ id, name, value, categoryId }: TransactionItemsForUpdate): void {
+      this.transactionItems.id = id;
+      this.transactionItems.name = name;
+      this.transactionItems.value = value;
+      this.transactionItems.categoryId = categoryId;
     },
   },
 });
