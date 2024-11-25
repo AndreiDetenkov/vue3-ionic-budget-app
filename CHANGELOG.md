@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.0.6
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.5...v0.0.6)
+
+### 🚀 Enhancements
+
+- Create update transaction action / api ([6e9c4cf](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6e9c4cf))
+- Add updating transaction modal ([5d462e9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5d462e9))
+- Updating transaction items ([2f07aa8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2f07aa8))
+- Update transaction ([279d199](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/279d199))
+
+### 💅 Refactors
+
+- Move slider item to feature and rename ([1b8e425](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1b8e425))
+- Slide item methods refactoring ([3032c2c](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3032c2c))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.4...v0.0.5)
