@@ -6,19 +6,18 @@
     "email": "a.detenkov@gmail.com"
   },
   "private": true,
-  "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "pnpm vite --host",
+    "dev": "pnpm vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
-    "sync": "npx cap sync android",
-    "open": "npx cap open android",
+    "sync": "pnpx cap sync android",
+    "open": "pnpx cap open android",
     "run:android": "npx cap run android --target=Pixel_7_API_35  --livereload --external",
-    "release": "npx changelogen@latest --release --push"
+    "release": "pnpx changelogen@latest --release --push"
   },
   "dependencies": {
     "@capacitor/android": "6.1.0",
