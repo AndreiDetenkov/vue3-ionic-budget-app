@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonToast } from '@ionic/vue';
-import { Color, Position, PositionAnchor } from '@/shared/ui/AppToast/Toast.types';
+import { Color, Position, PositionAnchor } from '@/core/components/AppToast/Toast.types';
 
 interface Props {
   message: string;

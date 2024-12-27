@@ -6,8 +6,8 @@ import { useRouter } from 'vue-router';
 import { TransactionPayload, useTransactionStore } from '@/entities/transactions';
 import { CategoriesForm } from '@/entities/categories';
 import { FormValues } from '@/features/AddTransaction';
-import AppToast from '@/shared/ui/AppToast/AppToast.vue';
-import { useToast } from '@/shared/ui/AppToast/useToast';
+import AppToast from '@/core/components/AppToast/AppToast.vue';
+import { useToast } from '@/core/components/AppToast/useToast';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();

@@ -1,4 +1,4 @@
-import { supabase } from '@/shared/config/supabase';
+import { supabase } from '@/core/config/supabase';
 import { TransactionPayload, RangeInterface, TransactionItemsForUpdate } from '@/entities/transactions';
 
 type TransactionsResponse = Awaited<ReturnType<typeof getTransactionsByRangeApi>>;

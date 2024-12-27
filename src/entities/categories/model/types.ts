@@ -1,4 +1,4 @@
-import { Database } from '@/shared/config/supabase';
+import { Database } from '@/core/config/supabase';
 import { CategoriesResponseError } from '@/entities/categories';
 
 export type Category = Database['public']['Tables']['categories']['Row'];

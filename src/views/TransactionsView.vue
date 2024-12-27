@@ -3,8 +3,8 @@ import { storeToRefs } from 'pinia';
 import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
 import { TotalAmount, TransactionList, useTransactionStore } from '@/entities/transactions';
 import { useCategoryStore } from '@/entities/categories';
-import AppRefresher from '@/shared/ui/AppRefresher.vue';
-import AppTabs from '@/shared/ui/AppTabs.vue';
+import AppRefresher from '@/core/components/AppRefresher.vue';
+import AppTabs from '@/core/components/AppTabs.vue';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsFilterUnit } = storeToRefs(transactionStore);

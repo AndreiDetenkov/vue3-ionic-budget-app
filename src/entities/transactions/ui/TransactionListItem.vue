@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonLabel, IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
-import { formatDate } from '@/shared/dates';
+import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/entities/transactions';
 
 defineProps<{

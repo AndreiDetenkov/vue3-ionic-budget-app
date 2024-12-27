@@ -10,7 +10,7 @@ import {
   updateTransactionApi,
 } from '@/entities/transactions/';
 import { Category } from '@/entities/categories';
-import { getRangeDates } from '@/shared/dates';
+import { getRangeDates } from '@/core/utils/dates';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { IonGrid, IonRow, IonCol, IonLabel } from '@ionic/vue';
-import { formatDateByTemplate } from '@/shared/dates';
+import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/entities/transactions';
 
 const store = useTransactionStore();
