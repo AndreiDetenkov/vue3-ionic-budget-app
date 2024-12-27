@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { IonInput, IonButton, IonSpinner } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
-import { TransactionPayload, useTransactionStore } from '@/entities/transactions';
+import { TransactionPayload, useTransactionStore } from '@/modules/transaction';
 import { CategoriesForm } from '@/entities/categories';
 import { FormValues } from '@/features/AddTransaction';
 import AppToast from '@/core/components/AppToast/AppToast.vue';

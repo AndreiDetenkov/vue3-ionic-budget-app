@@ -12,7 +12,7 @@ import {
   ToastOptions,
 } from '@ionic/vue';
 import { pencil, trash } from 'ionicons/icons';
-import { Transaction, TransactionListItem, useTransactionStore } from '@/entities/transactions';
+import { Transaction, TransactionListItem, useTransactionStore } from '@/modules/transaction';
 import { UpdateItemModal } from '@/features/SlideTransaction';
 
 const { transaction } = defineProps<{

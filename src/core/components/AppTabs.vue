@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonSegment, IonSegmentButton, IonLabel } from '@ionic/vue';
 import { OpUnitType } from 'dayjs';
-import { rangeUnits } from '@/entities/transactions';
+import { rangeUnits } from '@/modules/transaction';
 
 const model = defineModel<OpUnitType>();
 </script>
