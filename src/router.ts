@@ -18,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'transactions',
-        component: () => import('@/modules/transaction/views/TransactionsPage.vue'),
+        component: () => import('@/modules/transactions/views/TransactionsPage.vue'),
       },
       {
         path: 'calculations',
@@ -26,7 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'add',
-        component: () => import('@/modules/transaction/views/AddTransactionPage.vue'),
+        component: () => import('@/modules/transactions/views/AddTransactionPage.vue'),
       },
     ],
   },

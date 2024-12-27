@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { IonGrid, IonRow, IonCol, IonLabel } from '@ionic/vue';
 import { formatDateByTemplate } from '@/core/utils/dates';
-import { useTransactionStore } from '@/modules/transaction/store/transactionStore';
+import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 
 const store = useTransactionStore();
 

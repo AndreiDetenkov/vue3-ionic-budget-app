@@ -4,9 +4,9 @@ import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, o
 import { useCategoryStore } from '@/entities/categories';
 import AppRefresher from '@/core/components/AppRefresher.vue';
 import AppTabs from '@/core/components/AppTabs.vue';
-import { useTransactionStore } from '@/modules/transaction/store/transactionStore';
-import TotalAmount from '@/modules/transaction/components/TotalAmount.vue';
-import TransactionList from '@/modules/transaction/components/TransactionList.vue';
+import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
+import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsFilterUnit } = storeToRefs(transactionStore);

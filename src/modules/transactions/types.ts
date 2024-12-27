@@ -1,5 +1,5 @@
 import { OpUnitType } from 'dayjs';
-import { TransactionsResponseError } from '@/modules/transaction/api/api';
+import { TransactionsResponseError } from '@/modules/transactions/api/api';
 
 export interface TransactionStoreState {
   transactions: Transaction[] | [];

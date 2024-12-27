@@ -7,13 +7,13 @@ import {
   TransactionItemsForUpdate,
   TransactionPayload,
   TransactionStoreState,
-} from '@/modules/transaction/types';
+} from '@/modules/transactions/types';
 import {
   createTransactionApi,
   getTransactionsByRangeApi,
   removeTransactionApi,
   updateTransactionApi,
-} from '@/modules/transaction/api/api';
+} from '@/modules/transactions/api/api';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
