@@ -2,8 +2,8 @@
 // import { ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
 // import AppTabs from '@/shared/ui/AppTabs.vue';
-import { useTransactionStore } from '@/modules/transaction';
 import { storeToRefs } from 'pinia';
+import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 
 // const tab = ref('day');
 
