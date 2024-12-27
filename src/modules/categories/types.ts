@@ -1,5 +1,5 @@
 import { Database } from '@/core/config/supabase';
-import { CategoriesResponseError } from '@/entities/categories';
+import { CategoriesResponseError } from '@/modules/categories/api/categories';
 
 export type Category = Database['public']['Tables']['categories']['Row'];
 

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { Category, CategoryStoreState, getCategoriesApi, PressedCategory } from '@/entities/categories';
 import { getItem, setItem } from '@/core/utils/storage';
+import { Category, CategoryStoreState, PressedCategory } from '@/modules/categories/types';
+import { getCategoriesApi } from '@/modules/categories/api/categories';
 
 export const useCategoryStore = defineStore('categoryStore', {
   state: (): CategoryStoreState => ({

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { IonCol, IonGrid, IonImg, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
-import { PressedCategory, useCategoryStore } from '@/entities/categories';
+import { useCategoryStore } from '@/modules/categories/store/categoryStore';
+import { PressedCategory } from '@/modules/categories/types';
 
 const emit = defineEmits<{
   'select-category': [id: string];
