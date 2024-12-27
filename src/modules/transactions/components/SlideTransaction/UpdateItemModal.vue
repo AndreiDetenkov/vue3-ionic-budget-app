@@ -13,8 +13,8 @@ import {
   IonSelectOption,
 } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
-import { useTransactionStore } from '@/modules/transaction';
 import { useCategoryStore } from '@/entities/categories';
+import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 
 const transactionStore = useTransactionStore();
 const { transactionItems } = storeToRefs(transactionStore);

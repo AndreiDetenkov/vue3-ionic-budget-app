@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
-import { SlideListItem } from '@/features/SlideTransaction';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import TransactionsEmpty from '@/modules/transactions/components/TransactionsEmpty.vue';
+import SlideListItem from '@/modules/transactions/components/SlideTransaction/SlideListItem.vue';
 
 const store = useTransactionStore();
 const { transactions } = storeToRefs(store);

@@ -47,3 +47,9 @@ export const rangeUnits = {
   week: 'week',
   month: 'month',
 };
+
+export interface FormValues {
+  transaction: string;
+  amount: string;
+  categoryId: string;
+}

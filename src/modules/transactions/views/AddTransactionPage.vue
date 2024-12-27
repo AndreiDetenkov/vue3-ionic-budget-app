@@ -12,7 +12,7 @@ import {
 } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/entities/categories';
-import { AddTransactionForm } from '@/features/AddTransaction';
+import { AddTransactionForm } from '../components/AddTransaction';
 
 const categoryStore = useCategoryStore();
 const { loading } = storeToRefs(categoryStore);
