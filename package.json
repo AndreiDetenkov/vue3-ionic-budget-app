@@ -29,7 +29,7 @@
     "@capacitor/status-bar": "6.0.0",
     "@ionic/vue": "^8.4.1",
     "@ionic/vue-router": "^8.4.1",
-    "@supabase/supabase-js": "^2.47.10",
+    "@supabase/supabase-js": "^2.47.11",
     "dayjs": "^1.11.13",
     "ionicons": "^7.4.0",
     "pinia": "^2.3.0",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "@capacitor/cli": "6.1.0",
     "@ionic/prettier-config": "^4.0.0",
-    "@types/node": "^20.17.10",
+    "@types/node": "^20.17.12",
     "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/devtools": "^6.6.4",
@@ -52,7 +52,7 @@
     "typescript": "^5.7.2",
     "vite": "~5.2.14",
     "vitest": "^2.1.8",
-    "vue-tsc": "^2.1.10"
+    "vue-tsc": "^2.2.0"
   },
   "prettier": "@ionic/prettier-config",
   "engines": {
