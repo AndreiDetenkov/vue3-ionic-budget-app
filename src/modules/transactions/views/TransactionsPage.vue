@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
-import { useCategoryStore } from '@/entities/categories';
 import AppRefresher from '@/core/components/AppRefresher.vue';
 import AppTabs from '@/core/components/AppTabs.vue';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
+import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsFilterUnit } = storeToRefs(transactionStore);
