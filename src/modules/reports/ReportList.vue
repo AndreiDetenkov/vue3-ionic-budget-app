@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonCol, IonGrid, IonItem, IonLabel, IonList, IonListHeader, IonRow } from '@ionic/vue';
+import { IonCol, IonGrid, IonItem, IonLabel, IonList, IonRow } from '@ionic/vue';
 
 defineProps<{
   reports: { name: string; value: number }[];
@@ -7,13 +7,8 @@ defineProps<{
 </script>
 
 <template>
-  <ion-list-header>
-    <ion-label>
-      <h2>Categories</h2>
-    </ion-label>
-  </ion-list-header>
-  <ion-list>
-    <ion-item v-for="report in reports" :key="report.name">
+  <ion-list class="ion-padding-top">
+    <ion-item v-for="report in reports" :key="report.name" detail button>
       <ion-grid>
         <ion-row>
           <ion-col>

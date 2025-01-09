@@ -6,34 +6,48 @@ import { Transaction } from '@/modules/transactions/types';
 interface CategoryReport {
   name: string;
   value: number;
-  categoryId: string;
+  transactions: Transaction[];
 }
 
 export const useReportStore = defineStore('reportStore', () => {
   const transactionStore = useTransactionStore();
 
   const calculateCategoryReports = (transactions: Transaction[]): CategoryReport[] => {
-    const categoryTotals = transactions.reduce(
-      (acc: Record<string, { value: number; categoryId: string }>, transaction: Transaction) => {
-        const category = transaction.category.title;
+    const categoryGroups = transactions.reduce(
+      (
+        acc: Record<
+          string,
+          {
+            name: string;
+            value: number;
+            transactions: Transaction[];
+          }
+        >,
+        transaction: Transaction,
+      ) => {
+        const categoryId = transaction.category.id;
 
-        if (!acc[category]) {
-          acc[category] = {
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            name: transaction.category.title,
             value: 0,
-            categoryId: transaction.category.id,
+            transactions: [],
           };
         }
 
-        acc[category].value += transaction.value;
+        acc[categoryId].value += transaction.value;
+        acc[categoryId].transactions.push(transaction);
         return acc;
       },
       {},
     );
 
-    return Object.entries(categoryTotals).map(([name, data]) => ({
-      name,
+    console.log(categoryGroups);
+
+    return Object.entries(categoryGroups).map(([, data]) => ({
+      name: data.name,
       value: data.value,
-      categoryId: data.categoryId,
+      transactions: data.transactions,
     }));
   };
 
