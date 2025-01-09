@@ -1,19 +1,14 @@
 import { defineStore } from 'pinia';
 
-import { Category } from '@/entities/categories';
 import { getRangeDates } from '@/core/utils/dates';
-import {
-  Transaction,
-  TransactionItemsForUpdate,
-  TransactionPayload,
-  TransactionStoreState,
-} from '@/modules/transactions/types';
+import { TransactionItemsForUpdate, TransactionPayload, TransactionStoreState } from '@/modules/transactions/types';
 import {
   createTransactionApi,
   getTransactionsByRangeApi,
   removeTransactionApi,
   updateTransactionApi,
 } from '@/modules/transactions/api/api';
+import { Category } from '@/modules/categories/types';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
@@ -31,30 +26,6 @@ export const useTransactionStore = defineStore('transactionStore', {
       return state.transactions.reduce((acc, item) => {
         return acc + item.value;
       }, 0);
-    },
-
-    calculatedTransactionsByCategory(state) {
-      if (!state.transactions) return [];
-
-      const result = state.transactions.reduce(
-        (acc: Record<string, number>, item: Transaction) => {
-          const category = item.category.title;
-
-          if (!acc[category]) {
-            acc[category] = 0;
-          }
-
-          acc[category] += item.value;
-
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
-
-      return Object.entries(result).map(([name, value]) => ({
-        name,
-        value,
-      }));
     },
   },
 

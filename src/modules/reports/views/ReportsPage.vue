@@ -1,28 +1,21 @@
 <script setup lang="ts">
-// import { ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-// import AppTabs from '@/shared/ui/AppTabs.vue';
-import { storeToRefs } from 'pinia';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { useReportStore } from '@/modules/reports/store/reportStore';
+import ReportList from '@/modules/reports/ReportList.vue';
 
-// const tab = ref('day');
-
-const store = useTransactionStore();
-const { calculatedTransactionsByCategory } = storeToRefs(store);
+const store = useReportStore();
 </script>
 
 <template>
   <ion-page>
     <ion-header>
       <ion-toolbar mode="md">
-        <ion-title>Calculations</ion-title>
+        <ion-title>Reports</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content fullscreen class="ion-padding">
-      <!--      <app-tabs v-model="tab" />-->
-
-      <pre>{{ calculatedTransactionsByCategory }}</pre>
+    <ion-content fullscreen>
+      <report-list :reports="store.reports" />
     </ion-content>
   </ion-page>
 </template>

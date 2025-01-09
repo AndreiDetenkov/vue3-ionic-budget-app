@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { list, apps, add } from 'ionicons/icons';
+import { list, add, barChartSharp } from 'ionicons/icons';
 </script>
 
 <template>
@@ -18,9 +18,9 @@ import { list, apps, add } from 'ionicons/icons';
           <ion-icon aria-hidden="true" :icon="add" class="add-btn-icon" />
         </ion-tab-button>
 
-        <ion-tab-button tab="categories" href="/tabs/calculations">
-          <ion-icon aria-hidden="true" :icon="apps" />
-          <ion-label>Calculation</ion-label>
+        <ion-tab-button tab="categories" href="/tabs/reports">
+          <ion-icon aria-hidden="true" :icon="barChartSharp" />
+          <ion-label>Reports</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
