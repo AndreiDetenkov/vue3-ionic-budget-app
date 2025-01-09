@@ -1,6 +1,39 @@
 # Changelog
 
 
+## v0.1.0
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.6...v0.1.0)
+
+### 🚀 Enhancements
+
+- ⚠️  New modular system ([bda1a54](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/bda1a54))
+
+### 💅 Refactors
+
+- Reorganize structure ([18bf4e8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/18bf4e8))
+- Remove cypress and e2e tests ([8a71a38](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8a71a38))
+- Implement core folder ([862ae70](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/862ae70))
+- Implement transactions module ([c91ae19](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c91ae19))
+- Update path of transactions module ([a84fad3](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a84fad3))
+- Move features into the transactions module ([1a4eb32](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1a4eb32))
+- Updates in supabase config ([0815d84](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0815d84))
+- Implement categories module ([2ebf0bd](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2ebf0bd))
+- Implement reports module ([7b2dea2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7b2dea2))
+
+### 🏡 Chore
+
+- Update libs ([c95e226](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c95e226))
+- Update dependencies ([df65de6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/df65de6))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  New modular system ([bda1a54](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/bda1a54))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.0.6
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.5...v0.0.6)
