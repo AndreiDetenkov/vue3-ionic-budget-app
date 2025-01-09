@@ -11,8 +11,8 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
-import { useCategoryStore } from '@/entities/categories';
-import { AddTransactionForm } from '../components/AddTransaction';
+import TransactionForm from '@/modules/transactions/components/AddTransaction/TransactionForm.vue';
+import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 
 const categoryStore = useCategoryStore();
 const { loading } = storeToRefs(categoryStore);
@@ -33,7 +33,7 @@ onIonViewWillEnter(() => categoryStore.getCategoryList());
     </ion-header>
 
     <ion-content class="ion-padding">
-      <add-transaction-form />
+      <transaction-form />
     </ion-content>
   </ion-page>
 </template>

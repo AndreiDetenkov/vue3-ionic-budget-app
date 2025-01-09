@@ -3,11 +3,11 @@ import { computed, ref } from 'vue';
 import { IonInput, IonButton, IonSpinner } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
-import { CategoriesForm } from '@/entities/categories';
 import AppToast from '@/core/components/AppToast/AppToast.vue';
 import { useToast } from '@/core/components/AppToast/useToast';
 import { FormValues, TransactionPayload } from '@/modules/transactions/types';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
