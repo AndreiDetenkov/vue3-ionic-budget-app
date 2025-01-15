@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-import { useReportStore } from '@/modules/reports/store/reportStore';
-import ReportList from '@/modules/reports/ReportList.vue';
+import { useReportStore } from '@reports/store/reportStore';
+import ReportList from '@reports/components/ReportList.vue';
 
 const store = useReportStore();
 </script>
