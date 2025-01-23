@@ -1,14 +1,16 @@
 import { defineStore } from 'pinia';
 
 import { getRangeDates } from '@/core/utils/dates';
-import { TransactionItemsForUpdate, TransactionPayload, TransactionStoreState } from '@/modules/transactions/types';
 import {
   createTransactionApi,
   getTransactionsByRangeApi,
   removeTransactionApi,
   updateTransactionApi,
-} from '@/modules/transactions/api/api';
-import { Category } from '@/modules/categories/types';
+  TransactionItemsForUpdate,
+  TransactionPayload,
+  TransactionStoreState,
+} from '@/modules/transactions';
+import { Category } from '@/modules/categories';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({

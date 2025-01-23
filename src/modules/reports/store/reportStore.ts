@@ -1,7 +1,6 @@
 import { computed } from 'vue';
 import { defineStore } from 'pinia';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
-import { Transaction } from '@/modules/transactions/types';
+import { useTransactionStore, type Transaction } from '@/modules/transactions';
 
 interface CategoryReport {
   name: string;
