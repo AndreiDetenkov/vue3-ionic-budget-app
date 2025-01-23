@@ -1,12 +1,7 @@
 import { computed } from 'vue';
 import { defineStore } from 'pinia';
-import { useTransactionStore, type Transaction } from '@/modules/transactions';
-
-interface CategoryReport {
-  name: string;
-  value: number;
-  transactions: Transaction[];
-}
+import { useTransactionStore, type Transaction } from '@transactions/index';
+import { CategoryReport } from '@reports/index';
 
 export const useReportStore = defineStore('reportStore', () => {
   const transactionStore = useTransactionStore();
