@@ -1,6 +1,34 @@
 # Changelog
 
 
+## v0.1.1
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.0...v0.1.1)
+
+### 🚀 Enhancements
+
+- Display list of categories with total amounts ([f500bc4](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f500bc4))
+
+### 🩹 Fixes
+
+- Import path fixes ([40bbf58](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/40bbf58))
+- Import path fixes ([0e27375](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0e27375))
+
+### 💅 Refactors
+
+- Report by categories ([f644ab7](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f644ab7))
+- Add alias for reports module ([8e7960f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8e7960f))
+- Add public api index files ([d717305](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d717305))
+- Move types into types.ts, add aliases for modules path ([92d1ff6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/92d1ff6))
+
+### 🏡 Chore
+
+- Update gradle in android studio ([433301b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/433301b))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.0
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.0.6...v0.1.0)
