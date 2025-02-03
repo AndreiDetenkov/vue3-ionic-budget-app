@@ -16,7 +16,7 @@ const store = useReportStore();
     </ion-header>
 
     <ion-content fullscreen>
-      <report-list :reports="store.reports" />
+      <report-list :reports="store.reports" class="ion-padding-top" />
     </ion-content>
   </ion-page>
 </template>
