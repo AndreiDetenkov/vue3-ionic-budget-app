@@ -7,40 +7,29 @@ export const useReportStore = defineStore('reportStore', () => {
   const transactionStore = useTransactionStore();
 
   const calculateCategoryReports = (transactions: Transaction[]): CategoryReport[] => {
-    const categoryGroups = transactions.reduce(
-      (
-        acc: Record<
-          string,
-          {
-            name: string;
-            value: number;
-            transactions: Transaction[];
-          }
-        >,
-        transaction: Transaction,
-      ) => {
-        const categoryId = transaction.category.id;
+    const categoryGroups = transactions.reduce((acc: Record<string, CategoryReport>, transaction: Transaction) => {
+      const categoryId = transaction.category.id;
 
-        if (!acc[categoryId]) {
-          acc[categoryId] = {
-            name: transaction.category.title,
-            value: 0,
-            transactions: [],
-          };
-        }
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          name: transaction.category.title,
+          value: 0,
+          icon: transaction.category.icon,
+          transactions: [],
+        };
+      }
 
-        acc[categoryId].value += transaction.value;
-        acc[categoryId].transactions.push(transaction);
-        return acc;
-      },
-      {},
-    );
+      acc[categoryId].value += transaction.value;
+      acc[categoryId].transactions.push(transaction);
+      return acc;
+    }, {});
 
     console.log(categoryGroups);
 
     return Object.entries(categoryGroups).map(([, data]) => ({
       name: data.name,
       value: data.value,
+      icon: data.icon,
       transactions: data.transactions,
     }));
   };
