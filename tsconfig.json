@@ -15,9 +15,6 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@transactions/*": ["./src/modules/transactions/*"],
-      "@categories/*": ["./src/modules/categories/*"],
-      "@reports/*": ["./src/modules/reports/*"],
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

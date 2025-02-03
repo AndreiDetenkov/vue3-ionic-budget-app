@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import { defineStore } from 'pinia';
-import { useTransactionStore, type Transaction } from '@transactions/index';
-import { CategoryReport } from '@reports/index';
+import { useTransactionStore, type Transaction } from '@/modules/transactions';
+import { CategoryReport } from '@/modules/reports';
 
 export const useReportStore = defineStore('reportStore', () => {
   const transactionStore = useTransactionStore();
