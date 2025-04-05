@@ -24,8 +24,6 @@ export const useReportStore = defineStore('reportStore', () => {
       return acc;
     }, {});
 
-    console.log(categoryGroups);
-
     return Object.entries(categoryGroups).map(([, data]) => ({
       name: data.name,
       value: data.value,

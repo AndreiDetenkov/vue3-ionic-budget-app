@@ -14,9 +14,9 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
-    "sync": "pnpx cap sync android",
-    "open": "pnpx cap open android",
-    "run:android": "npx cap run android --target=Pixel_7_API_35  --livereload --external",
+    "sync": "cap sync android",
+    "open": "cap open android",
+    "run:android": "cap run android --target=Pixel_7_API_35  --livereload --external",
     "release": "pnpx changelogen@latest --release --push"
   },
   "dependencies": {

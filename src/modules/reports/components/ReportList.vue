@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { IonCol, IonGrid, IonItem, IonLabel, IonRow, IonThumbnail, IonAccordionGroup, IonAccordion } from '@ionic/vue';
+import {
+  IonCol,
+  IonGrid,
+  IonItem,
+  IonLabel,
+  IonRow,
+  IonThumbnail,
+  IonAccordionGroup,
+  IonAccordion,
+  IonList,
+} from '@ionic/vue';
 import { CategoryReport } from '@/modules/reports';
 import { formatDate } from '@/core/utils/dates';
 
