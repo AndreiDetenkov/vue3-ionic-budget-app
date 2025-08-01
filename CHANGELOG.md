@@ -1,6 +1,33 @@
 # Changelog
 
 
+## v0.1.2
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.1...v0.1.2)
+
+### 🚀 Enhancements
+
+- Display category report with icons ([d13d3ff](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d13d3ff))
+- List of transactions in separate categories ([c2ae575](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c2ae575))
+
+### 💅 Refactors
+
+- Update module's path ([f91ac39](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f91ac39))
+
+### 🏡 Chore
+
+- Update dependencies ([b4e92bc](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b4e92bc))
+- Disable ionic refresher ([d8495bf](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d8495bf))
+- Package.json scripts update ([3d3cad1](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3d3cad1))
+- Update node/pnpm version ([eec4c4f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/eec4c4f))
+- Update dependencies ([5e73f03](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5e73f03))
+- Update dependencies in package.json and pnpm-lock.yaml ([4a2d643](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4a2d643))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+- AndreiDetenkov <a.detenkov@gmail.com>
+
 ## v0.1.1
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.0...v0.1.1)
