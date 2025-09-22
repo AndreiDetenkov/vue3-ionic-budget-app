@@ -1,6 +1,7 @@
-export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+import { createClient } from '@supabase/supabase-js';
+import { checkEnvVariable } from '@/core/utils/env';
 
-export interface Database {
+interface Database {
   public: {
     Tables: {
       categories: {
@@ -44,20 +45,10 @@ export interface Database {
         };
       };
     };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      install_available_extensions_and_test: {
-        Args: Record<PropertyKey, never>;
-        Returns: boolean;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
   };
 }
+
+export const SUPABASE_URL = checkEnvVariable('VITE_SUPABASE_URL');
+export const API_KEY = checkEnvVariable('VITE_SUPABASE_ANON_KEY');
+
+export const supabase = createClient<Database>(SUPABASE_URL, API_KEY);
