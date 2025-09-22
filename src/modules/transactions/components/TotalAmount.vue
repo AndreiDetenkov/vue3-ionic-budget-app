@@ -6,7 +6,7 @@ import { useTransactionStore } from '@/modules/transactions/store/transactionSto
 
 const store = useTransactionStore();
 
-const currentDate = formatDateByTemplate('DD MMMM YYYY');
+const currentDate = formatDateByTemplate('MMMM YYYY');
 
 const formattedTotal = computed<string>(() => {
   return store.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, `$1 `);
@@ -46,6 +46,6 @@ const formattedTotal = computed<string>(() => {
 }
 
 .card__date {
-  font-size: 14px;
+  font-size: 16px;
 }
 </style>
