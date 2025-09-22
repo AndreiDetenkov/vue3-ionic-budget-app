@@ -1,9 +1,9 @@
 import dayjs, { OpUnitType } from 'dayjs';
-import ru from 'dayjs/locale/ru';
+import en from 'dayjs/locale/en';
 import localeData from 'dayjs/plugin/localeData';
 
 dayjs.extend(localeData);
-dayjs.locale(ru);
+dayjs.locale(en);
 
 interface RangeDates {
   startDate: string;
