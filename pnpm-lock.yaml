@@ -66,6 +66,9 @@ importers:
       '@ionic/prettier-config':
         specifier: ^4.0.0
         version: 4.0.0(prettier@3.3.3)
+      '@tanstack/eslint-plugin-query':
+        specifier: ^5.90.1
+        version: 5.90.1(eslint@9.36.0)(typescript@5.9.2)
       '@types/node':
         specifier: ^24.5.2
         version: 24.5.2
@@ -1195,6 +1198,11 @@ packages:
   '@szmarczak/http-timer@4.0.6':
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
     engines: {node: '>=10'}
+
+  '@tanstack/eslint-plugin-query@5.90.1':
+    resolution: {integrity: sha512-Ki4hl+8ZtnMFZ3amZbQl6sSMUq6L8oSJ14vmi3j5t1/SqXclL5SI/1kcuH36iIk05B/bN5pEOS1PTO3Ut/FbVA==}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
 
   '@tanstack/match-sorter-utils@8.19.4':
     resolution: {integrity: sha512-Wo1iKt2b9OT7d+YGhvEPD3DXvPv2etTusIMhMUoG7fbhmxcXCtIjJDEygy91Y2JFlwGyjqiBPRozme7UD8hoqg==}
@@ -4413,6 +4421,14 @@ snapshots:
   '@szmarczak/http-timer@4.0.6':
     dependencies:
       defer-to-connect: 2.0.1
+
+  '@tanstack/eslint-plugin-query@5.90.1(eslint@9.36.0)(typescript@5.9.2)':
+    dependencies:
+      '@typescript-eslint/utils': 8.44.0(eslint@9.36.0)(typescript@5.9.2)
+      eslint: 9.36.0
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
 
   '@tanstack/match-sorter-utils@8.19.4':
     dependencies:
