@@ -29,6 +29,9 @@ importers:
       '@capacitor/status-bar':
         specifier: 7.0.1
         version: 7.0.1(@capacitor/core@7.4.2)
+      '@ionic/core':
+        specifier: ^8.7.4
+        version: 8.7.4
       '@ionic/vue':
         specifier: ^8.7.4
         version: 8.7.4(@stencil/core@4.37.1)(vue-router@4.5.1(vue@3.5.21(typescript@5.9.2)))(vue@3.5.21(typescript@5.9.2))
