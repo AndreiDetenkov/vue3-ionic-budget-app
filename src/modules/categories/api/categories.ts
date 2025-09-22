@@ -1,4 +1,4 @@
-import { supabase } from '@/core/config/supabase';
+import { supabase } from '@/core/plugins/supabase';
 
 type TransactionsResponse = Awaited<ReturnType<typeof getCategoriesApi>>;
 export type CategoriesResponseSuccess = TransactionsResponse['data'];

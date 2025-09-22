@@ -1,5 +1,5 @@
-import { supabase } from '@/core/config/supabase';
-import { TransactionPayload, RangeInterface, TransactionItemsForUpdate } from '@/modules/transactions/types';
+import type { TransactionPayload, RangeInterface, TransactionItemsForUpdate } from '@/modules/transactions/types';
+import { supabase } from '@/core/plugins/supabase';
 
 type TransactionsResponse = Awaited<ReturnType<typeof getTransactionsByRangeApi>>;
 export type TransactionsResponseSuccess = TransactionsResponse['data'];

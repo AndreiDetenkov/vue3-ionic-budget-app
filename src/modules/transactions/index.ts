@@ -1,3 +1,3 @@
 export * from './types';
-export * from './api/api';
+export * from './api/transactions';
 export * from './store/transactionStore';
