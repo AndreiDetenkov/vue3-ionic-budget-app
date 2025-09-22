@@ -5,14 +5,14 @@ const emit = defineEmits<{
   refresh: [void];
 }>();
 
-const onRefreshHandler = (event: RefresherCustomEvent): void => {
+const handleRefresh = (event: RefresherCustomEvent) => {
   emit('refresh');
-  event.detail.complete()
+  event.detail.complete();
 };
 </script>
 
 <template>
-  <ion-refresher slot="fixed" @onIonRefresh="onRefreshHandler($event)" mode="md">
+  <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)" mode="md">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 </template>

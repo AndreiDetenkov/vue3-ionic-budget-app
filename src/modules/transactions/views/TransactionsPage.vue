@@ -6,7 +6,7 @@ import { useTransactionStore } from '@/modules/transactions/store/transactionSto
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
-// import AppRefresher from '@/core/components/AppRefresher.vue';
+import AppRefresher from '@/core/components/AppRefresher.vue';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsFilterUnit } = storeToRefs(transactionStore);
@@ -21,9 +21,13 @@ onIonViewWillEnter(() => {
   if (!categories.value.length) getCategoryList();
 });
 
-// const refreshView = () => getTransactionsByRange();
+const refreshContent = () => {
+  getTransactionsByRange();
+};
 
-const onChangeTab = () => getTransactionsByRange();
+const onChangeTab = () => {
+  getTransactionsByRange();
+};
 </script>
 
 <template>
@@ -36,7 +40,7 @@ const onChangeTab = () => getTransactionsByRange();
     </ion-header>
 
     <ion-content fullscreen>
-      <!-- <app-refresher @refresh="refreshView" /> -->
+      <app-refresher @refresh="refreshContent" />
       <total-amount />
       <app-tabs v-model="transactionsFilterUnit" @update:modelValue="onChangeTab" />
       <transaction-list />
