@@ -1,7 +1,7 @@
-import { Database } from '@/core/config/supabase';
 import { CategoriesResponseError } from '@/modules/categories/api/categories';
+import type { Tables } from '@/core/plugins/database.types';
 
-export type Category = Database['public']['Tables']['categories']['Row'];
+export type Category = Tables<'categories'>;
 
 export interface PressedCategory extends Category {
   isPressed: boolean;
