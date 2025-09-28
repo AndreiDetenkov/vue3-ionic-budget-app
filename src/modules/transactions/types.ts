@@ -1,8 +1,9 @@
 import { OpUnitType } from 'dayjs';
-import { TransactionsResponseError } from '@/modules/transactions/api/transactions';
+import type { TransactionsResponseError } from '@/modules/transactions/api/transactions';
+import { Tables } from '@/core/plugins/database.types';
 
 export interface TransactionStoreState {
-  transactions: Transaction[] | [];
+  transactions: Transaction[];
   error: TransactionsResponseError | null;
   loading: boolean;
   transactionsFilterUnit: OpUnitType;
@@ -12,12 +13,6 @@ export interface TransactionStoreState {
 export interface RangeInterface {
   from: string;
   to: string;
-}
-
-interface Category {
-  icon: string;
-  id: string;
-  title: string;
 }
 
 export interface TransactionItemsForUpdate {
@@ -33,7 +28,7 @@ export interface Transaction {
   id: string;
   name: string;
   value: number;
-  category: Category;
+  category: Tables<'categories'>;
 }
 
 export interface TransactionPayload {

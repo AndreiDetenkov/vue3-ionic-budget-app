@@ -10,7 +10,7 @@ import {
   TransactionPayload,
   TransactionStoreState,
 } from '@/modules/transactions';
-import { Category } from '@/modules/categories';
+import { PostgrestError } from '@supabase/supabase-js';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
@@ -42,19 +42,25 @@ export const useTransactionStore = defineStore('transactionStore', {
           to: endDate,
         });
 
-        if (error) {
+        if (error instanceof PostgrestError) {
           this.error = error;
           return;
         }
 
-        this.transactions = data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          value: item.value,
-          createdAt: item.created_at,
-          categoryId: item.category_id,
-          category: { ...item.categories } as unknown as Category,
-        }));
+        if (data) {
+          this.transactions = data.map((item) => ({
+            id: item.id,
+            name: item.name,
+            value: item.value,
+            createdAt: item.created_at,
+            categoryId: item.category_id,
+            category: {
+              id: item.categories.id,
+              title: item.categories.title,
+              icon: item.categories.icon,
+            },
+          }));
+        }
       } finally {
         this.loading = false;
       }
