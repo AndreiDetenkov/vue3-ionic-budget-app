@@ -11,13 +11,14 @@ import {
   TransactionStoreState,
 } from '@/modules/transactions';
 import { PostgrestError } from '@supabase/supabase-js';
+import type { OpUnitType } from 'dayjs';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
     transactions: [],
     error: null,
     loading: false,
-    transactionsFilterUnit: 'day',
+    transactionsUnit: 'month',
     transactionItems: { id: '', name: '', value: 0, categoryId: '' },
   }),
 
@@ -32,8 +33,9 @@ export const useTransactionStore = defineStore('transactionStore', {
   },
 
   actions: {
-    async getTransactionsByRange(): Promise<void> {
-      const { startDate, endDate } = getRangeDates(this.transactionsFilterUnit);
+    async getTransactionsByRange(unit: OpUnitType): Promise<void> {
+      this.transactionsUnit = unit;
+      const { startDate, endDate } = getRangeDates(unit);
 
       try {
         this.loading = true;
@@ -76,7 +78,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return { success: false };
         }
 
-        await this.getTransactionsByRange();
+        await this.getTransactionsByRange(this.transactionsUnit);
 
         return { success: true };
       } finally {
@@ -94,7 +96,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return;
         }
 
-        await this.getTransactionsByRange();
+        await this.getTransactionsByRange(this.transactionsUnit);
       } finally {
         this.loading = false;
       }
@@ -110,7 +112,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return { success: false };
         }
 
-        await this.getTransactionsByRange();
+        await this.getTransactionsByRange(this.transactionsUnit);
 
         return { success: true };
       } finally {

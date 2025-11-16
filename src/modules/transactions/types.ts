@@ -6,7 +6,7 @@ export interface TransactionStoreState {
   transactions: Transaction[];
   error: TransactionsResponseError | null;
   loading: boolean;
-  transactionsFilterUnit: OpUnitType;
+  transactionsUnit: OpUnitType;
   transactionItems: TransactionItemsForUpdate;
 }
 
@@ -22,12 +22,9 @@ export interface TransactionItemsForUpdate {
   categoryId: string;
 }
 
-export interface Transaction {
+export interface Transaction extends Tables<'transactions'> {
   categoryId: string;
   createdAt: string;
-  id: string;
-  name: string;
-  value: number;
   category: Tables<'categories'>;
 }
 
@@ -37,11 +34,11 @@ export interface TransactionPayload {
   category_id: string;
 }
 
-export const rangeUnits = {
-  day: 'day',
-  week: 'week',
-  month: 'month',
-};
+// export const rangeUnits = {
+//   day: 'day',
+//   week: 'week',
+//   month: 'month',
+// };
 
 export interface FormValues {
   transaction: string;

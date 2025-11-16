@@ -1,4 +1,4 @@
-import dayjs, { OpUnitType } from 'dayjs';
+import dayjs, { type OpUnitType } from 'dayjs';
 import en from 'dayjs/locale/en';
 import localeData from 'dayjs/plugin/localeData';
 
@@ -35,6 +35,13 @@ export const getPreviousYearRange = () => {
 export const getCurrentYearRange = () => {
   const startDate = dayjs().startOf('year').format();
   const endDate = dayjs().endOf('year').format();
+
+  return { startDate, endDate };
+};
+
+export const getCurrentMonthDates = (): RangeDates => {
+  const startDate = dayjs().startOf('month').format();
+  const endDate = dayjs().endOf('month').format();
 
   return { startDate, endDate };
 };
