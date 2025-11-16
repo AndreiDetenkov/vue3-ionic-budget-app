@@ -22,7 +22,7 @@ export interface TransactionItemsForUpdate {
   categoryId: string;
 }
 
-export interface Transaction extends Tables<'transactions'> {
+export interface Transaction extends Omit<Tables<'transactions'>, 'category_id' | 'created_at'> {
   categoryId: string;
   createdAt: string;
   category: Tables<'categories'>;
