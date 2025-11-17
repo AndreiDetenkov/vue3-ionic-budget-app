@@ -34,12 +34,6 @@ export interface TransactionPayload {
   category_id: string;
 }
 
-// export const rangeUnits = {
-//   day: 'day',
-//   week: 'week',
-//   month: 'month',
-// };
-
 export interface FormValues {
   transaction: string;
   amount: string;

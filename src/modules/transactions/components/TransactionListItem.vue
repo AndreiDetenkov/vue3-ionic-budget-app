@@ -14,7 +14,7 @@ defineProps<{
       <ion-row class="ion-align-items-center">
         <ion-col size="auto">
           <ion-thumbnail>
-            <img alt="" :src="transaction.category.icon" />
+            <img alt="" :src="transaction.category.icon ?? ''" />
           </ion-thumbnail>
         </ion-col>
 

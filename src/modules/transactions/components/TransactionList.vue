@@ -19,7 +19,7 @@ const showList = computed(() => recentTransactions.value?.length);
     <ion-list lines="full">
       <ion-list-header>
         <ion-label> Recent Transactions </ion-label>
-        <ion-button fill="clear" size="small" color="dark" @click="emit('handleClick')"> See All </ion-button>
+        <ion-button color="dark" @click="emit('handleClick')"> See All </ion-button>
       </ion-list-header>
 
       <slide-list-item v-for="transaction in recentTransactions" :key="transaction.id" :transaction="transaction" />
@@ -33,7 +33,6 @@ const showList = computed(() => recentTransactions.value?.length);
 
 <style scoped>
 ion-list-header {
-  padding-right: 16px;
   margin-bottom: 8px;
 }
 
@@ -44,5 +43,7 @@ ion-label {
 
 ion-button {
   text-transform: capitalize;
+  letter-spacing: 0;
+  font-size: 1rem;
 }
 </style>

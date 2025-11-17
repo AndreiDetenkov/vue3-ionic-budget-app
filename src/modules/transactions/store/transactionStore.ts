@@ -33,8 +33,23 @@ export const useTransactionStore = defineStore('transactionStore', {
       }, 0);
     },
 
-    recentTransactions(): Transaction[] {
-      return this.transactions.slice(0, 20);
+    recentTransactions(state): Transaction[] {
+      return state.transactions.slice(0, 20);
+    },
+
+    transactionsByDate(state) {
+      return state.transactions.reduce(
+        (acc, item) => {
+          const date = item.createdAt.split('T')[0];
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+
+          acc[date].push(item);
+          return acc;
+        },
+        {} as Record<string, Transaction[]>,
+      );
     },
   },
 
