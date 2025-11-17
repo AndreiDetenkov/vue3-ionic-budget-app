@@ -9,7 +9,7 @@ const store = useReportStore();
 
 <template>
   <ion-page>
-    <ion-header>
+    <ion-header class="ion-no-border">
       <ion-toolbar mode="md">
         <ion-title>Reports</ion-title>
       </ion-toolbar>

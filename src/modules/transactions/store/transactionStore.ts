@@ -8,7 +8,8 @@ import {
   updateTransactionApi,
   TransactionItemsForUpdate,
   TransactionPayload,
-  TransactionStoreState,
+  type TransactionStoreState,
+  type Transaction,
 } from '@/modules/transactions';
 import { PostgrestError } from '@supabase/supabase-js';
 import type { OpUnitType } from 'dayjs';
@@ -29,6 +30,10 @@ export const useTransactionStore = defineStore('transactionStore', {
       return state.transactions.reduce((acc, item) => {
         return acc + item.value;
       }, 0);
+    },
+
+    recentTransactions(): Transaction[] {
+      return this.transactions.slice(0, 20);
     },
   },
 

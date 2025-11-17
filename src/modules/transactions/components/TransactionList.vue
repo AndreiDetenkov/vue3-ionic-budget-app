@@ -1,27 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { IonLabel, IonList, IonListHeader } from '@ionic/vue';
+import { IonLabel, IonList, IonListHeader, IonButton } from '@ionic/vue';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import TransactionsEmpty from '@/modules/transactions/components/TransactionsEmpty.vue';
 import SlideListItem from '@/modules/transactions/components/SlideTransaction/SlideListItem.vue';
 
-const store = useTransactionStore();
-const { transactions } = storeToRefs(store);
+const emit = defineEmits(['handleClick']);
 
-const showList = computed(() => transactions.value?.length);
+const store = useTransactionStore();
+const { recentTransactions } = storeToRefs(store);
+
+const showList = computed(() => recentTransactions.value?.length);
 </script>
 
 <template>
   <template v-if="showList">
-    <ion-list-header>
-      <ion-label>
-        <h2>Recent Transactions</h2>
-      </ion-label>
-    </ion-list-header>
-
     <ion-list lines="full">
-      <slide-list-item v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
+      <ion-list-header>
+        <ion-label> Recent Transactions </ion-label>
+        <ion-button fill="clear" size="small" color="dark" @click="emit('handleClick')"> See All </ion-button>
+      </ion-list-header>
+
+      <slide-list-item v-for="transaction in recentTransactions" :key="transaction.id" :transaction="transaction" />
     </ion-list>
   </template>
 
@@ -29,3 +30,19 @@ const showList = computed(() => transactions.value?.length);
     <transactions-empty />
   </template>
 </template>
+
+<style scoped>
+ion-list-header {
+  padding-right: 16px;
+  margin-bottom: 8px;
+}
+
+ion-label {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+ion-button {
+  text-transform: capitalize;
+}
+</style>
