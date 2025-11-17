@@ -13,6 +13,7 @@ import {
 } from '@/modules/transactions';
 import { PostgrestError } from '@supabase/supabase-js';
 import type { OpUnitType } from 'dayjs';
+import { mappedTransactions } from '@/modules/transactions/utils';
 
 export const useTransactionStore = defineStore('transactionStore', {
   state: (): TransactionStoreState => ({
@@ -54,20 +55,7 @@ export const useTransactionStore = defineStore('transactionStore', {
           return;
         }
 
-        if (data) {
-          this.transactions = data.map((item) => ({
-            id: item.id,
-            name: item.name,
-            value: item.value,
-            createdAt: item.created_at,
-            categoryId: item.category_id,
-            category: {
-              id: item.categories.id,
-              title: item.categories.title,
-              icon: item.categories.icon,
-            },
-          }));
-        }
+        this.transactions = mappedTransactions(data);
       } finally {
         this.loading = false;
       }
