@@ -16,7 +16,7 @@
     "lint": "eslint --ext .ts,.vue src/ --fix",
     "sync": "cap sync android",
     "open": "cap open android",
-    "run:android": "cap run android --target=Pixel_7_API_35  --livereload --external",
+    "run:android": "cap run android --target=Pixel_7_Pro_API_30  --live-reload",
     "release": "pnpx changelogen@latest --release --push"
   },
   "dependencies": {
