@@ -34,7 +34,7 @@ function onTapHandler(id: string): void {
           :class="{ 'pressed-card': isPressed }"
         >
           <ion-ripple-effect class="card-custom-ripple" />
-          <ion-img class="card-img" :src="icon" :alt="title" />
+          <ion-img class="card-img" :src="icon as string" :alt="title" />
           <ion-label class="card-title">{{ title }}</ion-label>
         </div>
       </ion-col>

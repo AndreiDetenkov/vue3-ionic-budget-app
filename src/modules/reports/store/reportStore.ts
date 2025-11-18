@@ -14,7 +14,7 @@ export const useReportStore = defineStore('reportStore', () => {
         acc[categoryId] = {
           name: transaction.category.title,
           value: 0,
-          icon: transaction.category.icon,
+          icon: transaction.category.icon ?? '',
           transactions: [],
         };
       }
