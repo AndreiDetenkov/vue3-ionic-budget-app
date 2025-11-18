@@ -41,20 +41,22 @@ ion-thumbnail {
 
 .title {
   font-size: 16px;
+  margin-bottom: 4px;
 }
 
 .category {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ion-color-medium-shade);
 }
 
 .amount {
   font-size: 16px;
   text-align: right;
+  margin-bottom: 4px;
 }
 
 .date {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ion-color-medium-shade);
 }
 </style>

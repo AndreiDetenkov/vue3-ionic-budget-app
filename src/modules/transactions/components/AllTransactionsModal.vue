@@ -14,31 +14,37 @@ import {
   IonLabel,
 } from '@ionic/vue';
 import { useTransactionStore } from '@/modules/transactions';
-import TransactionListItem from '@/modules/transactions/components/TransactionListItem.vue';
+import { formatDate, formatDateByTemplate } from '@/core/utils/dates';
 
 const model = defineModel();
 const store = useTransactionStore();
+
+const currentMonth = formatDateByTemplate('MMMM');
 </script>
 
 <template>
   <ion-modal :is-open="model">
     <ion-header class="ion-no-border">
       <ion-toolbar>
-        <ion-title>All transactions</ion-title>
+        <ion-title>Transactions in {{ currentMonth }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button @click="model = false">Close</ion-button>
+          <ion-button @click="model = false" color="primary"> Close </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding-vertical">
+    <ion-content>
       <ion-list lines="full">
         <ion-item-group v-for="(transactions, date) in store.transactionsByDate">
-          <ion-item-divider>
-            <ion-label> {{ date }} </ion-label>
+          <ion-item-divider mode="md" color="light" sticky>
+            <ion-label> {{ formatDate(date.toString()) }} </ion-label>
           </ion-item-divider>
 
-          <ion-item v-for="transaction in transactions" :key="transaction.id">
+          <ion-item
+            v-for="(transaction, index) in transactions"
+            :key="transaction.id"
+            :lines="index === transactions.length - 1 ? 'none' : 'full'"
+          >
             <ion-label>{{ transaction.name }}</ion-label>
             <ion-label>{{ transaction.value }}</ion-label>
           </ion-item>

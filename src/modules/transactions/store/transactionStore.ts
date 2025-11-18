@@ -34,7 +34,7 @@ export const useTransactionStore = defineStore('transactionStore', {
     },
 
     recentTransactions(state): Transaction[] {
-      return state.transactions.slice(0, 20);
+      return state.transactions.slice(0, 10);
     },
 
     transactionsByDate(state) {
