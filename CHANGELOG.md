@@ -1,6 +1,45 @@
 # Changelog
 
 
+## v0.1.3
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.2...v0.1.3)
+
+### 💅 Refactors
+
+- Move TabsPage.vue out of core folder and update router path ([597d94d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/597d94d))
+- Re-enable AppRefresher and improve refresh functionality ([79f6711](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/79f6711))
+- Update date format and adjust font size in TotalAmount component ([9ceb015](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9ceb015))
+- Reorganize supabase config structure and create reusable env utility ([0e8ea0a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0e8ea0a))
+- Extract database types into separate file and update supabase client setup ([9eece9a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9eece9a))
+- Switch dayjs locale from Russian to English in dates utility ([2f9be89](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2f9be89))
+- Update supabase imports structure and improve TotalAmount date label formatting ([6f0564d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6f0564d))
+- Update categories types and supabase imports for improved clarity and consistency ([e2b3fd7](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/e2b3fd7))
+- Rename Supabase API key env variable for consistency ([eb80141](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/eb80141))
+- Update transaction store and related types for improved type safety and consistency ([fcd98be](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/fcd98be))
+- Streamline transaction store and update date utilities for improved month-based filtering and type safety ([97fa11a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/97fa11a))
+- Update Transaction type to omit unused fields for improved type clarity ([7261c08](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7261c08))
+- Enhance TransactionList with "See All" button and introduce modal for displaying full transactions list ([fb1ceb3](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/fb1ceb3))
+- Extract transaction mapping logic to utility function and clean up unused code in TransactionsPage ([61beeb1](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/61beeb1))
+- Add AllTransactionsModal component, improve transaction listing by date, and enhance modal integration ([ba01e04](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ba01e04))
+- Enhance transaction modals and lists with improved UI/UX and streamlined date formatting ([c2fe509](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c2fe509))
+- Update transaction modals and lists with consistent toolbar styles and improved UI elements ([a861fe5](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a861fe5))
+- Enhance AllTransactionsModal and TransactionList with improved layout and event handling ([c512591](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c512591))
+- Enhance type safety for category icons in form and report store ([3a6cba2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3a6cba2))
+- Migrate ESLint config to TypeScript and update dependencies for improved maintainability ([b6af713](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b6af713))
+- Add keys to transactions loop, remove unused code, and clean up category API imports ([7751b98](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7751b98))
+
+### 🏡 Chore
+
+- Update dependencies in package.json and pnpm-lock.yaml ([b30fea5](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b30fea5))
+- Add @ionic/core dependency and update lock file ([5934ba7](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5934ba7))
+- Add @tanstack/vue-query dependency and update pnpm-lock.yaml ([2da1f10](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2da1f10))
+- Integrate vue-query plugin and configure eslint for @tanstack/query ([b2fff24](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b2fff24))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.2
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.1...v0.1.2)
