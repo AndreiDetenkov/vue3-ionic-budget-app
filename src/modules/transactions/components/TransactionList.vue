@@ -19,7 +19,7 @@ const showList = computed(() => recentTransactions.value?.length);
     <ion-list lines="full">
       <ion-list-header>
         <ion-label> Recent Transactions </ion-label>
-        <ion-chip color="medium" @click="emit('handleClick')"> See All </ion-chip>
+        <ion-chip color="dark" outline @click="emit('handleClick')"> See All </ion-chip>
       </ion-list-header>
 
       <slide-list-item v-for="transaction in recentTransactions" :key="transaction.id" :transaction="transaction" />

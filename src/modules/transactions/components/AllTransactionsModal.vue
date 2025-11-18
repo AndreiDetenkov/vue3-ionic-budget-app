@@ -25,10 +25,10 @@ const currentMonth = formatDateByTemplate('MMMM');
 <template>
   <ion-modal :is-open="model">
     <ion-header class="ion-no-border">
-      <ion-toolbar>
+      <ion-toolbar color="light">
         <ion-title>Transactions in {{ currentMonth }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button @click="model = false" color="primary"> Close </ion-button>
+          <ion-button @click="model = false" color="dark"> Close </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>

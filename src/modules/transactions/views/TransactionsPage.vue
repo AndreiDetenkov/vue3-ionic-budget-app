@@ -23,8 +23,8 @@ const isOpenModal = ref(false);
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
+    <ion-header class="ion-no-border" mode="md">
+      <ion-toolbar color="light">
         <ion-title>Transactions</ion-title>
         <ion-progress-bar v-if="loading" type="indeterminate" />
       </ion-toolbar>
