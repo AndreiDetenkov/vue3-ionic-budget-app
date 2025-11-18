@@ -6,7 +6,7 @@ import { useTransactionStore } from '@/modules/transactions/store/transactionSto
 import TransactionsEmpty from '@/modules/transactions/components/TransactionsEmpty.vue';
 import SlideListItem from '@/modules/transactions/components/SlideTransaction/SlideListItem.vue';
 
-const emit = defineEmits(['handleClick']);
+const emit = defineEmits(['viewAllTransactions']);
 
 const store = useTransactionStore();
 const { recentTransactions } = storeToRefs(store);
@@ -19,7 +19,7 @@ const showList = computed(() => recentTransactions.value?.length);
     <ion-list lines="full">
       <ion-list-header>
         <ion-label> Recent Transactions </ion-label>
-        <ion-chip color="dark" outline @click="emit('handleClick')"> See All </ion-chip>
+        <ion-chip color="dark" outline @click="emit('viewAllTransactions')"> See All </ion-chip>
       </ion-list-header>
 
       <slide-list-item v-for="transaction in recentTransactions" :key="transaction.id" :transaction="transaction" />
