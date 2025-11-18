@@ -12,23 +12,23 @@ importers:
         specifier: 7.4.2
         version: 7.4.2(@capacitor/core@7.4.2)
       '@capacitor/app':
-        specifier: 7.0.1
-        version: 7.0.1(@capacitor/core@7.4.2)
+        specifier: 7.1.0
+        version: 7.1.0(@capacitor/core@7.4.2)
       '@capacitor/core':
         specifier: 7.4.2
         version: 7.4.2
       '@capacitor/haptics':
-        specifier: 7.0.1
-        version: 7.0.1(@capacitor/core@7.4.2)
+        specifier: 7.0.2
+        version: 7.0.2(@capacitor/core@7.4.2)
       '@capacitor/ios':
         specifier: 7.4.2
         version: 7.4.2(@capacitor/core@7.4.2)
       '@capacitor/keyboard':
-        specifier: 7.0.1
-        version: 7.0.1(@capacitor/core@7.4.2)
+        specifier: 7.0.3
+        version: 7.0.3(@capacitor/core@7.4.2)
       '@capacitor/status-bar':
-        specifier: 7.0.1
-        version: 7.0.1(@capacitor/core@7.4.2)
+        specifier: 7.0.3
+        version: 7.0.3(@capacitor/core@7.4.2)
       '@ionic/core':
         specifier: ^8.7.4
         version: 8.7.4
@@ -625,8 +625,8 @@ packages:
     peerDependencies:
       '@capacitor/core': ^7.4.0
 
-  '@capacitor/app@7.0.1':
-    resolution: {integrity: sha512-ArlVZAAla4MwQoKh26x2AaTDOBh5Vhp1VhMKR3RwqZSsZnazKTFGNrPbr9Ez5r1knnEDfApyjwp1uZnXK1WTYQ==}
+  '@capacitor/app@7.1.0':
+    resolution: {integrity: sha512-W7m09IWrUjZbo7AKeq+rc/KyucxrJekTBg0l4QCm/yDtCejE3hebxp/W2esU26KKCzMc7H3ClkUw32E9lZkwRA==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
@@ -638,8 +638,8 @@ packages:
   '@capacitor/core@7.4.2':
     resolution: {integrity: sha512-akCf9A1FUR8AWTtmgGjHEq6LmGsjA2U7igaJ9PxiCBfyxKqlDbuGHrlNdpvHEjV5tUPH3KYtkze6gtFcNKPU9A==}
 
-  '@capacitor/haptics@7.0.1':
-    resolution: {integrity: sha512-ewZmspE5krgDUj5ZvUDcfNZvgerAIr+3bDSk6DLzyvBZ/dYmr/tMLu5H6WtYaaKYZJ32aZAudGpIal5epDyBYA==}
+  '@capacitor/haptics@7.0.2':
+    resolution: {integrity: sha512-vqfeEM6s2zMgLjpITCTUIy7P/hadq/Gr5E/RClFgMJPB41Y5FsqOKD+j85/uwh8N2cf/aWaPeXUmjnTzJbEB2g==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
@@ -648,13 +648,13 @@ packages:
     peerDependencies:
       '@capacitor/core': ^7.4.0
 
-  '@capacitor/keyboard@7.0.1':
-    resolution: {integrity: sha512-Gi064vOARMac+x9/DmEFeywN9oAETMf3OYsMuYm9gA8SvdsDJ3QJqMoFnSEIORYXe21Jzt2SIEdLlpT65P/b2g==}
+  '@capacitor/keyboard@7.0.3':
+    resolution: {integrity: sha512-BIBKjmky5rOYNhvYhNeDi0MMvjwYZ6YF9JoCYcGKvKY+XLJKtezsEL78XfOlgWZBkbfR8uq3tzktY6PqgoYLKA==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
-  '@capacitor/status-bar@7.0.1':
-    resolution: {integrity: sha512-iDv3mXYo9CdxYRVwt3/pRyuk25p7Sn4GfaS/zMZyVIqTzsvKLCIIH3GdKK+ta+nsNcAVpCw/t5jFEBt1D18ctA==}
+  '@capacitor/status-bar@7.0.3':
+    resolution: {integrity: sha512-JyRpVnKwHij9hgPWolF6PK+HT3e2HSPjN11/h2OmKxq8GAdPGARFLv+97eZl0pvuvm0Kka/LpiLb5whXISBg7Q==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
@@ -3935,7 +3935,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 7.4.2
 
-  '@capacitor/app@7.0.1(@capacitor/core@7.4.2)':
+  '@capacitor/app@7.1.0(@capacitor/core@7.4.2)':
     dependencies:
       '@capacitor/core': 7.4.2
 
@@ -3965,7 +3965,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@capacitor/haptics@7.0.1(@capacitor/core@7.4.2)':
+  '@capacitor/haptics@7.0.2(@capacitor/core@7.4.2)':
     dependencies:
       '@capacitor/core': 7.4.2
 
@@ -3973,11 +3973,11 @@ snapshots:
     dependencies:
       '@capacitor/core': 7.4.2
 
-  '@capacitor/keyboard@7.0.1(@capacitor/core@7.4.2)':
+  '@capacitor/keyboard@7.0.3(@capacitor/core@7.4.2)':
     dependencies:
       '@capacitor/core': 7.4.2
 
-  '@capacitor/status-bar@7.0.1(@capacitor/core@7.4.2)':
+  '@capacitor/status-bar@7.0.3(@capacitor/core@7.4.2)':
     dependencies:
       '@capacitor/core': 7.4.2
 
