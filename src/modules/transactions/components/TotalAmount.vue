@@ -4,7 +4,6 @@ import { IonGrid, IonRow, IonCol, IonLabel } from '@ionic/vue';
 import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 
-const currencySign = '&#8838;';
 const store = useTransactionStore();
 
 const currentDate = formatDateByTemplate('MMMM YYYY');

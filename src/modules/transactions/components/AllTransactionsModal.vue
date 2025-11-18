@@ -38,7 +38,7 @@ const currentMonth = formatDateByTemplate('MMMM');
 
     <ion-content>
       <ion-list lines="full" class="ion-no-padding">
-        <ion-item-group v-memo v-for="(transactions, date) in store.transactionsByDate">
+        <ion-item-group v-for="(transactions, date) in store.transactionsByDate" :key="date">
           <ion-item-divider mode="md" color="light" sticky>
             <ion-label> {{ formatDate(date.toString(), 'DD.MM.YYYY dddd') }} </ion-label>
           </ion-item-divider>
