@@ -45,7 +45,7 @@ ion-thumbnail {
 }
 
 .category {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .amount {
@@ -55,6 +55,6 @@ ion-thumbnail {
 }
 
 .date {
-  font-size: 12px;
+  font-size: 11px;
 }
 </style>

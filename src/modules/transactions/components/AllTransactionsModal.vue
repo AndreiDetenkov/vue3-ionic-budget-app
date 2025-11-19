@@ -16,11 +16,14 @@ import {
   IonRow,
   IonCol,
 } from '@ionic/vue';
-import { useTransactionStore } from '@/modules/transactions';
+import type { Transaction } from '@/modules/transactions';
 import { formatDate, formatDateByTemplate } from '@/core/utils/dates';
 
 const model = defineModel();
-const store = useTransactionStore();
+
+defineProps<{
+  list: Record<string, Transaction[]>;
+}>();
 
 const currentMonth = formatDateByTemplate('MMMM');
 </script>
@@ -38,7 +41,7 @@ const currentMonth = formatDateByTemplate('MMMM');
 
     <ion-content fullscreen>
       <ion-list lines="full" class="ion-no-padding">
-        <ion-item-group v-for="(transactions, date) in store.transactionsByDate" :key="date">
+        <ion-item-group v-for="(transactions, date) in list" :key="date">
           <ion-item-divider mode="md" color="light" sticky>
             <ion-label> {{ formatDate(date.toString(), 'DD.MM.YYYY dddd') }} </ion-label>
           </ion-item-divider>
@@ -49,7 +52,7 @@ const currentMonth = formatDateByTemplate('MMMM');
             :lines="index === transactions.length - 1 ? 'none' : 'full'"
           >
             <ion-grid>
-              <ion-row>
+              <ion-row class="ion-align-items-center">
                 <ion-col>
                   <ion-label>{{ transaction.name }}</ion-label>
                   <ion-label color="medium" class="category">{{ transaction.category.title }}</ion-label>
@@ -74,6 +77,6 @@ ion-button {
 }
 
 .category {
-  font-size: 12px;
+  font-size: 11px;
 }
 </style>

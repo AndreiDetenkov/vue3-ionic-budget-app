@@ -33,7 +33,7 @@ const confirmHandler = async () => {
     <ion-toolbar color="light">
       <ion-title>Update transaction</ion-title>
       <ion-buttons slot="end">
-        <ion-button color="primary" @click="cancelHandler">Cancel</ion-button>
+        <ion-button color="primary" class="cancel-btn" @click="cancelHandler">Cancel</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -85,5 +85,11 @@ const confirmHandler = async () => {
 <style scoped>
 ion-button {
   height: 48px;
+}
+
+.cancel-btn {
+  text-transform: capitalize;
+  letter-spacing: 0;
+  font-size: 1rem;
 }
 </style>

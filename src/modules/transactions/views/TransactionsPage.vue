@@ -9,7 +9,7 @@ import AppRefresher from '@/core/components/AppRefresher.vue';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 
 const transactionStore = useTransactionStore();
-const { loading, transactions } = storeToRefs(transactionStore);
+const { loading, transactions, transactionsByDate } = storeToRefs(transactionStore);
 const { getTransactionsByRange } = transactionStore;
 
 onIonViewWillEnter(() => {
@@ -34,7 +34,7 @@ const isOpenModal = ref(false);
       <app-refresher @refresh="refreshContent" />
       <total-amount />
       <transaction-list @view-all-transactions="isOpenModal = true" />
-      <all-transactions-modal v-model="isOpenModal" />
+      <all-transactions-modal v-model="isOpenModal" :list="transactionsByDate" />
     </ion-content>
   </ion-page>
 </template>
