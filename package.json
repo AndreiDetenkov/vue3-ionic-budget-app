@@ -14,8 +14,8 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint --ext .ts,.vue src/ --fix",
-    "sync": "cap sync android",
-    "open": "cap open android",
+    "sync": "ionic capacitor sync android",
+    "open": "ionic capacitor open android",
     "run:android": "ionic capacitor run android --target=Pixel_7_Pro_API_30 --livereload --external",
     "release": "pnpx changelogen@latest --release --push"
   },
