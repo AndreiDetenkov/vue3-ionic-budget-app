@@ -30,7 +30,7 @@ const confirmHandler = async () => {
 
 <template>
   <ion-header>
-    <ion-toolbar>
+    <ion-toolbar color="light">
       <ion-title>Update transaction</ion-title>
       <ion-buttons slot="end">
         <ion-button color="primary" @click="cancelHandler">Cancel</ion-button>

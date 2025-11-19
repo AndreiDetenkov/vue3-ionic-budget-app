@@ -27,16 +27,16 @@ const currentMonth = formatDateByTemplate('MMMM');
 
 <template>
   <ion-modal :is-open="model">
-    <ion-header class="ion-no-border">
+    <ion-header>
       <ion-toolbar color="light">
         <ion-title>Transactions in {{ currentMonth }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button @click="model = false" color="dark"> Close </ion-button>
+          <ion-button color="primary" @click="model = false">Close</ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
+    <ion-content fullscreen>
       <ion-list lines="full" class="ion-no-padding">
         <ion-item-group v-for="(transactions, date) in store.transactionsByDate" :key="date">
           <ion-item-divider mode="md" color="light" sticky>

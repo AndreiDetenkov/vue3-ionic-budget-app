@@ -9,8 +9,8 @@ const store = useReportStore();
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar mode="md">
+    <ion-header>
+      <ion-toolbar color="light">
         <ion-title>Reports</ion-title>
       </ion-toolbar>
     </ion-header>
