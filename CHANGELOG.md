@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.4
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.3...v0.1.4)
+
+### 💅 Refactors
+
+- **android:** Update Capacitor dependencies and Java version compatibility ([42ed105](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/42ed105))
+- Remove AppTabs component and related styles ([914f445](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/914f445))
+- **ios/android:** Migrate to SPM from CocoaPods and update build tools dependencies ([3c01dae](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3c01dae))
+- Update Capacitor dependencies to latest versions ([c08bb55](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c08bb55))
+- Update Capacitor dependencies to latest versions ([ae3a104](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ae3a104))
+- **ios-android:** Bump SDK versions and update Capacitor dependencies ([6dfb696](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6dfb696))
+- **ui:** Update Ion components and clean up unused styles ([97abc99](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/97abc99))
+- **ui:** Improve Transactions UI and pass props to enhance component reusability ([450696f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/450696f))
+- **android:** Update AndroidManifest for improved configuration and bump dependency versions ([53cee28](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/53cee28))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.3
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.2...v0.1.3)
