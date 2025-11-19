@@ -1,5 +1,5 @@
 {
-  "name": "budget-app",
+  "name": "personal-budget",
   "integrations": {
     "capacitor": {}
   },

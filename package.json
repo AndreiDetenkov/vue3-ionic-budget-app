@@ -16,7 +16,7 @@
     "lint": "eslint --ext .ts,.vue src/ --fix",
     "sync": "cap sync android",
     "open": "cap open android",
-    "run:android": "cap run android --target=Pixel_7_Pro_API_30  --live-reload",
+    "run:android": "ionic capacitor run android --target=Pixel_7_Pro_API_30 --livereload --external",
     "release": "pnpx changelogen@latest --release --push"
   },
   "dependencies": {
@@ -49,6 +49,7 @@
     "@vue/devtools": "^8.0.2",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/test-utils": "^2.4.6",
+    "baseline-browser-mapping": "^2.8.29",
     "eslint": "^9.36.0",
     "eslint-plugin-vue": "^10.4.0",
     "globals": "^16.5.0",

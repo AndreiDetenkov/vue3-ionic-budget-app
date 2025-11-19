@@ -90,6 +90,9 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
+      baseline-browser-mapping:
+        specifier: ^2.8.29
+        version: 2.8.29
       eslint:
         specifier: ^9.36.0
         version: 9.36.0(jiti@2.6.1)
@@ -1604,8 +1607,8 @@ packages:
     resolution: {integrity: sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==}
     engines: {node: ^4.5.0 || >= 5.9}
 
-  baseline-browser-mapping@2.8.6:
-    resolution: {integrity: sha512-wrH5NNqren/QMtKUEEJf7z86YjfqW/2uw3IL3/xpqZUC95SSVIFXYQeeGjL6FT/X68IROu6RMehZQS5foy2BXw==}
+  baseline-browser-mapping@2.8.29:
+    resolution: {integrity: sha512-sXdt2elaVnhpDNRDz+1BDx1JQoJRuNk7oVlAlbGiFkLikHCAQiccexF/9e91zVi6RCgqspl04aP+6Cnl9zRLrA==}
     hasBin: true
 
   big-integer@1.6.52:
@@ -5026,7 +5029,7 @@ snapshots:
 
   base64id@2.0.0: {}
 
-  baseline-browser-mapping@2.8.6: {}
+  baseline-browser-mapping@2.8.29: {}
 
   big-integer@1.6.52: {}
 
@@ -5061,7 +5064,7 @@ snapshots:
 
   browserslist@4.26.2:
     dependencies:
-      baseline-browser-mapping: 2.8.6
+      baseline-browser-mapping: 2.8.29
       caniuse-lite: 1.0.30001743
       electron-to-chromium: 1.5.222
       node-releases: 2.0.21
