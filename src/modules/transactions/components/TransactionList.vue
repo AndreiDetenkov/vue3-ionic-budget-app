@@ -18,8 +18,10 @@ const showList = computed(() => recentTransactions.value?.length);
   <template v-if="showList">
     <ion-list lines="full">
       <ion-list-header>
-        <ion-label> Recent Transactions </ion-label>
-        <ion-chip color="dark" outline @click="emit('viewAllTransactions')"> See All </ion-chip>
+        <ion-label>
+          <h2 class="section-title">Recent Transactions</h2>
+        </ion-label>
+        <ion-chip color="primary" outline @click="emit('viewAllTransactions')"> See All </ion-chip>
       </ion-list-header>
 
       <slide-list-item v-for="transaction in recentTransactions" :key="transaction.id" :transaction="transaction" />
@@ -43,5 +45,9 @@ ion-label {
 
 ion-chip {
   margin-right: 16px;
+}
+
+.section-title {
+  font-size: 1.25rem;
 }
 </style>

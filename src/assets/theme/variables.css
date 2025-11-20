@@ -1,6 +1,9 @@
-/* Ionic Variables and Theming. For more info, please see:
-http://ionicframework.com/docs/theming/ */
+:root {
+  --ion-font-family: 'Roboto', sans-serif;
+  --ion-text-color: var(--ion-color-dark);
+  --ion-safe-area-top: 2rem;
+}
 
-/** Ionic CSS Variables **/
-:root {}
-
+ion-header ion-toolbar:first-of-type {
+  padding-top: var(--ion-safe-area-top, 0);
+}
