@@ -1,6 +1,21 @@
 # Changelog
 
 
+## v0.1.5
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.4...v0.1.5)
+
+### 💅 Refactors
+
+- **android:** Reformat AndroidManifest.xml for improved readability and structure ([4f330fe](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4f330fe))
+- **android:** Update npm scripts to use 'ionic capacitor' commands for consistency ([1a0da2c](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1a0da2c))
+- Update Capacitor, dependencies, npm scripts, and UI enhancements ([5c5a86c](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5c5a86c))
+- **ui:** Adjust transaction category color style for consistency ([9fd0745](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9fd0745))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.4
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.3...v0.1.4)
