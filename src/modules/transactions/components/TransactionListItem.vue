@@ -46,7 +46,7 @@ ion-thumbnail {
 
 .category {
   font-size: 11px;
-  color: var(--ion-color-medium);
+  color: var(--ion-color-medium-shade);
 }
 
 .amount {
@@ -57,6 +57,6 @@ ion-thumbnail {
 
 .date {
   font-size: 11px;
-  color: var(--ion-color-medium);
+  color: var(--ion-color-medium-shade);
 }
 </style>

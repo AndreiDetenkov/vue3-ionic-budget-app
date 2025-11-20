@@ -57,6 +57,7 @@ const currentMonth = formatDateByTemplate('MMMM');
                   <ion-label>{{ transaction.name }}</ion-label>
                   <ion-label class="category">{{ transaction.category.title }}</ion-label>
                 </ion-col>
+
                 <ion-col size="auto">
                   <ion-label>{{ transaction.value }}</ion-label>
                 </ion-col>
@@ -78,6 +79,6 @@ ion-button {
 
 .category {
   font-size: 11px;
-  color: var(--ion-color-medium);
+  color: var(--ion-color-medium-shade);
 }
 </style>
