@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.6
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.5...v0.1.6)
+
+### 💅 Refactors
+
+- Reformat AndroidManifest.xml and enhance transaction UI styling for consistency ([3b9637e](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3b9637e))
+- **ui:** Enhance transaction modal logic and adjust UI styles ([41a7796](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/41a7796))
+- **ui:** Replace ion-header with BaseHeader for better reusability ([e2ca7e2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/e2ca7e2))
+- **build:** Enhance build configuration with custom chunking and size warning ([218a4c6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/218a4c6))
+- **android:** Reformat AndroidManifest.xml for improved readability ([851fcbf](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/851fcbf))
+- **ui:** Adjust ion-label and date styles for consistency ([812d772](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/812d772))
+- **ui:** Replace ion-label with div for consistency and adjust styles ([70149c1](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/70149c1))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.5
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.4...v0.1.5)
