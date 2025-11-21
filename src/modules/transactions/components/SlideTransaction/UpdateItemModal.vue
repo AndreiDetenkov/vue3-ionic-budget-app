@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import {
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
   IonButtons,
   IonButton,
   IonInput,
@@ -15,6 +12,7 @@ import {
 import { storeToRefs } from 'pinia';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
+import BaseHeader from '@/core/components/BaseHeader.vue';
 
 const transactionStore = useTransactionStore();
 const { transactionItems } = storeToRefs(transactionStore);
@@ -29,14 +27,13 @@ const confirmHandler = async () => {
 </script>
 
 <template>
-  <ion-header>
-    <ion-toolbar color="light">
-      <ion-title>Update transaction</ion-title>
+  <BaseHeader title="Update transaction">
+    <template #buttons>
       <ion-buttons slot="end">
         <ion-button color="primary" class="cancel-btn" @click="cancelHandler">Cancel</ion-button>
       </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+    </template>
+  </BaseHeader>
 
   <ion-content class="ion-padding">
     <form @submit.prevent="confirmHandler" v-if="transactionItems">

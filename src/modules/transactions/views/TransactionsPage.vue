@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { IonContent, IonHeader, IonPage, IonProgressBar, IonTitle, IonToolbar, onIonViewWillEnter } from '@ionic/vue';
+import { IonContent, IonPage, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 import AppRefresher from '@/core/components/AppRefresher.vue';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
+import BaseHeader from '@/core/components/BaseHeader.vue';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsByDate } = storeToRefs(transactionStore);
@@ -23,12 +24,9 @@ const isOpenModal = ref(false);
 
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar color="light">
-        <ion-title>Transactions</ion-title>
-        <ion-progress-bar v-if="loading" type="indeterminate" />
-      </ion-toolbar>
-    </ion-header>
+    <BaseHeader title="Transactions">
+      <ion-progress-bar v-if="loading" type="indeterminate" />
+    </BaseHeader>
 
     <ion-content fullscreen>
       <app-refresher @refresh="refreshContent" />

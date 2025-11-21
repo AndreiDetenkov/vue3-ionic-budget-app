@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonChip } from '@ionic/vue';
+import { IonPage, IonContent, IonChip } from '@ionic/vue';
 
 import ReportList from '@/modules/reports/components/ReportList.vue';
 import { useReportStore } from '@/modules/reports';
+import BaseHeader from '@/core/components/BaseHeader.vue';
 
 const store = useReportStore();
 </script>
 
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar color="light">
-        <ion-title>Reports</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <BaseHeader title="Reports"></BaseHeader>
 
     <ion-content fullscreen>
       <div class="ion-padding">

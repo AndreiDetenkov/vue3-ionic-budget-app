@@ -2,9 +2,6 @@
 import {
   IonModal,
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
   IonButtons,
   IonButton,
   IonList,
@@ -18,6 +15,8 @@ import {
 } from '@ionic/vue';
 import type { Transaction } from '@/modules/transactions';
 import { formatDate, formatDateByTemplate } from '@/core/utils/dates';
+import BaseHeader from '@/core/components/BaseHeader.vue';
+import { computed } from 'vue';
 
 defineProps<{
   list: Record<string, Transaction[]>;
@@ -25,7 +24,7 @@ defineProps<{
 
 const model = defineModel();
 
-const currentMonth = formatDateByTemplate('MMMM');
+const title = computed(() => `Transactions in ${formatDateByTemplate('MMMM')}`);
 
 const closeModal = () => {
   model.value = false;
@@ -34,14 +33,13 @@ const closeModal = () => {
 
 <template>
   <ion-modal :is-open="model" @didDismiss="closeModal">
-    <ion-header>
-      <ion-toolbar color="light">
-        <ion-title>Transactions in {{ currentMonth }}</ion-title>
+    <BaseHeader :title>
+      <template #buttons>
         <ion-buttons slot="end">
           <ion-button color="primary" @click="closeModal">Close</ion-button>
         </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+      </template>
+    </BaseHeader>
 
     <ion-content fullscreen>
       <ion-list lines="full" class="ion-no-padding">
