@@ -71,7 +71,6 @@ ion-thumbnail {
 
 .title {
   font-size: 1rem;
-  color: var(--ion-color-medium-shade);
 }
 
 .amount {
@@ -80,7 +79,7 @@ ion-thumbnail {
 }
 
 .date {
-  font-size: 11px;
-  color: var(--ion-color-medium-shade);
+  --color: var(--ion-color-medium);
+  font-size: 0.65rem;
 }
 </style>

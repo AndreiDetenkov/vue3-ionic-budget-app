@@ -40,23 +40,21 @@ ion-thumbnail {
 }
 
 .title {
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-size: 1rem;
 }
 
 .category {
-  font-size: 11px;
-  color: var(--ion-color-medium-shade);
+  --color: var(--ion-color-medium);
+  font-size: 0.8rem;
 }
 
 .amount {
-  font-size: 16px;
+  font-size: 1rem;
   text-align: right;
-  margin-bottom: 4px;
 }
 
 .date {
-  font-size: 11px;
-  color: var(--ion-color-medium-shade);
+  --color: var(--ion-color-medium);
+  font-size: 0.65rem;
 }
 </style>

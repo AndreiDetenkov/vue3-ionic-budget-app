@@ -54,12 +54,12 @@ const currentMonth = formatDateByTemplate('MMMM');
             <ion-grid>
               <ion-row class="ion-align-items-center">
                 <ion-col>
-                  <ion-label>{{ transaction.name }}</ion-label>
+                  <ion-label class="title">{{ transaction.name }}</ion-label>
                   <ion-label class="category">{{ transaction.category.title }}</ion-label>
                 </ion-col>
 
                 <ion-col size="auto">
-                  <ion-label>{{ transaction.value }}</ion-label>
+                  <ion-label class="price">{{ transaction.value }}</ion-label>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -74,11 +74,16 @@ const currentMonth = formatDateByTemplate('MMMM');
 ion-button {
   text-transform: capitalize;
   letter-spacing: 0;
-  font-size: 1rem;
+  font-size: 1.125rem;
+}
+
+.title,
+.price {
+  font-size: 1.125rem;
 }
 
 .category {
-  font-size: 11px;
-  color: var(--ion-color-medium-shade);
+  font-size: 12px;
+  --color: var(--ion-color-medium-shade);
 }
 </style>
