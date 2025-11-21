@@ -19,22 +19,26 @@ import {
 import type { Transaction } from '@/modules/transactions';
 import { formatDate, formatDateByTemplate } from '@/core/utils/dates';
 
-const model = defineModel();
-
 defineProps<{
   list: Record<string, Transaction[]>;
 }>();
 
+const model = defineModel();
+
 const currentMonth = formatDateByTemplate('MMMM');
+
+const closeModal = () => {
+  model.value = false;
+};
 </script>
 
 <template>
-  <ion-modal :is-open="model">
+  <ion-modal :is-open="model" @didDismiss="closeModal">
     <ion-header>
       <ion-toolbar color="light">
         <ion-title>Transactions in {{ currentMonth }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button color="primary" @click="model = false">Close</ion-button>
+          <ion-button color="primary" @click="closeModal">Close</ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -59,7 +63,7 @@ const currentMonth = formatDateByTemplate('MMMM');
                 </ion-col>
 
                 <ion-col size="auto">
-                  <ion-label class="price">{{ transaction.value }}</ion-label>
+                  <ion-label class="price">{{ transaction.value }}&nbsp;&#8838;</ion-label>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -74,10 +78,13 @@ const currentMonth = formatDateByTemplate('MMMM');
 ion-button {
   text-transform: capitalize;
   letter-spacing: 0;
-  font-size: 1.125rem;
+  font-size: 1.2rem;
 }
 
-.title,
+.title {
+  font-size: 1.1rem;
+}
+
 .price {
   font-size: 1.125rem;
 }

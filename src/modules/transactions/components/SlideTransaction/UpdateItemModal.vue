@@ -90,6 +90,6 @@ ion-button {
 .cancel-btn {
   text-transform: capitalize;
   letter-spacing: 0;
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 </style>

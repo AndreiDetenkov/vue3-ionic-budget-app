@@ -35,7 +35,7 @@ const showList = computed(() => recentTransactions.value?.length);
 
 <style scoped>
 ion-list-header {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 ion-label {
@@ -44,7 +44,7 @@ ion-label {
 }
 
 ion-chip {
-  margin-right: 16px;
+  margin-right: 1rem;
 }
 
 .section-title {

@@ -33,7 +33,7 @@ const isOpenModal = ref(false);
     <ion-content fullscreen>
       <app-refresher @refresh="refreshContent" />
       <total-amount />
-      <transaction-list @view-all-transactions="isOpenModal = true" />
+      <transaction-list @view-all-transactions="isOpenModal = !isOpenModal" />
       <all-transactions-modal v-model="isOpenModal" :list="transactionsByDate" />
     </ion-content>
   </ion-page>

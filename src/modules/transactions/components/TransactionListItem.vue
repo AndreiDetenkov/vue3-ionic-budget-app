@@ -40,7 +40,7 @@ ion-thumbnail {
 }
 
 .title {
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .category {
@@ -49,7 +49,7 @@ ion-thumbnail {
 }
 
 .amount {
-  font-size: 1rem;
+  font-size: 1.125rem;
   text-align: right;
 }
 
