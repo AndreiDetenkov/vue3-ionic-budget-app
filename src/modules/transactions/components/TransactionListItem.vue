@@ -39,6 +39,10 @@ ion-thumbnail {
   margin-right: 10px;
 }
 
+ion-label {
+  display: block;
+}
+
 .title {
   font-size: 1.1rem;
 }
@@ -56,5 +60,6 @@ ion-thumbnail {
 .date {
   --color: var(--ion-color-medium);
   font-size: 0.65rem;
+  text-align: right;
 }
 </style>
