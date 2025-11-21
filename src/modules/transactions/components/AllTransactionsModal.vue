@@ -56,12 +56,12 @@ const closeModal = () => {
             <ion-grid>
               <ion-row class="ion-align-items-center">
                 <ion-col>
-                  <ion-label class="title">{{ transaction.name }}</ion-label>
-                  <ion-label class="category">{{ transaction.category.title }}</ion-label>
+                  <div class="title">{{ transaction.name }}</div>
+                  <div class="category">{{ transaction.category.title }}</div>
                 </ion-col>
 
                 <ion-col size="auto">
-                  <ion-label class="price">{{ transaction.value }}&nbsp;&#8838;</ion-label>
+                  <div class="price">{{ transaction.value }}&nbsp;&#8838;</div>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -88,7 +88,7 @@ ion-button {
 }
 
 .category {
-  font-size: 12px;
-  --color: var(--ion-color-medium-shade);
+  font-size: 0.8rem;
+  color: var(--ion-color-medium-shade);
 }
 </style>

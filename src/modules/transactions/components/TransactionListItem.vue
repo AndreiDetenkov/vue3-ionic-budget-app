@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonLabel, IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
+import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
 import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions/types';
 
@@ -19,13 +19,13 @@ defineProps<{
         </ion-col>
 
         <ion-col>
-          <ion-label class="title">{{ transaction.name }}</ion-label>
-          <ion-label class="category">{{ transaction.category.title }}</ion-label>
+          <div class="title">{{ transaction.name }}</div>
+          <div class="category">{{ transaction.category.title }}</div>
         </ion-col>
 
         <ion-col size="auto">
-          <ion-label class="amount">{{ transaction.value }}</ion-label>
-          <ion-label class="date">{{ formatDate(transaction.createdAt) }}</ion-label>
+          <div class="amount">{{ transaction.value }}</div>
+          <div class="date">{{ formatDate(transaction.createdAt) }}</div>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -39,16 +39,12 @@ ion-thumbnail {
   margin-right: 10px;
 }
 
-ion-label {
-  display: block;
-}
-
 .title {
   font-size: 1.1rem;
 }
 
 .category {
-  --color: var(--ion-color-medium);
+  color: var(--ion-color-medium);
   font-size: 0.8rem;
 }
 
@@ -58,7 +54,7 @@ ion-label {
 }
 
 .date {
-  --color: var(--ion-color-medium);
+  color: var(--ion-color-medium);
   font-size: 0.65rem;
   text-align: right;
 }

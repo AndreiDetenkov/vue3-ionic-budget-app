@@ -7,3 +7,7 @@
 ion-header ion-toolbar:first-of-type {
   padding-top: var(--ion-safe-area-top, 0);
 }
+
+html {
+  box-sizing: border-box;
+}
