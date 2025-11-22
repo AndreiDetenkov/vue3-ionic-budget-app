@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow } from '@ionic/vue';
-import type { Report } from '@/modules/reports';
+import { Report } from '@/modules/reports';
 
-type Props = Pick<Report, 'name' | 'value' | 'icon'>;
+interface Props {
+  name: Report['name'];
+  value: Report['value'];
+  icon: Report['icon'];
+}
 
-defineProps<Props>();
+const { icon, name, value } = defineProps<Props>();
 </script>
 
 <template>
