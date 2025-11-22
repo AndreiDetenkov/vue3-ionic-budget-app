@@ -3,11 +3,12 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { IonContent, IonPage, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import BaseRefresher from '@/core/components/BaseRefresher.vue';
+import BaseHeader from '@/core/components/BaseHeader.vue';
+import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
-import BaseRefresher from '@/core/components/BaseRefresher.vue';
-import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
-import BaseHeader from '@/core/components/BaseHeader.vue';
+import TransactionsEmpty from '@/modules/transactions/components/TransactionsEmpty.vue';
 
 const transactionStore = useTransactionStore();
 const { loading, transactions, transactionsByDate } = storeToRefs(transactionStore);
@@ -30,8 +31,13 @@ const isOpenModal = ref(false);
 
     <ion-content fullscreen>
       <BaseRefresher @refresh="refreshContent" />
-      <TotalAmount class="ion-margin-bottom" />
-      <TransactionList @view-all-transactions="isOpenModal = !isOpenModal" />
+
+      <template v-if="transactions.length">
+        <TotalAmount />
+        <TransactionList @view-all-transactions="isOpenModal = !isOpenModal" />
+      </template>
+      <TransactionsEmpty v-else class="ion-padding-top" />
+
       <AllTransactionsModal v-model="isOpenModal" :list="transactionsByDate" />
     </ion-content>
   </ion-page>
