@@ -1,6 +1,6 @@
 import type { Transaction } from '@/modules/transactions';
 
-export interface CategoryReport {
+export interface Report {
   name: string;
   value: number;
   icon: string;

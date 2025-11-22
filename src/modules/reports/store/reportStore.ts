@@ -1,13 +1,13 @@
 import { computed } from 'vue';
 import { defineStore } from 'pinia';
 import { useTransactionStore, type Transaction } from '@/modules/transactions';
-import { CategoryReport } from '@/modules/reports';
+import { Report } from '@/modules/reports';
 
 export const useReportStore = defineStore('reportStore', () => {
   const transactionStore = useTransactionStore();
 
-  const calculateCategoryReports = (transactions: Transaction[]): CategoryReport[] => {
-    const categoryGroups = transactions.reduce((acc: Record<string, CategoryReport>, transaction: Transaction) => {
+  const calculateCategoryReports = (transactions: Transaction[]): Report[] => {
+    const categoryGroups = transactions.reduce((acc: Record<string, Report>, transaction: Transaction) => {
       const categoryId = transaction.category.id;
 
       if (!acc[categoryId]) {
@@ -32,7 +32,7 @@ export const useReportStore = defineStore('reportStore', () => {
     }));
   };
 
-  const reports = computed((): CategoryReport[] => {
+  const reports = computed((): Report[] => {
     return calculateCategoryReports(transactionStore.transactions);
   });
 
