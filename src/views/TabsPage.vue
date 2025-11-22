@@ -6,7 +6,7 @@ import { list, add, barChartSharp } from 'ionicons/icons';
 <template>
   <ion-page>
     <ion-tabs>
-      <ion-router-outlet mode="md"></ion-router-outlet>
+      <ion-router-outlet></ion-router-outlet>
 
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="transactions" href="/tabs/transactions">

@@ -5,7 +5,7 @@ import { IonContent, IonPage, IonProgressBar, onIonViewWillEnter } from '@ionic/
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
-import AppRefresher from '@/core/components/AppRefresher.vue';
+import BaseRefresher from '@/core/components/BaseRefresher.vue';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 
@@ -23,16 +23,16 @@ const isOpenModal = ref(false);
 </script>
 
 <template>
-  <ion-page>
+  <ion-page color="light">
     <BaseHeader title="Transactions">
       <ion-progress-bar v-if="loading" type="indeterminate" />
     </BaseHeader>
 
     <ion-content fullscreen>
-      <app-refresher @refresh="refreshContent" />
-      <total-amount />
-      <transaction-list @view-all-transactions="isOpenModal = !isOpenModal" />
-      <all-transactions-modal v-model="isOpenModal" :list="transactionsByDate" />
+      <BaseRefresher @refresh="refreshContent" />
+      <TotalAmount class="ion-margin-bottom" />
+      <TransactionList @view-all-transactions="isOpenModal = !isOpenModal" />
+      <AllTransactionsModal v-model="isOpenModal" :list="transactionsByDate" />
     </ion-content>
   </ion-page>
 </template>
