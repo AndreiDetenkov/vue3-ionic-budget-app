@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v0.1.7
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.6...v0.1.7)
+
+### 💅 Refactors
+
+- **reports:** Modularize components and update typing for consistency ([7b4c245](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7b4c245))
+- **reports:** Update ReportListHeader typing for improved clarity ([88e5702](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/88e5702))
+- **ui:** Enhance TransactionsPage and TabsPage components ([4d7af49](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4d7af49))
+- **ui:** Enhance transaction components and visibility toggle ([5690f45](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5690f45))
+
+### 🏡 Chore
+
+- **gitignore:** Add `.orig` files from Android to ignore list ([80d4c82](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/80d4c82))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.6
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.5...v0.1.6)
