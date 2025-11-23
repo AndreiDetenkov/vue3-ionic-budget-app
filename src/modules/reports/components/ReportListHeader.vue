@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonCol, IonGrid, IonItem, IonLabel, IonRow } from '@ionic/vue';
+import { IonCol, IonGrid, IonItem, IonLabel, IonRow, IonThumbnail } from '@ionic/vue';
 import { Report } from '@/modules/reports';
 
 interface Props {

@@ -12,19 +12,17 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonProgressBar,
 } from '@ionic/vue';
 import type { Transaction } from '@/modules/transactions';
-import { formatDate, formatDateByTemplate } from '@/core/utils/dates';
+import { formatDate } from '@/core/utils/dates';
 import BaseHeader from '@/core/components/BaseHeader.vue';
-import { computed } from 'vue';
 
 defineProps<{
   list: Record<string, Transaction[]>;
 }>();
 
 const model = defineModel();
-
-const title = computed(() => `Transactions in ${formatDateByTemplate('MMMM')}`);
 
 const closeModal = () => {
   model.value = false;
@@ -33,7 +31,7 @@ const closeModal = () => {
 
 <template>
   <ion-modal :is-open="model" @didDismiss="closeModal">
-    <BaseHeader :title>
+    <BaseHeader title="Transaction List">
       <template #buttons>
         <ion-buttons slot="end">
           <ion-button color="primary" @click="closeModal">Close</ion-button>

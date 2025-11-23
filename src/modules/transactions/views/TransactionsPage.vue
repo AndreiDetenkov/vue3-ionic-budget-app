@@ -20,7 +20,7 @@ onIonViewWillEnter(() => {
 
 const refreshContent = () => getTransactionsByRange('month');
 
-const isOpenModal = ref(false);
+const isModalOpen = ref(false);
 </script>
 
 <template>
@@ -34,11 +34,11 @@ const isOpenModal = ref(false);
 
       <template v-if="transactions.length">
         <TotalAmount />
-        <TransactionList @view-all-transactions="isOpenModal = !isOpenModal" />
+        <TransactionList @view-all-transactions="isModalOpen = !isModalOpen" />
       </template>
       <TransactionsEmpty v-else class="ion-padding-top" />
 
-      <AllTransactionsModal v-model="isOpenModal" :list="transactionsByDate" />
+      <AllTransactionsModal v-model="isModalOpen" :list="transactionsByDate" />
     </ion-content>
   </ion-page>
 </template>
