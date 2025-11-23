@@ -4,10 +4,8 @@ import { useReportStore } from '@/modules/reports';
 import ReportList from '@/modules/reports/components/ReportList.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import ReportFilters from '@/modules/reports/components/ReportFilters.vue';
-import { useTransactionStore } from '@/modules/transactions';
 
 const reportStore = useReportStore();
-const transactionStore = useTransactionStore();
 
 const filter = (key: string) => {
   console.log(key);
@@ -16,11 +14,13 @@ const filter = (key: string) => {
 
 <template>
   <ion-page>
-    <BaseHeader title="Reports"></BaseHeader>
+    <BaseHeader title="Reports">
+      <ion-progress-bar v-if="reportStore.isLoading" type="indeterminate" />
+    </BaseHeader>
 
     <ion-content fullscreen>
       <ReportFilters @filter="filter" />
-      <ReportList :reports="reportStore.reports" />
+      <ReportList :reports="reportStore.reportList" />
     </ion-content>
   </ion-page>
 </template>
