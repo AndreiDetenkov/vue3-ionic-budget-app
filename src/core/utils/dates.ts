@@ -25,21 +25,28 @@ export const formatDate = (date: string, template = 'DD.MM.YYYY'): string => {
   return dayjs(date).format(template);
 };
 
-export const getPreviousYearRange = () => {
+export const previousYearRange = () => {
   const startDate = dayjs().subtract(1, 'year').startOf('year').format();
   const endDate = dayjs().subtract(1, 'year').endOf('year').format();
 
   return { startDate, endDate };
 };
 
-export const getCurrentYearRange = () => {
+export const currentYearRange = () => {
   const startDate = dayjs().startOf('year').format();
   const endDate = dayjs().endOf('year').format();
 
   return { startDate, endDate };
 };
 
-export const getCurrentMonthDates = (): RangeDates => {
+export const previousMonthRange = (): RangeDates => {
+  const startDate = dayjs().subtract(1, 'month').startOf('month').format();
+  const endDate = dayjs().subtract(1, 'month').endOf('month').format();
+
+  return { startDate, endDate };
+};
+
+export const currentMonthRange = (): RangeDates => {
   const startDate = dayjs().startOf('month').format();
   const endDate = dayjs().endOf('month').format();
 

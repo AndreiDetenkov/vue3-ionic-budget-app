@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { IonPage, IonContent, IonChip } from '@ionic/vue';
-
-import ReportList from '@/modules/reports/components/ReportList.vue';
+import { IonPage, IonContent } from '@ionic/vue';
 import { useReportStore } from '@/modules/reports';
+import ReportList from '@/modules/reports/components/ReportList.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
+import ReportFilters from '@/modules/reports/components/ReportFilters.vue';
+import { useTransactionStore } from '@/modules/transactions';
 
 const store = useReportStore();
+const transactionStore = useTransactionStore();
+
+const filter = (key: string) => {
+  console.log(key);
+};
 </script>
 
 <template>
@@ -13,14 +19,8 @@ const store = useReportStore();
     <BaseHeader title="Reports"></BaseHeader>
 
     <ion-content fullscreen>
-      <div class="ion-padding">
-        <ion-chip outline color="primary">All time</ion-chip>
-        <ion-chip outline color="primary">Last year</ion-chip>
-        <ion-chip outline color="primary">Last month</ion-chip>
-        <ion-chip outline color="primary">Range</ion-chip>
-      </div>
-
-      <report-list :reports="store.reports" />
+      <ReportFilters @filter="filter" />
+      <ReportList :reports="store.reports" />
     </ion-content>
   </ion-page>
 </template>
