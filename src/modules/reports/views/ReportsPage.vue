@@ -6,7 +6,7 @@ import BaseHeader from '@/core/components/BaseHeader.vue';
 import ReportFilters from '@/modules/reports/components/ReportFilters.vue';
 import { useTransactionStore } from '@/modules/transactions';
 
-const store = useReportStore();
+const reportStore = useReportStore();
 const transactionStore = useTransactionStore();
 
 const filter = (key: string) => {
@@ -20,7 +20,7 @@ const filter = (key: string) => {
 
     <ion-content fullscreen>
       <ReportFilters @filter="filter" />
-      <ReportList :reports="store.reports" />
+      <ReportList :reports="reportStore.reports" />
     </ion-content>
   </ion-page>
 </template>
