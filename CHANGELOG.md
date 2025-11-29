@@ -1,6 +1,40 @@
 # Changelog
 
 
+## v0.1.9
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.8...v0.1.9)
+
+### 🚀 Enhancements
+
+- Add launch_splash.xml for splash screen configuration ([a0f1a3e](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a0f1a3e))
+- Simplify transactions and reports components ([7e8d645](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7e8d645))
+- Add report filters component and refactor date utilities ([2665dcd](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2665dcd))
+- Enhance ReportFilters with dynamic selection ([604dc9c](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/604dc9c))
+- Enhance report filtering and update report store ([9de040d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9de040d))
+
+### 💅 Refactors
+
+- Streamline report store and improve naming clarity ([6fbdcbc](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6fbdcbc))
+
+### 🏡 Chore
+
+- **release:** V0.1.8" ([665c312](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/665c312))
+- Add .prettierignore and clean up unused imports ([6f64337](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6f64337))
+- Improve XML, Splash screen configurations & Capacitor dependencies ([12dbad5](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/12dbad5))
+- Update Android resources and ESLint configuration ([2826edd](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2826edd))
+- Update strings.xml for app name capitalization ([ee01e9f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ee01e9f))
+- Adjust launcher icon insets in adaptive icons ([eee0a5b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/eee0a5b))
+- Update AndroidManifest formatting and cleanup resources ([955e43b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/955e43b))
+- Update splash screen configurations and assets** ([2dee070](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2dee070))
+- **release:** V0.1.8 ([6f44701](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6f44701))
+- Adjust launcher icon foreground insets ([1fd4b9d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1fd4b9d))
+- Remove outdated splash screen assets ([b6d1112](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b6d1112))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.8
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.8...v0.1.8)
