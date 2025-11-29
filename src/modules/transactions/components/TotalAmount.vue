@@ -37,7 +37,7 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
 <style scoped>
 .card {
   padding: 2rem 1rem;
-  margin: 16px 8px 0;
+  margin: 1rem;
   border: 1px solid var(--ion-color-medium);
   border-radius: 1rem;
   display: flex;

@@ -47,5 +47,3 @@ watchEffect(() => {
     </ion-chip>
   </div>
 </template>
-
-<style scoped></style>

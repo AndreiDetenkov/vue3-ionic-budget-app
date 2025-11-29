@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { IonPage, IonContent } from '@ionic/vue';
+import { IonPage, IonContent, IonProgressBar } from '@ionic/vue';
 import { useReportStore } from '@/modules/reports';
 import ReportList from '@/modules/reports/components/ReportList.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import ReportFilters from '@/modules/reports/components/ReportFilters.vue';
+import ReportTotalAmount from '@/modules/reports/components/ReportTotalAmount.vue';
 
 const reportStore = useReportStore();
 
@@ -19,6 +20,7 @@ const filter = (key: string) => {
     </BaseHeader>
 
     <ion-content fullscreen>
+      <ReportTotalAmount />
       <ReportFilters @filter="filter" />
       <ReportList :reports="reportStore.reportList" />
     </ion-content>
