@@ -12,11 +12,11 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonProgressBar,
 } from '@ionic/vue';
 import type { Transaction } from '@/modules/transactions';
 import { formatDate } from '@/core/utils/dates';
 import BaseHeader from '@/core/components/BaseHeader.vue';
+import { formatAmount } from '@/core/utils';
 
 defineProps<{
   list: Record<string, Transaction[]>;
@@ -59,7 +59,7 @@ const closeModal = () => {
                 </ion-col>
 
                 <ion-col size="auto">
-                  <div class="price">{{ transaction.value }}&nbsp;&#8838;</div>
+                  <div class="price">{{ formatAmount(transaction.value) }}&nbsp;&#8838;</div>
                 </ion-col>
               </ion-row>
             </ion-grid>

@@ -4,7 +4,7 @@ import { IonGrid, IonLabel, IonIcon } from '@ionic/vue';
 import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
 import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
-import { formatAmount } from '@/modules/transactions/utils';
+import { formatAmount } from '@/core/utils';
 
 const store = useTransactionStore();
 

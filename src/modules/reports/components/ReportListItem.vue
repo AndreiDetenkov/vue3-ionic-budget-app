@@ -2,7 +2,7 @@
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow } from '@ionic/vue';
 import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions';
-import { formatAmount } from '@/modules/transactions/utils';
+import { formatAmount } from '@/core/utils';
 
 type ItemProp = Pick<Transaction, 'name' | 'value' | 'createdAt'>;
 

@@ -2,7 +2,8 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { type Transaction, getTransactionsByRangeApi } from '@/modules/transactions';
 import { Report } from '@/modules/reports';
-import { formatAmount, mappedTransactions } from '@/modules/transactions/utils';
+import { mappedTransactions } from '@/modules/transactions/utils';
+import { formatAmount } from '@/core/utils';
 
 export const useReportStore = defineStore('reportStore', () => {
   const isLoading = ref(false);

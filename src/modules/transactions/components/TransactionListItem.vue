@@ -2,7 +2,7 @@
 import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
 import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions/types';
-import { formatAmount } from '@/modules/transactions/utils';
+import { formatAmount } from '@/core/utils';
 
 defineProps<{
   transaction: Transaction;
