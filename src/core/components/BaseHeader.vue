@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <ion-header class="ion-no-border">
-    <ion-toolbar>
+    <ion-toolbar color="light">
       <ion-title> {{ title }} </ion-title>
       <slot name="buttons" />
       <slot />
