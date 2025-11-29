@@ -4,6 +4,7 @@ import { IonGrid, IonLabel, IonIcon } from '@ionic/vue';
 import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
 import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { formatAmount } from '@/modules/transactions/utils';
 
 const store = useTransactionStore();
 
@@ -13,9 +14,7 @@ const toggleVisibility = () => {
   isAmountHidden.value = !isAmountHidden.value;
 };
 
-const formattedTotal = computed<string>(() => {
-  return store.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, `$1 `);
-});
+const formattedTotal = computed<string>(() => formatAmount(store.total));
 
 const amountToDisplay = computed(() => (isAmountHidden.value ? '********' : formattedTotal.value));
 
@@ -27,9 +26,11 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
     <div class="card">
       <ion-label class="card__total">
         <span class="card__total-amount"> {{ amountToDisplay }}</span>
-        KGS
+        <span class="card__total-currency">&nbsp;KGS</span>
       </ion-label>
-      <ion-label class="card__date">{{ formatDateByTemplate('MMMM YYYY') }}</ion-label>
+      <ion-label class="card__date">
+        {{ formatDateByTemplate('MMMM YYYY') }}
+      </ion-label>
       <ion-icon :icon color="medium" class="card__icon" @click="toggleVisibility"></ion-icon>
     </div>
   </ion-grid>
@@ -66,6 +67,10 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
   display: inline-block;
   min-width: 6.5ch;
   text-align: center;
+}
+
+.card__total-currency {
+  font-size: 1.4rem;
 }
 
 .card__date {

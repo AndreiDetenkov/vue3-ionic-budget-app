@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useTransactionStore, type Transaction, getTransactionsByRangeApi } from '@/modules/transactions';
+import { type Transaction, getTransactionsByRangeApi } from '@/modules/transactions';
 import { Report } from '@/modules/reports';
 import { mappedTransactions } from '@/modules/transactions/utils';
 

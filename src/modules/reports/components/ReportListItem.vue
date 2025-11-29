@@ -2,6 +2,7 @@
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow } from '@ionic/vue';
 import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions';
+import { formatAmount } from '@/modules/transactions/utils';
 
 type ItemProp = Pick<Transaction, 'name' | 'value' | 'createdAt'>;
 
@@ -17,7 +18,7 @@ defineProps<{ item: ItemProp }>();
         </ion-col>
 
         <ion-col size="auto">
-          <ion-label class="amount">{{ item.value }}</ion-label>
+          <ion-label class="amount">{{ formatAmount(item.value) }}</ion-label>
           <ion-label class="date">{{ formatDate(item.createdAt) }}</ion-label>
         </ion-col>
       </ion-row>

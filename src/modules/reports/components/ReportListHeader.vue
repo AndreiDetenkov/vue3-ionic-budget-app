@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow, IonThumbnail } from '@ionic/vue';
 import { Report } from '@/modules/reports';
+import { formatAmount } from '@/modules/transactions/utils';
 
 interface Props {
   name: Report['name'];
@@ -26,7 +27,9 @@ const { icon, name, value } = defineProps<Props>();
         </ion-col>
 
         <ion-col size="auto">
-          <ion-label>{{ value }}&nbsp;&#8838;</ion-label>
+          <ion-label>{{ formatAmount(value) }}
+            &nbsp;<span class="currency">KGS</span>
+          </ion-label>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -37,5 +40,10 @@ const { icon, name, value } = defineProps<Props>();
 ion-thumbnail {
   --size: 2rem;
   margin-right: 1rem;
+}
+
+.currency {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
 }
 </style>
