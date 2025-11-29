@@ -13,7 +13,7 @@ defineProps<{
   <IonList>
     <IonListHeader>
       <ion-label class="list-header">
-        <h2>Expense categories</h2>
+        <h2>Spend breakdown</h2>
       </ion-label>
     </IonListHeader>
   </IonList>
