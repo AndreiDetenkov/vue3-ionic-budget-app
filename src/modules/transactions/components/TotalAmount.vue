@@ -4,6 +4,7 @@ import { IonGrid, IonLabel, IonIcon } from '@ionic/vue';
 import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
 import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { formatAmount } from '@/core/utils';
 
 const store = useTransactionStore();
 
@@ -13,9 +14,7 @@ const toggleVisibility = () => {
   isAmountHidden.value = !isAmountHidden.value;
 };
 
-const formattedTotal = computed<string>(() => {
-  return store.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, `$1 `);
-});
+const formattedTotal = computed<string>(() => formatAmount(store.total));
 
 const amountToDisplay = computed(() => (isAmountHidden.value ? '********' : formattedTotal.value));
 
@@ -26,10 +25,10 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
   <ion-grid>
     <div class="card">
       <ion-label class="card__total">
-        <span class="card__total-amount"> {{ amountToDisplay }}</span>
-        KGS
+        <span class="card__amount"> {{ amountToDisplay }}</span>
+        <span class="card__currency">&nbsp;KGS</span>
       </ion-label>
-      <ion-label class="card__date">{{ formatDateByTemplate('MMMM YYYY') }}</ion-label>
+      <ion-label>in&nbsp;{{ formatDateByTemplate('MMMM YYYY') }}</ion-label>
       <ion-icon :icon color="medium" class="card__icon" @click="toggleVisibility"></ion-icon>
     </div>
   </ion-grid>
@@ -38,7 +37,7 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
 <style scoped>
 .card {
   padding: 2rem 1rem;
-  margin: 16px 8px 0;
+  margin: 1rem;
   border: 1px solid var(--ion-color-medium);
   border-radius: 1rem;
   display: flex;
@@ -62,13 +61,13 @@ const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline))
   font-variant-numeric: tabular-nums;
 }
 
-.card__total-amount {
+.card__amount {
   display: inline-block;
   min-width: 6.5ch;
   text-align: center;
 }
 
-.card__date {
-  font-size: 16px;
+.card__currency {
+  font-size: 1.4rem;
 }
 </style>

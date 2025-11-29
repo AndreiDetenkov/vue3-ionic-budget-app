@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonAccordion, IonAccordionGroup, IonList } from '@ionic/vue';
+import { IonAccordion, IonAccordionGroup, IonList, IonLabel, IonListHeader } from '@ionic/vue';
 import { Report } from '@/modules/reports';
 import ReportListItem from '@/modules/reports/components/ReportListItem.vue';
 import ReportListHeader from '@/modules/reports/components/ReportListHeader.vue';
@@ -10,6 +10,14 @@ defineProps<{
 </script>
 
 <template>
+  <IonList>
+    <IonListHeader>
+      <ion-label class="list-header">
+        <h2>Spend breakdown</h2>
+      </ion-label>
+    </IonListHeader>
+  </IonList>
+
   <ion-accordion-group>
     <ion-accordion v-for="report in reports" :key="report.name" :value="report.name">
       <ReportListHeader :icon="report.icon" :name="report.name" :value="report.value" />
@@ -24,3 +32,9 @@ defineProps<{
     </ion-accordion>
   </ion-accordion-group>
 </template>
+
+<style scoped>
+h2 {
+  font-size: 1.25rem;
+}
+</style>

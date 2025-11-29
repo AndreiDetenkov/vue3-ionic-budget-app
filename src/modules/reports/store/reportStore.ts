@@ -1,8 +1,9 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useTransactionStore, type Transaction, getTransactionsByRangeApi } from '@/modules/transactions';
+import { type Transaction, getTransactionsByRangeApi } from '@/modules/transactions';
 import { Report } from '@/modules/reports';
 import { mappedTransactions } from '@/modules/transactions/utils';
+import { formatAmount } from '@/core/utils';
 
 export const useReportStore = defineStore('reportStore', () => {
   const isLoading = ref(false);
@@ -38,6 +39,14 @@ export const useReportStore = defineStore('reportStore', () => {
     }));
   });
 
+  const totalAmount = computed(() => {
+    if (!reports.value) {
+      return 0;
+    }
+
+    return formatAmount(reports.value.reduce((acc, transaction) => acc + transaction.value, 0));
+  });
+
   const getReports = async (from: string, to: string) => {
     isLoading.value = true;
     const { data } = await getTransactionsByRangeApi({ from, to });
@@ -45,5 +54,5 @@ export const useReportStore = defineStore('reportStore', () => {
     isLoading.value = false;
   };
 
-  return { reportList, isLoading, getReports, reports };
+  return { reportList, isLoading, getReports, reports, totalAmount };
 });
