@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.10
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.9...v0.1.10)
+
+### 🚀 Enhancements
+
+- Update project dependencies ([f70c240](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f70c240))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.8...v0.1.9)
