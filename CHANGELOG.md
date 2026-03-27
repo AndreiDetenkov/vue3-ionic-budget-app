@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.11
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.10...v0.1.11)
+
+### 🚀 Enhancements
+
+- Upgrade Capacitor dependencies to v8.3.0 ([1fb97d7](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1fb97d7))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.10
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.9...v0.1.10)
