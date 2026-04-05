@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.1.12
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.11...v0.1.12)
+
+### 🚀 Enhancements
+
+- Add Vue guides to the agent skills library ([cc360e4](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/cc360e4))
+- Add comprehensive Supabase Postgres best practices documentation and skill definition ([868fba6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/868fba6))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.11
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.10...v0.1.11)
