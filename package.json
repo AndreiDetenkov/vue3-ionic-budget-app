@@ -57,6 +57,7 @@
     "globals": "^16.5.0",
     "jiti": "^2.6.1",
     "jsdom": "^26.1.0",
+    "supabase": "^2.105.0",
     "terser": "^5.46.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.2",
@@ -73,6 +74,9 @@
     "ignoredBuiltDependencies": [
       "esbuild",
       "vue-demi"
+    ],
+    "onlyBuiltDependencies": [
+      "supabase"
     ]
   }
 }
