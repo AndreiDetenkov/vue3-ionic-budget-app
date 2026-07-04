@@ -24,9 +24,9 @@ const isModalOpen = ref(false);
 </script>
 
 <template>
-  <ion-page color="light">
+  <ion-page>
     <BaseHeader title="Transactions">
-      <ion-progress-bar v-if="loading" type="indeterminate" />
+      <ion-progress-bar v-if="loading" type="indeterminate" color="secondary" />
     </BaseHeader>
 
     <ion-content fullscreen>

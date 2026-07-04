@@ -8,10 +8,19 @@ defineProps<{
 
 <template>
   <ion-header class="ion-no-border">
-    <ion-toolbar color="light">
-      <ion-title> {{ title }} </ion-title>
+    <ion-toolbar>
+      <ion-title>{{ title }}</ion-title>
       <slot name="buttons" />
       <slot />
     </ion-toolbar>
   </ion-header>
 </template>
+
+<style scoped>
+ion-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: var(--ion-color-primary-tint);
+  letter-spacing: 0;
+}
+</style>
