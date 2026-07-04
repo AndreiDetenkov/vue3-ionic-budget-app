@@ -14,12 +14,28 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'ionic-vendor': ['@ionic/vue', '@ionic/vue-router', '@ionic/core'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'query-vendor': ['@tanstack/vue-query'],
-          utils: ['dayjs'],
+        manualChunks(id) {
+          if (id.includes('node_modules/vue/') || id.includes('node_modules/vue-router/') || id.includes('node_modules/pinia/')) {
+            return 'vue-vendor';
+          }
+
+          if (id.includes('node_modules/@ionic/vue/') || id.includes('node_modules/@ionic/vue-router/') || id.includes('node_modules/@ionic/core/')) {
+            return 'ionic-vendor';
+          }
+
+          if (id.includes('node_modules/@supabase/supabase-js/')) {
+            return 'supabase-vendor';
+          }
+
+          if (id.includes('node_modules/@tanstack/vue-query/')) {
+            return 'query-vendor';
+          }
+
+          if (id.includes('node_modules/dayjs/')) {
+            return 'utils';
+          }
+
+          return undefined;
         },
       },
     },
