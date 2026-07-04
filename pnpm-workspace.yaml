@@ -1,0 +1,9 @@
+allowBuilds:
+  supabase: true
+  esbuild: false
+  vue-demi: false
+  bufferutil: false
+  core-js: false
+  electron: false
+  sharp: false
+  utf-8-validate: false

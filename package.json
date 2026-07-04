@@ -68,15 +68,6 @@
   "prettier": "@ionic/prettier-config",
   "engines": {
     "node": "^24",
-    "pnpm": "^10"
-  },
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "esbuild",
-      "vue-demi"
-    ],
-    "onlyBuiltDependencies": [
-      "supabase"
-    ]
+    "pnpm": "^11"
   }
 }
