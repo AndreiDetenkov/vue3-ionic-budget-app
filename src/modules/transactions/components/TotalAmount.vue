@@ -1,73 +1,70 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { IonGrid, IonLabel, IonIcon } from '@ionic/vue';
-import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
+import { computed } from 'vue';
+import { IonCardSubtitle, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonChip } from '@ionic/vue';
 import { formatDateByTemplate } from '@/core/utils/dates';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import { formatAmount } from '@/core/utils';
 
 const store = useTransactionStore();
 
-const isAmountHidden = ref(false);
-
-const toggleVisibility = () => {
-  isAmountHidden.value = !isAmountHidden.value;
-};
-
 const formattedTotal = computed<string>(() => formatAmount(store.total));
-
-const amountToDisplay = computed(() => (isAmountHidden.value ? '********' : formattedTotal.value));
-
-const icon = computed(() => (isAmountHidden.value ? eyeOutline : eyeOffOutline));
 </script>
 
 <template>
-  <ion-grid>
-    <div class="card">
-      <ion-label class="card__total">
-        <span class="card__amount"> {{ amountToDisplay }}</span>
-        <span class="card__currency">&nbsp;KGS</span>
-      </ion-label>
-      <ion-label>in&nbsp;{{ formatDateByTemplate('MMMM YYYY') }}</ion-label>
-      <ion-icon :icon color="medium" class="card__icon" @click="toggleVisibility"></ion-icon>
-    </div>
-  </ion-grid>
+  <ion-card class="card">
+    <ion-card-header>
+      <ion-card-subtitle>monthly spending</ion-card-subtitle>
+      <ion-card-title>
+        <span class="amount"> {{ formattedTotal }}</span>
+        <span class="currency">&nbsp;KGS</span>
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-chip>
+        {{ formatDateByTemplate('MMMM YYYY') }}
+      </ion-chip>
+    </ion-card-content>
+  </ion-card>
 </template>
 
 <style scoped>
-.card {
-  padding: 2rem 1rem;
+ion-card {
+  background: #1B4332;
+  background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
+  border-radius: 1.6rem;
+  padding: 1rem 1rem 1rem 1.4rem;
   margin: 1rem;
-  border: 1px solid var(--ion-color-medium);
-  border-radius: 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
 }
 
-.card__icon {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.6rem;
+ion-card-subtitle {
+  font-size: 0.8rem;
+  color: var(--ion-color-amount);
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 2px
 }
 
-.card__total {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  font-variant-numeric: tabular-nums;
+ion-card-title .amount {
+  font-size: 3.4rem;
+  font-weight: bold;
+  color: var(--ion-color-amount);
 }
 
-.card__amount {
-  display: inline-block;
-  min-width: 6.5ch;
-  text-align: center;
+ion-card-title .currency {
+  font-size: 1.5rem;
+  color: var(--ion-color-amount);
+  opacity: 0.8;
 }
 
-.card__currency {
-  font-size: 1.4rem;
+ion-chip {
+  font-size: 1rem;
+  --color: var(--ion-color-amount);
+  background: #3F7A63;
+  opacity: 0.8;
+  pointer-events: none;
+  padding: 0.4rem 1.2rem;
+  letter-spacing: 1px;
 }
 </style>

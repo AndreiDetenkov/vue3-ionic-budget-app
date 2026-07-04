@@ -3,6 +3,7 @@
 :root {
   --ion-font-family: 'Manrope', sans-serif;
   --ion-text-color: var(--ion-color-dark);
+  --ion-color-amount: #D0FDE4;
 
   --ion-color-primary: #1B4332;
   --ion-color-primary-rgb: 27,67,50;

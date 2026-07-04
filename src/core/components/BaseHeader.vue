@@ -18,6 +18,7 @@ defineProps<{
 
 <style scoped>
 ion-title {
+  font-family: Roboto, sans-serif;
   font-size: 1.6rem;
   font-weight: bold;
   color: var(--ion-color-primary-tint);
