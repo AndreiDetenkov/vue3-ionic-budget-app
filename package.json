@@ -16,7 +16,7 @@
     "lint": "eslint --ext .ts,.vue src/ --fix",
     "sync": "ionic capacitor sync android",
     "open": "ionic capacitor open android",
-    "run": "ionic capacitor run android -l --external",
+    "run": "ionic capacitor run android -l --external --target=676239e9 ",
     "run:android": "ionic capacitor run android --target=Pixel_9 --livereload --external",
     "release": "pnpx changelogen@latest --release --push"
   },
