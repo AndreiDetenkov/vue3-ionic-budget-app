@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
 :root {
   --ion-font-family: 'Manrope', sans-serif;
   --ion-text-color: var(--ion-color-dark);
@@ -69,3 +71,5 @@
 html {
   box-sizing: border-box;
 }
+
+
