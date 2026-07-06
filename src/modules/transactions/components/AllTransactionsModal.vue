@@ -42,7 +42,7 @@ const closeModal = () => {
     <ion-content fullscreen>
       <ion-list lines="full" class="ion-no-padding">
         <ion-item-group v-for="(transactions, date) in list" :key="date">
-          <ion-item-divider mode="md" color="light" sticky>
+          <ion-item-divider mode="md" sticky>
             <ion-label> {{ formatDate(date.toString(), 'DD.MM.YYYY dddd') }} </ion-label>
           </ion-item-divider>
 
@@ -59,7 +59,7 @@ const closeModal = () => {
                 </ion-col>
 
                 <ion-col size="auto">
-                  <div class="price">{{ formatAmount(transaction.value) }}&nbsp;&#8838;</div>
+                  <div class="price">{{ formatAmount(transaction.value) }}&nbsp;KGS</div>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -77,12 +77,20 @@ ion-button {
   font-size: 1.2rem;
 }
 
+ion-item-divider {
+  background: var(--ion-color-bg-light-grey);
+  color: var(--ion-color-primary);
+  font-weight: 500;
+}
+
 .title {
   font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .price {
-  font-size: 1.125rem;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .category {
