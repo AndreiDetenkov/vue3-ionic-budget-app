@@ -3,7 +3,7 @@ import {
   IonModal,
   IonContent,
   IonButtons,
-  IonButton,
+  IonChip,
   IonList,
   IonItem,
   IonItemGroup,
@@ -34,7 +34,7 @@ const closeModal = () => {
     <BaseHeader title="Transaction List">
       <template #buttons>
         <ion-buttons slot="end">
-          <ion-button color="primary" @click="closeModal">Close</ion-button>
+          <ion-chip color="primary" @click="closeModal">Close</ion-chip>
         </ion-buttons>
       </template>
     </BaseHeader>
