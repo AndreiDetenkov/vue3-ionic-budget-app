@@ -35,7 +35,6 @@ defineProps<{
 
 <style scoped>
 ion-item {
-  margin-bottom: 0.5rem;
   border-radius: 1rem;
 }
 

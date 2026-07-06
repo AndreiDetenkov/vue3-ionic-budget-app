@@ -71,8 +71,11 @@ const openModal = async () => {
   const { data, role } = await modal.onWillDismiss();
 
   if (role === 'confirm') {
-    if (data) toastHandler({ message: 'Successfully updated!', color: 'success' });
-    else toastHandler({ message: 'Oops...Something went wrong', color: 'danger' });
+    if (data) {
+      await toastHandler({ message: 'Successfully updated!', color: 'success' });
+    } else {
+      await toastHandler({ message: 'Oops...Something went wrong', color: 'danger' });
+    }
   }
 };
 
@@ -107,3 +110,15 @@ const updateHandler = () => {
     </ion-item-options>
   </ion-item-sliding>
 </template>
+
+<style scoped>
+ion-item-sliding {
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 1rem;
+}
+
+ion-item-option {
+  border-radius: 1rem;
+}
+</style>
