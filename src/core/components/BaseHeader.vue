@@ -17,11 +17,15 @@ defineProps<{
 </template>
 
 <style scoped>
+ion-toolbar {
+  --background: var(--ion-color-bg-light-grey);
+  --color: var(--ion-color-primary-tint);
+  letter-spacing: 0;
+}
+
 ion-title {
   font-family: Roboto, sans-serif;
   font-size: 1.6rem;
   font-weight: bold;
-  color: var(--ion-color-primary-tint);
-  letter-spacing: 0;
 }
 </style>

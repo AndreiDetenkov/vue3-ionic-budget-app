@@ -29,7 +29,7 @@ const isModalOpen = ref(false);
       <ion-progress-bar v-if="loading" type="indeterminate" color="secondary" />
     </BaseHeader>
 
-    <ion-content fullscreen>
+    <ion-content fullscreen class="ion-padding">
       <BaseRefresher @refresh="refreshContent" />
 
       <template v-if="transactions.length">
@@ -42,3 +42,9 @@ const isModalOpen = ref(false);
     </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+ion-content {
+  --background: var(--ion-color-bg-light-grey);
+}
+</style>

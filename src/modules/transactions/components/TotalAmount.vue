@@ -11,7 +11,7 @@ const formattedTotal = computed<string>(() => formatAmount(store.total));
 </script>
 
 <template>
-  <ion-card class="card">
+  <ion-card class="ion-no-margin">
     <ion-card-header>
       <ion-card-subtitle>monthly spending</ion-card-subtitle>
       <ion-card-title>
@@ -33,7 +33,7 @@ ion-card {
   background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
   border-radius: 1.6rem;
   padding: 1rem 1rem 1rem 1.4rem;
-  margin: 1rem;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
 }

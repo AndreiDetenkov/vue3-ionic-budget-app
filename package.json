@@ -16,7 +16,7 @@
     "lint": "eslint --ext .ts,.vue src/ --fix",
     "sync": "ionic capacitor sync android",
     "open": "ionic capacitor open android",
-    "run": "ionic capacitor run android -l --external --target=676239e9 ",
+    "run": "ionic capacitor run android -l --external --target=676239e9",
     "run:android": "ionic capacitor run android --target=Pixel_9 --livereload --external",
     "release": "pnpx changelogen@latest --release --push"
   },
@@ -43,7 +43,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.3.0",
     "@eslint/js": "^9.39.4",
-    "@ionic/prettier-config": "^4.0.0",
+    "@ionic/prettier-config": "4.0.0",
     "@tanstack/eslint-plugin-query": "^5.95.2",
     "@types/node": "^24.12.0",
     "@vitejs/plugin-legacy": "^7.2.1",
