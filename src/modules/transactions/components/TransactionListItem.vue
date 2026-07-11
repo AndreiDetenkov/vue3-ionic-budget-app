@@ -20,13 +20,13 @@ defineProps<{
         </ion-col>
 
         <ion-col>
-          <ion-label class="title">{{ transaction.name }}</ion-label>
-          <ion-label class="category">{{ transaction.category.title }}</ion-label>
+          <div class="title">{{ transaction.name }}</div>
+          <div class="category">{{ transaction.category.title }}</div>
         </ion-col>
 
         <ion-col size="auto">
-          <ion-label class="amount">{{ formatAmount(transaction.value) }}</ion-label>
-          <ion-label class="date">{{ formatDate(transaction.createdAt) }}</ion-label>
+          <div class="amount">{{ formatAmount(transaction.value) }}</div>
+          <div class="date">{{ formatDate(transaction.createdAt) }}</div>
         </ion-col>
       </ion-row>
     </ion-grid>
