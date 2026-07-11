@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import dayjs from 'dayjs';
 
 import { getRangeDates } from '@/core/utils/dates';
 import {
@@ -33,8 +34,23 @@ export const useTransactionStore = defineStore('transactionStore', {
       }, 0);
     },
 
-    recentTransactions(state): Transaction[] {
-      return state.transactions.slice(0, 10);
+    recentTransactions(state): { today: Transaction[]; yesterday: Transaction[] } {
+      const todayStr = dayjs().format('YYYY-MM-DD');
+      const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+
+      const today: Transaction[] = [];
+      const yesterday: Transaction[] = [];
+
+      state.transactions.forEach((transaction) => {
+        const date = dayjs(transaction.createdAt).format('YYYY-MM-DD');
+        if (date === todayStr) {
+          today.push(transaction);
+        } else if (date === yesterdayStr) {
+          yesterday.push(transaction);
+        }
+      });
+
+      return { today, yesterday };
     },
 
     transactionsByDate(state) {

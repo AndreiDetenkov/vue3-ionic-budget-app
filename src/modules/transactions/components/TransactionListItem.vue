@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
-import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions/types';
 import { formatAmount } from '@/core/utils';
 
@@ -26,7 +25,7 @@ defineProps<{
 
         <ion-col size="auto">
           <div class="amount">{{ formatAmount(transaction.value) }}</div>
-          <div class="date">{{ formatDate(transaction.createdAt) }}</div>
+          <div class="currency">KGS</div>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -60,7 +59,7 @@ ion-thumbnail {
   text-align: right;
 }
 
-.date {
+.currency {
   color: var(--ion-color-medium);
   font-size: 0.65rem;
   text-align: right;
