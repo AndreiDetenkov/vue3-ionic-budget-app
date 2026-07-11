@@ -27,10 +27,21 @@ import { list, add, barChartSharp } from 'ionicons/icons';
   </ion-page>
 </template>
 
-<style>
+<style scoped>
+ion-tab-bar {
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+ion-tab-button {
+  border-radius: 1rem;
+  margin: 0 1rem;
+}
+
 .add-btn-icon {
   font-size: 30px;
-  border-width: 1px;
+  border-width: 1.5px;
   border-style: solid;
   padding: 1px;
   border-radius: 10px;
