@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem, IonLabel } from '@ionic/vue';
+import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
 import { formatDate } from '@/core/utils/dates';
 import { Transaction } from '@/modules/transactions/types';
 import { formatAmount } from '@/core/utils';
