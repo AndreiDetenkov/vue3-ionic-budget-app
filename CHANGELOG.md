@@ -1,6 +1,46 @@
 # Changelog
 
 
+## v0.1.13
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.12...v0.1.13)
+
+### 🚀 Enhancements
+
+- Enhance UI styles and improve progress bar visibility ([eae59aa](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/eae59aa))
+- Restyle TotalAmount component and update font settings ([b26ccf2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b26ccf2))
+- Improve UI styling and update dependencies ([1152305](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1152305))
+- Update TransactionListItem to use IonLabel and enhance styles ([3694cb3](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3694cb3))
+- Update AllTransactionsModal UI and styling ([bf021ca](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/bf021ca))
+- Replace ion-button with ion-chip in AllTransactionsModal ([078f013](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/078f013))
+- Refine transaction components styles ([3c171fb](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3c171fb))
+- Group recent transactions by date ([14869a0](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/14869a0))
+
+### 💅 Refactors
+
+- Replace ion-label with div in TransactionListItem ([14c061a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/14c061a))
+- Remove unused IonLabel component import. ([0d5d896](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0d5d896))
+- Migrate transaction store to Pinia setup syntax ([c1e2f7d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c1e2f7d))
+
+### 🏡 Chore
+
+- Update dependencies ([b6b9cbb](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b6b9cbb))
+- Remove Vue Router navigation guard gotchas from skill library ([4cfa9d7](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4cfa9d7))
+- Configure pnpm-workspace and update pnpm version ([80bda70](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/80bda70))
+- Update Vite chunk splitting ([34fe987](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/34fe987))
+- Comment out .env.local variables and update Android run targets ([7833754](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7833754))
+- Update theme variables ([8206574](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8206574))
+- Import Manrope font in theme variables ([4465c93](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4465c93))
+- Bump app version to 1.2 in build.gradle ([6b07ac8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/6b07ac8))
+
+### ✅ Tests
+
+- Add transaction store tests ([cda36d1](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/cda36d1))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.12
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.11...v0.1.12)
