@@ -1,3 +1,4 @@
+import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import dayjs from 'dayjs';
 
@@ -9,146 +10,154 @@ import {
   updateTransactionApi,
   TransactionItemsForUpdate,
   TransactionPayload,
-  type TransactionStoreState,
   type Transaction,
 } from '@/modules/transactions';
 import { PostgrestError } from '@supabase/supabase-js';
 import type { OpUnitType } from 'dayjs';
 import { mappedTransactions } from '@/modules/transactions/utils';
 
-export const useTransactionStore = defineStore('transactionStore', {
-  state: (): TransactionStoreState => ({
-    transactions: [],
-    error: null,
-    loading: false,
-    transactionsUnit: 'month',
-    transactionItems: { id: '', name: '', value: 0, categoryId: '' },
-  }),
+export const useTransactionStore = defineStore('transactionStore', () => {
+  const transactions = ref<Transaction[]>([]);
+  const error = ref<PostgrestError | null>(null);
+  const loading = ref<boolean>(false);
+  const transactionsUnit = ref<OpUnitType>('month');
+  const transactionItems = ref<TransactionItemsForUpdate>({ id: '', name: '', value: 0, categoryId: '' });
 
-  getters: {
-    total(state): number {
-      if (!state.transactions) return 0;
+  const total = computed<number>(() => {
+    if (!transactions.value) return 0;
 
-      return state.transactions.reduce((acc, item) => {
-        return acc + item.value;
-      }, 0);
-    },
+    return transactions.value.reduce((acc, item) => {
+      return acc + item.value;
+    }, 0);
+  });
 
-    recentTransactions(state): { today: Transaction[]; yesterday: Transaction[] } {
-      const todayStr = dayjs().format('YYYY-MM-DD');
-      const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+  const recentTransactions = computed<{ today: Transaction[]; yesterday: Transaction[] }>(() => {
+    const todayStr = dayjs().format('YYYY-MM-DD');
+    const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
 
-      const today: Transaction[] = [];
-      const yesterday: Transaction[] = [];
+    const today: Transaction[] = [];
+    const yesterday: Transaction[] = [];
 
-      state.transactions.forEach((transaction) => {
-        const date = dayjs(transaction.createdAt).format('YYYY-MM-DD');
-        if (date === todayStr) {
-          today.push(transaction);
-        } else if (date === yesterdayStr) {
-          yesterday.push(transaction);
+    transactions.value.forEach((transaction) => {
+      const date = dayjs(transaction.createdAt).format('YYYY-MM-DD');
+      if (date === todayStr) {
+        today.push(transaction);
+      } else if (date === yesterdayStr) {
+        yesterday.push(transaction);
+      }
+    });
+
+    return { today, yesterday };
+  });
+
+  const transactionsByDate = computed<Record<string, Transaction[]>>(() => {
+    return transactions.value.reduce(
+      (acc, item) => {
+        const date = item.createdAt.split('T')[0];
+        if (!acc[date]) {
+          acc[date] = [];
         }
+
+        acc[date].push(item);
+        return acc;
+      },
+      {} as Record<string, Transaction[]>,
+    );
+  });
+
+  async function getTransactionsByRange(unit: OpUnitType): Promise<void> {
+    transactionsUnit.value = unit;
+    const { startDate, endDate } = getRangeDates(unit);
+
+    try {
+      loading.value = true;
+      const { data, error: apiError } = await getTransactionsByRangeApi({
+        from: startDate,
+        to: endDate,
       });
 
-      return { today, yesterday };
-    },
-
-    transactionsByDate(state) {
-      return state.transactions.reduce(
-        (acc, item) => {
-          const date = item.createdAt.split('T')[0];
-          if (!acc[date]) {
-            acc[date] = [];
-          }
-
-          acc[date].push(item);
-          return acc;
-        },
-        {} as Record<string, Transaction[]>,
-      );
-    },
-  },
-
-  actions: {
-    async getTransactionsByRange(unit: OpUnitType): Promise<void> {
-      this.transactionsUnit = unit;
-      const { startDate, endDate } = getRangeDates(unit);
-
-      try {
-        this.loading = true;
-        const { data, error } = await getTransactionsByRangeApi({
-          from: startDate,
-          to: endDate,
-        });
-
-        if (error instanceof PostgrestError) {
-          this.error = error;
-          return;
-        }
-
-        this.transactions = mappedTransactions(data);
-      } finally {
-        this.loading = false;
+      if (apiError instanceof PostgrestError) {
+        error.value = apiError;
+        return;
       }
-    },
 
-    async createTransaction(payload: TransactionPayload): Promise<{ success: boolean }> {
-      try {
-        this.loading = true;
-        const { error } = await createTransactionApi(payload);
+      transactions.value = mappedTransactions(data);
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        if (error) {
-          this.error = error;
-          return { success: false };
-        }
+  async function createTransaction(payload: TransactionPayload): Promise<{ success: boolean }> {
+    try {
+      loading.value = true;
+      const { error: apiError } = await createTransactionApi(payload);
 
-        await this.getTransactionsByRange(this.transactionsUnit);
-
-        return { success: true };
-      } finally {
-        this.loading = false;
+      if (apiError) {
+        error.value = apiError;
+        return { success: false };
       }
-    },
 
-    async removeTransaction(id: string): Promise<void> {
-      try {
-        this.loading = true;
-        const { error } = await removeTransactionApi(id);
+      await getTransactionsByRange(transactionsUnit.value);
 
-        if (error) {
-          this.error = error;
-          return;
-        }
+      return { success: true };
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        await this.getTransactionsByRange(this.transactionsUnit);
-      } finally {
-        this.loading = false;
+  async function removeTransaction(id: string): Promise<void> {
+    try {
+      loading.value = true;
+      const { error: apiError } = await removeTransactionApi(id);
+
+      if (apiError) {
+        error.value = apiError;
+      } else {
+        await getTransactionsByRange(transactionsUnit.value);
       }
-    },
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async updateTransaction(): Promise<{ success: boolean }> {
-      try {
-        this.loading = true;
-        const { error } = await updateTransactionApi(this.transactionItems);
+  async function updateTransaction(): Promise<{ success: boolean }> {
+    try {
+      loading.value = true;
+      const { error: apiError } = await updateTransactionApi(transactionItems.value);
 
-        if (error) {
-          this.error = error;
-          return { success: false };
-        }
-
-        await this.getTransactionsByRange(this.transactionsUnit);
-
-        return { success: true };
-      } finally {
-        this.loading = false;
+      if (apiError) {
+        error.value = apiError;
+        return { success: false };
       }
-    },
 
-    setTransactionItems({ id, name, value, categoryId }: TransactionItemsForUpdate): void {
-      this.transactionItems.id = id;
-      this.transactionItems.name = name;
-      this.transactionItems.value = value;
-      this.transactionItems.categoryId = categoryId;
-    },
-  },
+      await getTransactionsByRange(transactionsUnit.value);
+
+      return { success: true };
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function setTransactionItems({ id, name, value, categoryId }: TransactionItemsForUpdate): void {
+    transactionItems.value.id = id;
+    transactionItems.value.name = name;
+    transactionItems.value.value = value;
+    transactionItems.value.categoryId = categoryId;
+  }
+
+  return {
+    transactions,
+    error,
+    loading,
+    transactionsUnit,
+    transactionItems,
+    total,
+    recentTransactions,
+    transactionsByDate,
+    getTransactionsByRange,
+    createTransaction,
+    removeTransaction,
+    updateTransaction,
+    setTransactionItems,
+  };
 });
