@@ -13,7 +13,7 @@ onIonViewWillEnter(() => categoryStore.getCategoryList());
 
 <template>
   <ion-page>
-    <BaseHeader title="Add transaction">
+    <BaseHeader title="New transaction">
       <template #buttons>
         <ion-buttons slot="start">
           <ion-back-button default-href="/"></ion-back-button>

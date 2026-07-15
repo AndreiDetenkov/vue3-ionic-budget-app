@@ -3,15 +3,14 @@ import { computed, ref } from 'vue';
 import { IonInput, IonButton, IonSpinner } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
-import AppToast from '@/core/components/AppToast/AppToast.vue';
-import { useToast } from '@/core/components/AppToast/useToast';
+import { useToast } from '@/core/composables/useToast';
 import { FormValues, TransactionPayload } from '@/modules/transactions/types';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
-const { setToast, toast } = useToast();
+const { showToast } = useToast();
 
 const form = ref<FormValues>({
   transaction: '',
@@ -35,37 +34,36 @@ function createPayload(): TransactionPayload {
   };
 }
 
+function clearState(): void {
+  form.value.transaction = form.value.amount = form.value.categoryId = '';
+}
+
 async function onSubmitFormHandler(): Promise<void> {
   if (notValidForm.value) {
-    setToast({ state: true, message: 'There are fields that are not filled in!' });
+    await showToast({
+      message: 'There are fields that are not filled in!',
+      color: 'danger',
+      positionAnchor: 'header',
+    });
     return;
   }
 
   const { success } = await transactionStore.createTransaction(createPayload());
 
   if (!success) {
-    setToast({ state: true, message: 'Oops! Something went wrong!' });
+    await showToast({
+      message: 'Oops! Something went wrong!',
+      color: 'danger',
+      positionAnchor: 'header',
+    });
     return;
   }
 
   router.push('/tabs/transactions').then(() => clearState());
 }
-
-function clearState(): void {
-  form.value.transaction = form.value.amount = form.value.categoryId = '';
-}
 </script>
 
 <template>
-  <app-toast
-    v-model="toast.isOpen"
-    :duration="2000"
-    :message="toast.message"
-    position="top"
-    position-anchor="header"
-    color="danger"
-  ></app-toast>
-
   <form @submit.prevent="onSubmitFormHandler">
     <ion-input
       v-model="form.transaction"

@@ -8,9 +8,8 @@ import {
   IonLabel,
   alertController,
   modalController,
-  toastController,
-  ToastOptions,
 } from '@ionic/vue';
+import { useToast } from '@/core/composables/useToast';
 import { pencil, trash } from 'ionicons/icons';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import { Transaction } from '@/modules/transactions/types';
@@ -54,13 +53,7 @@ const onRemoveHandler = async () => {
   closeSlidingItems();
 };
 
-const toastHandler = async (options: ToastOptions): Promise<void> => {
-  const toast = await toastController.create({
-    duration: 2000,
-    ...options,
-  });
-  await toast.present();
-};
+const { showToast } = useToast();
 
 const openModal = async () => {
   const modal = await modalController.create({
@@ -72,9 +65,9 @@ const openModal = async () => {
 
   if (role === 'confirm') {
     if (data) {
-      await toastHandler({ message: 'Successfully updated!', color: 'success' });
+      await showToast({ message: 'Successfully updated!', color: 'success' });
     } else {
-      await toastHandler({ message: 'Oops...Something went wrong', color: 'danger' });
+      await showToast({ message: 'Oops...Something went wrong', color: 'danger' });
     }
   }
 };
