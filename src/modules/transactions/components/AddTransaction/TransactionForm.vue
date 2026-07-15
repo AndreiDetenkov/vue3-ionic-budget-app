@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { IonInput, IonButton, IonSpinner } from '@ionic/vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
 import { useToast } from '@/core/composables/useToast';
 import { FormValues, TransactionPayload } from '@/modules/transactions/types';
@@ -10,6 +11,7 @@ import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
+const { loading } = storeToRefs(transactionStore)
 const { showErrorToast } = useToast();
 
 const form = ref<FormValues>({
@@ -79,8 +81,8 @@ async function onSubmitFormHandler(): Promise<void> {
 
     <categories-form @select-category="setCategoryId" />
 
-    <ion-button expand="block" type="submit" :disabled="transactionStore.loading">
-      <ion-spinner name="lines" v-if="transactionStore.loading" />
+    <ion-button expand="block" type="submit" :disabled="loading">
+      <ion-spinner name="lines" v-if="loading" />
       <span v-else>Create transaction</span>
     </ion-button>
   </form>
