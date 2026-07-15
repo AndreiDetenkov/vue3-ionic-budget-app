@@ -15,7 +15,6 @@ export function useToast() {
     return showToast({
       message,
       color: 'danger',
-      positionAnchor: 'header',
       ...options,
     });
   };
@@ -24,7 +23,6 @@ export function useToast() {
     return showToast({
       message,
       color: 'success',
-      positionAnchor: 'header',
       ...options,
     });
   };
