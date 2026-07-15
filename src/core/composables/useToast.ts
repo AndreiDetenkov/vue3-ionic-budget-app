@@ -11,7 +11,27 @@ export function useToast() {
     return toast;
   };
 
+  const showErrorToast = (message: string, options?: Omit<ToastOptions, 'message' | 'color'>) => {
+    return showToast({
+      message,
+      color: 'danger',
+      positionAnchor: 'header',
+      ...options,
+    });
+  };
+
+  const showSuccessToast = (message: string, options?: Omit<ToastOptions, 'message' | 'color'>) => {
+    return showToast({
+      message,
+      color: 'success',
+      positionAnchor: 'header',
+      ...options,
+    });
+  };
+
   return {
     showToast,
+    showErrorToast,
+    showSuccessToast,
   };
 }

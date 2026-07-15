@@ -10,7 +10,7 @@ import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
-const { showToast } = useToast();
+const { showErrorToast } = useToast();
 
 const form = ref<FormValues>({
   transaction: '',
@@ -40,22 +40,14 @@ function clearState(): void {
 
 async function onSubmitFormHandler(): Promise<void> {
   if (notValidForm.value) {
-    await showToast({
-      message: 'There are fields that are not filled in!',
-      color: 'danger',
-      positionAnchor: 'header',
-    });
+    await showErrorToast('There are fields that are not filled in!');
     return;
   }
 
   const { success } = await transactionStore.createTransaction(createPayload());
 
   if (!success) {
-    await showToast({
-      message: 'Oops! Something went wrong!',
-      color: 'danger',
-      positionAnchor: 'header',
-    });
+    await showErrorToast('Oops! Something went wrong!');
     return;
   }
 

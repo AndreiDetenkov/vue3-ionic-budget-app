@@ -53,7 +53,7 @@ const onRemoveHandler = async () => {
   closeSlidingItems();
 };
 
-const { showToast } = useToast();
+const { showSuccessToast, showErrorToast } = useToast();
 
 const openModal = async () => {
   const modal = await modalController.create({
@@ -65,9 +65,9 @@ const openModal = async () => {
 
   if (role === 'confirm') {
     if (data) {
-      await showToast({ message: 'Successfully updated!', color: 'success' });
+      await showSuccessToast('Successfully updated!');
     } else {
-      await showToast({ message: 'Oops...Something went wrong', color: 'danger' });
+      await showErrorToast('Oops...Something went wrong');
     }
   }
 };
