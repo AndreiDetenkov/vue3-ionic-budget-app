@@ -12,13 +12,16 @@ defineProps<{
   <ion-item>
     <ion-grid>
       <ion-row class="ion-align-items-center">
-        <ion-col size="auto">
+        <ion-col size="auto" class="ion-no-padding">
           <ion-thumbnail>
-            <img alt="" :src="getCategoryIconUrl(transaction.category.icon)" />
+            <div
+              class="category-icon"
+              :style="{ maskImage: `url(${getCategoryIconUrl(transaction.category.icon)})` }"
+            />
           </ion-thumbnail>
         </ion-col>
 
-        <ion-col>
+        <ion-col class="ion-padding-start">
           <div class="title">{{ transaction.name }}</div>
           <div class="category">{{ transaction.category.title }}</div>
         </ion-col>
@@ -38,9 +41,19 @@ ion-item {
 }
 
 ion-thumbnail {
-  --size: 32px;
-  --border-radius: 4px;
-  margin-right: 10px;
+  --size: 48px;
+  --border-radius: 0.7rem;
+  padding: 0.7rem;
+  background: var(--ion-color-bg-green-pastel);
+}
+
+.category-icon {
+  width: 100%;
+  height: 100%;
+  background-color: var(--ion-color-primary-tint);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 .title {
