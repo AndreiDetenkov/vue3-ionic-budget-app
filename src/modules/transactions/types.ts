@@ -1,14 +1,4 @@
-import { OpUnitType } from 'dayjs';
-import type { TransactionsResponseError } from '@/modules/transactions/api/transactions';
 import { Tables } from '@/core/plugins/database.types';
-
-export interface TransactionStoreState {
-  transactions: Transaction[];
-  error: TransactionsResponseError | null;
-  loading: boolean;
-  transactionsUnit: OpUnitType;
-  transactionItems: TransactionItemsForUpdate;
-}
 
 export interface RangeInterface {
   from: string;

@@ -69,8 +69,9 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     transactionsUnit.value = unit;
     const { startDate, endDate } = getRangeDates(unit);
 
+    loading.value = true;
+
     try {
-      loading.value = true;
       const { data, error: apiError } = await getTransactionsByRangeApi({
         from: startDate,
         to: endDate,

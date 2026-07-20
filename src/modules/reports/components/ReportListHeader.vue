@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow, IonThumbnail } from '@ionic/vue';
 import { Report } from '@/modules/reports';
-import { formatAmount } from '@/core/utils';
+import { formatAmount, getCategoryIconUrl } from '@/core/utils';
 
 interface Props {
   name: Report['name'];
@@ -18,7 +18,7 @@ const { icon, name, value } = defineProps<Props>();
       <ion-row class="ion-align-items-center">
         <ion-col size="auto">
           <ion-thumbnail>
-            <img alt="" :src="icon" />
+            <img alt="" :src="getCategoryIconUrl(icon)" />
           </ion-thumbnail>
         </ion-col>
 

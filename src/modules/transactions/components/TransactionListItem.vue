@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonGrid, IonRow, IonCol, IonThumbnail, IonItem } from '@ionic/vue';
 import { Transaction } from '@/modules/transactions/types';
-import { formatAmount } from '@/core/utils';
+import { formatAmount, getCategoryIconUrl } from '@/core/utils';
 
 defineProps<{
   transaction: Transaction;
@@ -14,7 +14,7 @@ defineProps<{
       <ion-row class="ion-align-items-center">
         <ion-col size="auto">
           <ion-thumbnail>
-            <img alt="" :src="transaction.category.icon ?? ''" />
+            <img alt="" :src="getCategoryIconUrl(transaction.category.icon)" />
           </ion-thumbnail>
         </ion-col>
 

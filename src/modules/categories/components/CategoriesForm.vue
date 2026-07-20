@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { IonCol, IonGrid, IonImg, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 import { PressedCategory } from '@/modules/categories/types';
+import { getCategoryIconUrl } from '@/core/utils';
 
 const emit = defineEmits<{
   'select-category': [id: string];
@@ -34,7 +35,7 @@ function onTapHandler(id: string): void {
           :class="{ 'pressed-card': isPressed }"
         >
           <ion-ripple-effect class="card-custom-ripple" />
-          <ion-img class="card-img" :src="icon as string" :alt="title" />
+          <ion-img class="card-img" :src="getCategoryIconUrl(icon)" :alt="title" />
           <ion-label class="card-title">{{ title }}</ion-label>
         </div>
       </ion-col>
