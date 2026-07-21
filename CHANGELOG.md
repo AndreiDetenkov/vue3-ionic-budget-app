@@ -1,6 +1,50 @@
 # Changelog
 
 
+## v0.1.14
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.13...v0.1.14)
+
+### 🚀 Enhancements
+
+- Style tab bar ([a2ce6d2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a2ce6d2))
+- Enhance tab bar styling and icons ([7639d91](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7639d91))
+- Use utility function for category icon URLs ([8e9d881](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8e9d881))
+- Enhance TransactionListItem styling ([68b19a0](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/68b19a0))
+- Add 'clothes' category icon and update predefined icons list ([9ba982b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9ba982b))
+- Switch storage to sessionStorage and load category list in SlideListItem ([39056fe](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/39056fe))
+- Add 'grocery' category icon ([273ecd1](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/273ecd1))
+
+### 💅 Refactors
+
+- Remove AppToast component and migrate to composable useToast ([7180b08](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7180b08))
+- Add specific toast helpers for success and error messages ([8f4a5d2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8f4a5d2))
+- Remove unused `positionAnchor` property in toast helpers ([7010e96](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7010e96))
+- Use `storeToRefs` for `loading` in TransactionForm ([b3b9098](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b3b9098))
+- Enhance function readability and imports in SlideListItem.vue ([701e6f6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/701e6f6))
+- Migrate category store to Composition API and simplify types ([44c3c5e](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/44c3c5e))
+
+### 📖 Documentation
+
+- Add documentation for toast notification system ([19a85ee](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/19a85ee))
+
+### 🏡 Chore
+
+- Add Gradle daemon JVM configuration ([55552fa](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/55552fa))
+- Update android version code and name ([1cc29c6](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/1cc29c6))
+- Update `vue-tsc` and related dependencies in lockfile ([a7fa53e](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a7fa53e))
+- Add category icons ([5d3b0a3](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5d3b0a3))
+- Remove supabase skills ([155bbe2](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/155bbe2))
+- Bump version name to 1.3.0 in build.gradle ([3909042](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3909042))
+
+### 🎨 Styles
+
+- Adjust TotalAmount component padding for improved spacing ([79aa325](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/79aa325))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.13
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.12...v0.1.13)
