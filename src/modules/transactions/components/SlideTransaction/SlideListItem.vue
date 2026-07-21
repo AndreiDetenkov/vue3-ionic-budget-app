@@ -12,6 +12,7 @@ import {
 import { useToast } from '@/core/composables/useToast';
 import { pencil, trash } from 'ionicons/icons';
 import { useTransactionStore } from '@/modules/transactions';
+import { useCategoryStore } from '@/modules/categories';
 import { Transaction } from '@/modules/transactions/types';
 import UpdateItemModal from '@/modules/transactions/components/SlideTransaction/UpdateItemModal.vue';
 import TransactionListItem from '@/modules/transactions/components/TransactionListItem.vue';
@@ -21,6 +22,7 @@ const { transaction } = defineProps<{
 }>();
 
 const store = useTransactionStore();
+const categoryStore = useCategoryStore();
 const itemSliding = useTemplateRef<ComponentPublicInstance>('item-sliding');
 const { showSuccessToast, showErrorToast } = useToast();
 
@@ -78,6 +80,7 @@ async function updateTransaction() {
     value: transaction.value,
     categoryId: transaction.categoryId,
   });
+  await categoryStore.getCategoryList()
   await openUpdateTransactionModal()
 };
 </script>

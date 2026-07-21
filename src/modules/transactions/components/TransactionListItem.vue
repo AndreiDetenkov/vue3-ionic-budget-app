@@ -43,7 +43,7 @@ ion-item {
 ion-thumbnail {
   --size: 48px;
   --border-radius: 0.7rem;
-  padding: 0.7rem;
+  padding: 0.6rem;
   background: var(--ion-color-bg-green-pastel);
 }
 
