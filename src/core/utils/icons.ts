@@ -6,6 +6,7 @@ export type PredefinedIcon =
   | 'food'
   | 'health'
   | 'housing'
+  | 'grocery'
   | 'other'
   | 'pets'
   | 'recreation'
@@ -22,6 +23,7 @@ export const PREDEFINED_ICONS: PredefinedIcon[] = [
   'food',
   'health',
   'housing',
+  'grocery',
   'other',
   'pets',
   'recreation',
