@@ -1,52 +1,46 @@
+import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getItem, setItem } from '@/core/utils/storage';
-import { Category, CategoryStoreState, PressedCategory } from '@/modules/categories/types';
-import { getCategoriesApi } from '@/modules/categories/api/categories';
+import { getCategoriesApi, CategoriesResponseError, Category, PressedCategory  } from '@/modules/categories';
 
-export const useCategoryStore = defineStore('categoryStore', {
-  state: (): CategoryStoreState => ({
-    categories: [],
-    pressedCategories: [],
-    error: null,
-    loading: false,
-  }),
+export const useCategoryStore = defineStore('categoryStore', () => {
+  const categories = ref<Category[]>([]);
+  const pressedCategories = ref<PressedCategory[]>([]);
+  const error = ref<CategoriesResponseError | null>(null);
+  const loading = ref<boolean>(false);
 
-  actions: {
-    checkCategoriesInStorage(): boolean {
-      const localCategories = getItem('categories');
-      this.categories = localCategories ?? [];
-      if (localCategories) this.setCategoriesToPressed(localCategories);
+  function setCategoriesToPressed(newCategories: Category[]): void {
+    pressedCategories.value = newCategories.map(
+      (category: Category): PressedCategory => ({ ...category, isPressed: false }),
+    );
+  }
 
-      return !!localCategories;
-    },
+  async function getCategoryList(): Promise<void> {
+    if (categories.value.length > 0) {
+      return;
+    }
 
-    setCategoriesToPressed(categories: Category[]): void {
-      this.pressedCategories = categories.map(
-        (category: Category): PressedCategory => ({ ...category, isPressed: false }),
-      );
-    },
+    try {
+      loading.value = true;
+      const { data, error: apiError } = await getCategoriesApi();
 
-    async getCategoryList(): Promise<void> {
-      const isCategoriesInStorage = this.checkCategoriesInStorage();
-      if (isCategoriesInStorage) {
+      if (apiError) {
+        error.value = apiError;
         return;
       }
 
-      try {
-        this.loading = true;
-        const { data, error } = await getCategoriesApi();
+      categories.value = data;
+      setCategoriesToPressed(data);
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        if (error) {
-          this.error = error;
-          return;
-        }
-
-        this.categories = data;
-        this.setCategoriesToPressed(data);
-        setItem('categories', data);
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+  return {
+    categories,
+    pressedCategories,
+    error,
+    loading,
+    setCategoriesToPressed,
+    getCategoryList,
+  };
 });

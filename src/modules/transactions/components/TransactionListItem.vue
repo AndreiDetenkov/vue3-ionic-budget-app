@@ -36,14 +36,10 @@ defineProps<{
 </template>
 
 <style scoped>
-ion-item {
-  border-radius: 1rem;
-}
-
 ion-thumbnail {
   --size: 48px;
   --border-radius: 0.7rem;
-  padding: 0.6rem;
+  padding: 0.7rem;
   background: var(--ion-color-bg-green-pastel);
 }
 
