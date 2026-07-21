@@ -32,7 +32,7 @@ ion-card {
   background: #1B4332;
   background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
   border-radius: 1.6rem;
-  padding: 1rem 1rem 1rem 1.4rem;
+  padding: 0.5rem 1rem 0.5rem 1.4rem;
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
