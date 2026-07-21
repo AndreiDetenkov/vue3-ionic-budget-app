@@ -11,7 +11,7 @@ import {
 } from '@ionic/vue';
 import { useToast } from '@/core/composables/useToast';
 import { pencil, trash } from 'ionicons/icons';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { useTransactionStore } from '@/modules/transactions';
 import { Transaction } from '@/modules/transactions/types';
 import UpdateItemModal from '@/modules/transactions/components/SlideTransaction/UpdateItemModal.vue';
 import TransactionListItem from '@/modules/transactions/components/TransactionListItem.vue';
@@ -22,12 +22,13 @@ const { transaction } = defineProps<{
 
 const store = useTransactionStore();
 const itemSliding = useTemplateRef<ComponentPublicInstance>('item-sliding');
+const { showSuccessToast, showErrorToast } = useToast();
 
-const closeSlidingItems = () => {
+function closeSlidingItems() {
   itemSliding.value?.$el.close();
-};
+}
 
-const alertHandler = async () => {
+async function alertHandler() {
   const alert = await alertController.create({
     subHeader: 'Submit your action',
     message: `${transaction.name} will be removed.`,
@@ -48,14 +49,12 @@ const alertHandler = async () => {
   await alert.present();
 };
 
-const onRemoveHandler = async () => {
+async function onRemoveHandler() {
   await store.removeTransaction(transaction.id);
   closeSlidingItems();
-};
+}
 
-const { showSuccessToast, showErrorToast } = useToast();
-
-const openModal = async () => {
+async function openUpdateTransactionModal() {
   const modal = await modalController.create({
     component: UpdateItemModal,
   });
@@ -70,24 +69,23 @@ const openModal = async () => {
       await showErrorToast('Oops...Something went wrong');
     }
   }
-};
+}
 
-const updateHandler = () => {
+async function updateTransaction() {
   store.setTransactionItems({
     id: transaction.id,
     name: transaction.name,
     value: transaction.value,
     categoryId: transaction.categoryId,
   });
-
-  openModal();
+  await openUpdateTransactionModal()
 };
 </script>
 
 <template>
   <ion-item-sliding ref="item-sliding">
     <ion-item-options side="start">
-      <ion-item-option @click.stop="updateHandler">
+      <ion-item-option @click.stop="updateTransaction">
         <ion-icon slot="start" :icon="pencil"></ion-icon>
         <ion-label>Edit</ion-label>
       </ion-item-option>
