@@ -1,5 +1,6 @@
 export type PredefinedIcon =
   | 'beauty'
+  | 'clothes'
   | 'education'
   | 'entertainment'
   | 'food'
@@ -16,6 +17,7 @@ export type PredefinedIcon =
 export const PREDEFINED_ICONS: PredefinedIcon[] = [
   'beauty',
   'education',
+  'clothes',
   'entertainment',
   'food',
   'health',
@@ -29,7 +31,6 @@ export const PREDEFINED_ICONS: PredefinedIcon[] = [
   'utilities',
 ];
 
-// Dynamically collect all local PNG files from src/assets/icons/ relative to project root
 const localIcons = import.meta.glob('/src/assets/icons/*.png', { eager: true, import: 'default' }) as Record<
   string,
   string
@@ -44,12 +45,10 @@ export function getCategoryIconUrl(iconNameOrUrl: string | null | undefined): st
     return localIcons['/src/assets/icons/other.png'] || '';
   }
 
-  // If it's a full remote URL (legacy server icon or future custom uploaded icon)
   if (iconNameOrUrl.startsWith('http://') || iconNameOrUrl.startsWith('https://')) {
     return iconNameOrUrl;
   }
 
-  // Treat as local predefined icon name
   const iconKey = iconNameOrUrl.replace('.png', '') as PredefinedIcon;
   const path = `/src/assets/icons/${iconKey}.png`;
 
