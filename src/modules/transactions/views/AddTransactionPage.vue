@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { IonContent, IonButtons, IonBackButton, IonPage, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
-import TransactionForm from '@/modules/transactions/components/AddTransaction/TransactionForm.vue';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
+import AddTransactionForm from '@/modules/transactions/components/AddTransactionForm.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 
 const categoryStore = useCategoryStore();
@@ -22,8 +22,14 @@ onIonViewWillEnter(() => categoryStore.getCategoryList());
       <ion-progress-bar v-if="loading" type="indeterminate" />
     </BaseHeader>
 
-    <ion-content class="ion-padding">
-      <transaction-form />
+    <ion-content fullscreen class="ion-padding">
+      <AddTransactionForm />
     </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+ion-content {
+  --background: var(--ion-color-bg-light-grey);
+}
+</style>

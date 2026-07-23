@@ -73,12 +73,13 @@ function onTapHandler(id: string): void {
   width: calc(100% - 10px);
   height: 78px;
   border-radius: 8px;
-  color: var(--ion-color-tertiary);
+  color: var(--ion-color-secondary-tint);
   transform: translateX(6px) translateY(6px);
 }
 
 .pressed-card {
-  border: 1px solid var(--ion-color-tertiary);
-  background: var(--ion-color-tertiary-light);
+  border: 1px solid var(--ion-color-primary);
+  background: var(--ion-color-bg-green-pastel);
+  color: var(--ion-color-primary);
 }
 </style>
