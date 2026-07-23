@@ -6,7 +6,6 @@ export type PredefinedIcon =
   | 'food'
   | 'health'
   | 'housing'
-  | 'grocery'
   | 'other'
   | 'pets'
   | 'recreation'
@@ -14,24 +13,6 @@ export type PredefinedIcon =
   | 'sport'
   | 'transportation'
   | 'utilities';
-
-export const PREDEFINED_ICONS: PredefinedIcon[] = [
-  'beauty',
-  'education',
-  'clothes',
-  'entertainment',
-  'food',
-  'health',
-  'housing',
-  'grocery',
-  'other',
-  'pets',
-  'recreation',
-  'shopping',
-  'sport',
-  'transportation',
-  'utilities',
-];
 
 const localIcons = import.meta.glob('/src/assets/icons/*.png', { eager: true, import: 'default' }) as Record<
   string,
