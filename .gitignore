@@ -36,3 +36,6 @@ npm-debug.log*
 budget-app-keystore
 
 android/**/*.orig
+
+/tsconfig.node.tsbuildinfo
+/tsconfig.tsbuildinfo

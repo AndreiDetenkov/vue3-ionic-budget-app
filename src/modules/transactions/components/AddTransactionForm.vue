@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { IonButton, IonInput, IonLabel, IonSpinner } from '@ionic/vue';
+import { IonButton, IonInput, IonLabel, IonSpinner, IonGrid, IonCol, IonRow } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
@@ -85,9 +85,9 @@ async function onSubmitFormHandler(): Promise<void> {
             v-model="state.transaction"
             autocapitalize="on"
             label="What is it?"
-            label-placement="floating"
             fill="outline"
-            class="transaction-input"
+            label-placement="floating"
+            :clear-input="true"
           />
         </ion-col>
       </ion-row>
@@ -118,7 +118,7 @@ ion-label.amount-label {
 
 ion-input.amount-input {
   width: 100%;
-  font-size: 2.4rem;
+  font-size: 3rem;
   font-weight: 700;
   --placeholder-color: var(--ion-color-light-grey);
   --placeholder-font-weight: 700;
@@ -126,5 +126,6 @@ ion-input.amount-input {
 
 .submit-btn {
   --background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
+  margin-top: 1rem;
 }
 </style>
