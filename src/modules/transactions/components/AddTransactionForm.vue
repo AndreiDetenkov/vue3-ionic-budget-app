@@ -78,20 +78,16 @@ async function onSubmitFormHandler(): Promise<void> {
 
     <CategoriesForm @select-category="setCategoryId" />
 
-    <ion-grid class="ion-margin-bottom ion-no-padding">
-      <ion-row>
-        <ion-col>
-          <ion-input
-            v-model="state.transaction"
-            autocapitalize="on"
-            label="What is it?"
-            fill="outline"
-            label-placement="floating"
-            :clear-input="true"
-          />
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <div class="transaction-name-group">
+      <ion-label class="transaction-name-label">What is this for?</ion-label>
+      <ion-input
+        v-model="state.transaction"
+        autocapitalize="on"
+        placeholder="e.g., Bazaar"
+        :clear-input="true"
+        class="transaction-name-input"
+      />
+    </div>
 
     <ion-button
       expand="block"
@@ -122,6 +118,38 @@ ion-input.amount-input {
   font-weight: 700;
   --placeholder-color: var(--ion-color-light-grey);
   --placeholder-font-weight: 700;
+}
+
+.transaction-name-group {
+  margin: 1.5rem 0 1.25rem;
+}
+
+.transaction-name-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ion-color-dark, #2f2f2f);
+  display: block;
+  margin-bottom: 0.75rem;
+  padding-left: 0.25rem;
+}
+
+ion-input.transaction-name-input {
+  background: var(--ion-color-bg-light-green);
+  border-radius: 9999px;
+  overflow: hidden;
+  --padding-start: 1.5rem;
+  --padding-end: 1.5rem;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  --placeholder-color: #8e95a2;
+  --placeholder-opacity: 1;
+  --placeholder-font-weight: 400;
+  --highlight-height: 0;
+  --border-width: 0;
+  --border-style: none;
+  min-height: 54px;
+  font-size: 1rem;
+  color: var(--ion-color-dark, #2f2f2f);
 }
 
 .submit-btn {
