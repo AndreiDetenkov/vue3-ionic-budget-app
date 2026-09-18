@@ -76,7 +76,7 @@ async function onSubmitFormHandler(): Promise<void> {
         </ion-row>
       </ion-grid>
 
-    <CategoriesForm @select-category="setCategoryId" />
+    <CategoriesForm @select-category="setCategoryId" class="ion-margin-bottom" />
 
     <div class="transaction-name-group">
       <ion-label class="transaction-name-label">What is this for?</ion-label>
@@ -121,7 +121,7 @@ ion-input.amount-input {
 }
 
 .transaction-name-group {
-  margin: 1.5rem 0 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .transaction-name-label {

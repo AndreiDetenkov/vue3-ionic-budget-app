@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { IonCol, IonGrid, IonImg, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
+import { IonCol, IonGrid, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 import { PressedCategory } from '@/modules/categories/types';
 import { getCategoryIconUrl } from '@/core/utils';
@@ -35,7 +35,10 @@ function onTapHandler(id: string): void {
           :class="{ 'pressed-card': isPressed }"
         >
           <ion-ripple-effect class="card-custom-ripple" />
-          <ion-img class="card-img" :src="getCategoryIconUrl(icon)" :alt="title" />
+          <div
+            class="category-icon"
+            :style="({ maskImage: `url(${getCategoryIconUrl(icon)})` })"
+          />
           <ion-label class="card-title">{{ title }}</ion-label>
         </div>
       </ion-col>
@@ -53,9 +56,10 @@ function onTapHandler(id: string): void {
   text-align: center;
   justify-content: center;
   align-items: center;
-  color: var(--ion-color-dark);
+  color: var(--ion-color-dark-tint);
   min-height: 70px;
   box-sizing: border-box;
+  background-color: var(--ion-color-bg-light-green);
 }
 
 .card-title {
@@ -63,10 +67,18 @@ function onTapHandler(id: string): void {
   font-weight: 500;
 }
 
-.card-img {
-  width: 36px;
-  height: auto;
+.category-icon {
+  width: 32px;
+  height: 32px;
   margin-bottom: 8px;
+  background-color: var(--ion-color-dark);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  transition: background-color 0.2s ease;
 }
 
 .card-custom-ripple {
@@ -78,8 +90,12 @@ function onTapHandler(id: string): void {
 }
 
 .pressed-card {
-  border: 1px solid var(--ion-color-primary);
+  border: 1px solid var(--ion-color-bg-green-pastel);
   background: var(--ion-color-bg-green-pastel);
   color: var(--ion-color-primary);
+}
+
+.pressed-card .category-icon {
+  background-color: var(--ion-color-primary-tint);
 }
 </style>
