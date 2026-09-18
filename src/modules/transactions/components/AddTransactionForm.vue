@@ -135,12 +135,13 @@ ion-input.amount-input {
 
 ion-input.transaction-name-input {
   background: var(--ion-color-bg-light-green);
+  border: 1px solid var(--ion-color-light-shade);
   border-radius: 9999px;
   overflow: hidden;
   --padding-start: 1.5rem;
   --padding-end: 1.5rem;
-  --padding-top: 1rem;
-  --padding-bottom: 1rem;
+  --padding-top: 0.825rem;
+  --padding-bottom: 0.825rem;
   --placeholder-color: #8e95a2;
   --placeholder-opacity: 1;
   --placeholder-font-weight: 400;
@@ -155,5 +156,9 @@ ion-input.transaction-name-input {
 .submit-btn {
   --background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
   margin-top: 1rem;
+}
+
+.submit-btn span {
+  font-size: 1rem;
 }
 </style>
