@@ -71,7 +71,7 @@ function onTapHandler(id: string): void {
   width: 32px;
   height: 32px;
   margin-bottom: 8px;
-  background-color: var(--ion-color-dark);
+  background-color: var(--ion-color-medium);
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;
