@@ -1,6 +1,36 @@
 # Changelog
 
 
+## v0.1.15
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.14...v0.1.15)
+
+### 🚀 Enhancements
+
+- Remove 'grocery' category icon ([defd479](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/defd479))
+
+### 💅 Refactors
+
+- Remove redundant PREDEFINED_ICONS constant ([83a6791](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/83a6791))
+- Extract transaction item logic into TransactionListItem component ([ade5321](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ade5321))
+- Update AddTransactionForm with improved styles and state management ([45163b5](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/45163b5))
+- Enhance AddTransactionForm layout and input styling ([8eb73f8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8eb73f8))
+- Improve input group layout and styling in AddTransactionForm ([afbd338](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/afbd338))
+- Update styles in AddTransactionForm and CategoriesForm for consistency ([0caa4ed](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0caa4ed))
+- Adjust AddTransactionForm input and button styles for consistency ([097f9b4](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/097f9b4))
+
+### 🏡 Chore
+
+- Update Gradle wrapper to 9.5.0 and AGP to 9.3.0 ([459eb57](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/459eb57))
+- **deps-dev:** Bump vite from 8.0.5 to 8.0.16 ([#4](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/4))
+- Bump version name to 1.3.1 in build.gradle ([d6a3b52](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d6a3b52))
+- Bump version name to 1.4.1 in build.gradle ([c26c9cd](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c26c9cd))
+- Update pnpm-lock.yaml with latest dependency versions ([2943ccb](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2943ccb))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.14
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.13...v0.1.14)
