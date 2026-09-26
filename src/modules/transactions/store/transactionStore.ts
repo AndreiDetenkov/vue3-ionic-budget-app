@@ -20,6 +20,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
   const transactions = ref<Transaction[]>([]);
   const error = ref<PostgrestError | null>(null);
   const loading = ref<boolean>(false);
+  const creating = ref<boolean>(false);
   const transactionsUnit = ref<OpUnitType>('month');
   const transactionItems = ref<TransactionItemsForUpdate>({ id: '', name: '', value: 0, categoryId: '' });
 
@@ -90,7 +91,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
 
   async function createTransaction(payload: TransactionPayload): Promise<{ success: boolean }> {
     try {
-      loading.value = true;
+      creating.value = true;
       const { error: apiError } = await createTransactionApi(payload);
 
       if (apiError) {
@@ -102,7 +103,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
 
       return { success: true };
     } finally {
-      loading.value = false;
+      creating.value = false;
     }
   }
 
@@ -150,6 +151,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     transactions,
     error,
     loading,
+    creating,
     transactionsUnit,
     transactionItems,
     total,

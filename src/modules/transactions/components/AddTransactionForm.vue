@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { IonButton, IonInput, IonLabel, IonSpinner, IonGrid, IonCol, IonRow } from '@ionic/vue';
+import { IonButton, IonInput, IonLabel, IonSpinner, IonGrid, IonCol, IonRow, loadingController } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
@@ -12,7 +12,7 @@ import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
-const { loading } = storeToRefs(transactionStore)
+const { creating } = storeToRefs(transactionStore)
 const categoryStore = useCategoryStore();
 const { showErrorToast } = useToast();
 
@@ -44,12 +44,19 @@ function clearState(): void {
 }
 
 async function onSubmitFormHandler(): Promise<void> {
+  (document.activeElement as HTMLElement | null)?.blur();
+
   if (notValidForm.value) {
     await showErrorToast('There are fields that are not filled in!');
     return;
   }
 
-  const { success } = await transactionStore.createTransaction(createPayload());
+  const loader = await loadingController.create({ message: 'Creating transaction...', spinner: 'lines' });
+  await loader.present();
+
+  const { success } = await transactionStore
+    .createTransaction(createPayload())
+    .finally(() => loader.dismiss());
 
   if (!success) {
     await showErrorToast('Oops! Something went wrong!');
@@ -97,10 +104,10 @@ async function onSubmitFormHandler(): Promise<void> {
       type="submit"
       shape="round"
       size="large"
-      :disabled="loading"
+      :disabled="creating"
       class="submit-btn"
     >
-      <ion-spinner name="lines" v-if="loading" />
+      <ion-spinner name="lines" v-if="creating" />
       <span v-else>Create transaction</span>
     </ion-button>
   </form>
