@@ -9,11 +9,11 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "lint": "eslint --ext .ts,.vue src/ --fix",
-    "typecheck": "vue-tsc -b",
+    "typecheck": "vue-tsc -b --noEmit",
     "sync": "ionic capacitor sync android",
     "open": "ionic capacitor open android",
     "run": "ionic capacitor run android -l --external --target=676239e9",
