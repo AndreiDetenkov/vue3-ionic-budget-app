@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v1.0.0
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.17...v1.0.0)
+
 ## v0.1.17
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.16...v0.1.17)
