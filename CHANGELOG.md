@@ -1,6 +1,39 @@
 # Changelog
 
 
+## v0.1.17
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.16...v0.1.17)
+
+### 🚀 Enhancements
+
+- Add Prettier support and update package scripts ([5302968](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5302968))
+- Add verification hooks and pre-commit checks ([fb4a405](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/fb4a405))
+
+### 🩹 Fixes
+
+- Resolve typecheck errors ([c0ebd2e](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c0ebd2e))
+
+### 💅 Refactors
+
+- Reset category states on AddTransactionForm clear ([f84da4c](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f84da4c))
+- Add `creating` state and loader to improve transaction creation flow ([2e61f60](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2e61f60))
+- Replace IonButton with IonChip in UpdateItemModal and adjust styles ([5fc6b6a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5fc6b6a))
+- Update ReportListHeader styles and improve icon handling ([4b7d088](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4b7d088))
+- Remove type checking step from build script ([8cd961f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8cd961f))
+
+### 📖 Documentation
+
+- Add CLAUDE.md with project guidelines and architecture details ([0e13264](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/0e13264))
+
+### 🎨 Styles
+
+- Format src with prettier ([709e7d0](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/709e7d0))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.16
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.15...v0.1.16)
