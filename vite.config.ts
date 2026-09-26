@@ -12,14 +12,27 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
+      treeshake: {
+        // Ionic's component modules call proxyCustomElement() at top level without a /*@__PURE__*/
+        // annotation, so without this every component (~90) is bundled even when unused.
+        moduleSideEffects: [{ test: /@ionic[\\/]core[\\/]components[\\/]ion-[^\\/]+\.js$/, sideEffects: false }],
+      },
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/vue/') || id.includes('node_modules/vue-router/') || id.includes('node_modules/pinia/')) {
+          if (
+            id.includes('node_modules/vue/') ||
+            id.includes('node_modules/vue-router/') ||
+            id.includes('node_modules/pinia/')
+          ) {
             return 'vue-vendor';
           }
 
-          if (id.includes('node_modules/@ionic/vue/') || id.includes('node_modules/@ionic/vue-router/') || id.includes('node_modules/@ionic/core/')) {
+          if (
+            id.includes('node_modules/@ionic/vue/') ||
+            id.includes('node_modules/@ionic/vue-router/') ||
+            id.includes('node_modules/@ionic/core/')
+          ) {
             return 'ionic-vendor';
           }
 
@@ -39,7 +52,8 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 600,
+    // ionic-vendor is ~800 kB after tree-shaking; it ships inside the native app, not over the network.
+    chunkSizeWarningLimit: 900,
   },
   test: {
     globals: true,
