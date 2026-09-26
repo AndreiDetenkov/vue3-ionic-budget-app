@@ -5,6 +5,10 @@
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.17...v1.0.0)
 
+First stable release. No code changes since v0.1.17.
+
+From now on the project follows standard semver: `feat` commits bump the minor version, `fix` commits bump the patch version, and breaking changes bump the major version. Before 1.0.0, changelogen bumped features as patch releases because it treats `0.x` versions as unstable.
+
 ## v0.1.17
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.16...v0.1.17)
