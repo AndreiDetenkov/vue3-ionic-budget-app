@@ -7,11 +7,13 @@ import { storeToRefs } from 'pinia';
 import { useToast } from '@/core/composables/useToast';
 import { FormValues, TransactionPayload } from '@/modules/transactions/types';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
 const { loading } = storeToRefs(transactionStore)
+const categoryStore = useCategoryStore();
 const { showErrorToast } = useToast();
 
 const state = ref<FormValues>({
@@ -38,6 +40,7 @@ function createPayload(): TransactionPayload {
 
 function clearState(): void {
   state.value.transaction = state.value.amount = state.value.categoryId = '';
+  categoryStore.resetPressedCategories();
 }
 
 async function onSubmitFormHandler(): Promise<void> {

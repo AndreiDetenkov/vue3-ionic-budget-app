@@ -14,6 +14,12 @@ export const useCategoryStore = defineStore('categoryStore', () => {
     );
   }
 
+  function resetPressedCategories(): void {
+    pressedCategories.value.forEach((category: PressedCategory): void => {
+      category.isPressed = false;
+    });
+  }
+
   async function getCategoryList(): Promise<void> {
     if (categories.value.length > 0) {
       return;
@@ -41,6 +47,7 @@ export const useCategoryStore = defineStore('categoryStore', () => {
     error,
     loading,
     setCategoriesToPressed,
+    resetPressedCategories,
     getCategoryList,
   };
 });
