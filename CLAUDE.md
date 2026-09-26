@@ -10,9 +10,10 @@ Personal budget tracker: Vue 3 + Ionic 8 + Capacitor 8 (Android/iOS), backed by 
 
 ```bash
 pnpm dev                 # Vite dev server
-pnpm build               # vue-tsc type check + vite build (output: dist/, used as Capacitor webDir)
-pnpm typecheck           # vue-tsc -b (solution tsconfig: tsconfig.app.json + tsconfig.node.json)
+pnpm build               # vite build, no type check (output: dist/, used as Capacitor webDir)
+pnpm typecheck           # vue-tsc -b --noEmit (solution tsconfig: tsconfig.app.json + tsconfig.node.json)
 pnpm lint                # eslint with --fix on src/
+pnpm format              # prettier --write src/
 pnpm test:unit           # vitest (watch mode by default)
 pnpm test:unit run       # single run
 pnpm test:unit src/modules/transactions/store/transactionStore.spec.ts   # single file
@@ -42,5 +43,8 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
 ## Conventions
 
 - Prettier config is `@ionic/prettier-config`. ESLint uses flat config (`eslint.config.ts`) with `vue/no-deprecated-slot-attribute` off, because Ionic uses the `slot="..."` attribute.
+- **Verification**: after code changes run `pnpm typecheck`, `pnpm lint` and `pnpm format`. A husky pre-commit hook runs
+  lint-staged (eslint --fix + prettier on staged files) and `pnpm typecheck`. A Claude Code Stop hook
+  (`.claude/hooks/verify.sh`) runs the same checks when there are uncommitted changes and blocks until they pass.
 - Commits follow Conventional Commits (`feat:`, `refactor:`, `chore(release):`); changelogen builds `CHANGELOG.md` from them.
 - Vue/Pinia guidance for agents is in `.agents/skills/` (vue-best-practices, vue-pinia-best-practices, vue-testing-best-practices, vue-debug-guides).
