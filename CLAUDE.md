@@ -11,7 +11,7 @@ Personal budget tracker: Vue 3 + Ionic 8 + Capacitor 8 (Android/iOS), backed by 
 ```bash
 pnpm dev                 # Vite dev server
 pnpm build               # vue-tsc type check + vite build (output: dist/, used as Capacitor webDir)
-pnpm typecheck           # vue-tsc -b --noEmit
+pnpm typecheck           # vue-tsc -b (solution tsconfig: tsconfig.app.json + tsconfig.node.json)
 pnpm lint                # eslint with --fix on src/
 pnpm test:unit           # vitest (watch mode by default)
 pnpm test:unit run       # single run
