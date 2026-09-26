@@ -3,6 +3,7 @@ import {
   IonContent,
   IonButtons,
   IonButton,
+  IonChip,
   IonInput,
   modalController,
   IonSpinner,
@@ -30,7 +31,7 @@ const confirmHandler = async () => {
   <BaseHeader title="Update transaction">
     <template #buttons>
       <ion-buttons slot="end">
-        <ion-button color="primary" class="cancel-btn" @click="cancelHandler">Cancel</ion-button>
+        <ion-chip color="primary" @click="cancelHandler">Cancel</ion-chip>
       </ion-buttons>
     </template>
   </BaseHeader>
@@ -82,11 +83,5 @@ const confirmHandler = async () => {
 <style scoped>
 ion-button {
   height: 48px;
-}
-
-.cancel-btn {
-  text-transform: capitalize;
-  letter-spacing: 0;
-  font-size: 1.2rem;
 }
 </style>
