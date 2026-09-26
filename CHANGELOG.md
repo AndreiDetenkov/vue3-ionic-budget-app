@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.16
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.15...v0.1.16)
+
+### 💅 Refactors
+
+- Change color if not active icons ([4d3ed38](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/4d3ed38))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+
 ## v0.1.15
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v0.1.14...v0.1.15)
