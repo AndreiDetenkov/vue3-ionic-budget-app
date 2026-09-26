@@ -47,4 +47,7 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
   lint-staged (eslint --fix + prettier on staged files) and `pnpm typecheck`. A Claude Code Stop hook
   (`.claude/hooks/verify.sh`) runs the same checks when there are uncommitted changes and blocks until they pass.
 - Commits follow Conventional Commits (`feat:`, `refactor:`, `chore(release):`); changelogen builds `CHANGELOG.md` from them.
+- **Native versions are synced by hand.** `pnpm release` only bumps `package.json`. After a release, set the same
+  version in `android/app/build.gradle` (`versionName`) and `ios/App/App.xcodeproj/project.pbxproj`
+  (`MARKETING_VERSION`, Debug and Release).
 - Vue/Pinia guidance for agents is in `.agents/skills/` (vue-best-practices, vue-pinia-best-practices, vue-testing-best-practices, vue-debug-guides).
