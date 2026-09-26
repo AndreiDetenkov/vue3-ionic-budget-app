@@ -35,10 +35,7 @@ function onTapHandler(id: string): void {
           :class="{ 'pressed-card': isPressed }"
         >
           <ion-ripple-effect class="card-custom-ripple" />
-          <div
-            class="category-icon"
-            :style="({ maskImage: `url(${getCategoryIconUrl(icon)})` })"
-          />
+          <div class="category-icon" :style="{ maskImage: `url(${getCategoryIconUrl(icon)})` }" />
           <ion-label class="card-title">{{ title }}</ion-label>
         </div>
       </ion-col>

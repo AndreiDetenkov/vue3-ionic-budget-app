@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getCategoriesApi, CategoriesResponseError, Category, PressedCategory  } from '@/modules/categories';
+import { getCategoriesApi, CategoriesResponseError, Category, PressedCategory } from '@/modules/categories';
 
 export const useCategoryStore = defineStore('categoryStore', () => {
   const categories = ref<Category[]>([]);
@@ -9,9 +9,10 @@ export const useCategoryStore = defineStore('categoryStore', () => {
   const loading = ref<boolean>(false);
 
   function setCategoriesToPressed(newCategories: Category[]): void {
-    pressedCategories.value = newCategories.map(
-      (category: Category): PressedCategory => ({ ...category, isPressed: false }),
-    );
+    pressedCategories.value = newCategories.map((category: Category): PressedCategory => ({
+      ...category,
+      isPressed: false,
+    }));
   }
 
   function resetPressedCategories(): void {

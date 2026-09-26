@@ -12,7 +12,7 @@ import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
-const { creating } = storeToRefs(transactionStore)
+const { creating } = storeToRefs(transactionStore);
 const categoryStore = useCategoryStore();
 const { showErrorToast } = useToast();
 
@@ -54,9 +54,7 @@ async function onSubmitFormHandler(): Promise<void> {
   const loader = await loadingController.create({ message: 'Creating transaction...', spinner: 'lines' });
   await loader.present();
 
-  const { success } = await transactionStore
-    .createTransaction(createPayload())
-    .finally(() => loader.dismiss());
+  const { success } = await transactionStore.createTransaction(createPayload()).finally(() => loader.dismiss());
 
   if (!success) {
     await showErrorToast('Oops! Something went wrong!');
@@ -69,22 +67,16 @@ async function onSubmitFormHandler(): Promise<void> {
 
 <template>
   <form @submit.prevent="onSubmitFormHandler">
-      <ion-grid class="ion-margin-bottom ion-no-padding">
-        <ion-row>
-          <ion-col></ion-col>
-          <ion-col size="6" class="ion-text-center">
-            <ion-label class="amount-label">Enter Amount</ion-label>
-            <ion-input
-              v-model="state.amount"
-              type="number"
-              inputmode="numeric"
-              placeholder="0.00"
-              class="amount-input"
-            />
-          </ion-col>
-          <ion-col></ion-col>
-        </ion-row>
-      </ion-grid>
+    <ion-grid class="ion-margin-bottom ion-no-padding">
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col size="6" class="ion-text-center">
+          <ion-label class="amount-label">Enter Amount</ion-label>
+          <ion-input v-model="state.amount" type="number" inputmode="numeric" placeholder="0.00" class="amount-input" />
+        </ion-col>
+        <ion-col></ion-col>
+      </ion-row>
+    </ion-grid>
 
     <CategoriesForm @select-category="setCategoryId" class="ion-margin-bottom" />
 
@@ -99,14 +91,7 @@ async function onSubmitFormHandler(): Promise<void> {
       />
     </div>
 
-    <ion-button
-      expand="block"
-      type="submit"
-      shape="round"
-      size="large"
-      :disabled="creating"
-      class="submit-btn"
-    >
+    <ion-button expand="block" type="submit" shape="round" size="large" :disabled="creating" class="submit-btn">
       <ion-spinner name="lines" v-if="creating" />
       <span v-else>Create transaction</span>
     </ion-button>
@@ -115,7 +100,7 @@ async function onSubmitFormHandler(): Promise<void> {
 
 <style scoped>
 ion-label.amount-label {
-  font-size: .8rem;
+  font-size: 0.8rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   display: block;
@@ -164,7 +149,7 @@ ion-input.transaction-name-input {
 }
 
 .submit-btn {
-  --background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
+  --background: linear-gradient(90deg, rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
   margin-top: 1rem;
 }
 

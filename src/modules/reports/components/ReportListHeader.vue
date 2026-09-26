@@ -67,5 +67,4 @@ ion-label.amount {
   font-weight: 600;
   text-align: right;
 }
-
 </style>

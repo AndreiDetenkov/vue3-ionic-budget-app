@@ -1,4 +1,4 @@
 export * from './types';
 export * from './api/transactions';
 export * from './store/transactionStore';
-export * from './utils'
+export * from './utils';

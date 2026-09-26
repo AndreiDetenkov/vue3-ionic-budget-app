@@ -29,8 +29,8 @@ const formattedTotal = computed<string>(() => formatAmount(store.total));
 
 <style scoped>
 ion-card {
-  background: #1B4332;
-  background: linear-gradient(90deg,rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
+  background: #1b4332;
+  background: linear-gradient(90deg, rgba(27, 67, 50, 1) 0%, rgba(64, 145, 108, 1) 100%);
   border-radius: 1.6rem;
   padding: 0.5rem 1rem 0.5rem 1.4rem;
   margin-bottom: 1rem;
@@ -43,7 +43,7 @@ ion-card-subtitle {
   color: var(--ion-color-amount);
   opacity: 0.6;
   text-transform: uppercase;
-  letter-spacing: 2px
+  letter-spacing: 2px;
 }
 
 ion-card-title .amount {
@@ -61,7 +61,7 @@ ion-card-title .currency {
 ion-chip {
   font-size: 1rem;
   --color: var(--ion-color-amount);
-  background: #3F7A63;
+  background: #3f7a63;
   opacity: 0.8;
   pointer-events: none;
   padding: 0.4rem 1.2rem;

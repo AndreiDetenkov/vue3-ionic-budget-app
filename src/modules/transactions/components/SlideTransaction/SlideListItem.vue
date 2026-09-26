@@ -49,7 +49,7 @@ async function alertHandler() {
   });
 
   await alert.present();
-};
+}
 
 async function onRemoveHandler() {
   await store.removeTransaction(transaction.id);
@@ -80,9 +80,9 @@ async function updateTransaction() {
     value: transaction.value,
     categoryId: transaction.categoryId,
   });
-  await categoryStore.getCategoryList()
-  await openUpdateTransactionModal()
-};
+  await categoryStore.getCategoryList();
+  await openUpdateTransactionModal();
+}
 </script>
 
 <template>

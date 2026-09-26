@@ -4,3 +4,4 @@ android/app/src/main/AndroidManifest.xml
 /dist
 /android
 /ios
+/src/core/plugins/database.types.ts

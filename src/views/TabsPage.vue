@@ -30,7 +30,8 @@ import { list, barChartSharp, addCircleOutline } from 'ionicons/icons';
 
 <style scoped>
 ion-tab-bar {
-  padding: 0.5rem var(--ion-safe-area-right, 0px) calc(var(--ion-safe-area-bottom, 0px) + 0.5rem) var(--ion-safe-area-left, 0px);
+  padding: 0.5rem var(--ion-safe-area-right, 0px) calc(var(--ion-safe-area-bottom, 0px) + 0.5rem)
+    var(--ion-safe-area-left, 0px);
 }
 
 ion-tab-button {

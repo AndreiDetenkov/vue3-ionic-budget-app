@@ -1,14 +1,5 @@
 <script setup lang="ts">
-import {
-  IonModal,
-  IonContent,
-  IonButtons,
-  IonChip,
-  IonList,
-  IonItemGroup,
-  IonItemDivider,
-  IonLabel,
-} from '@ionic/vue';
+import { IonModal, IonContent, IonButtons, IonChip, IonList, IonItemGroup, IonItemDivider, IonLabel } from '@ionic/vue';
 import type { Transaction } from '@/modules/transactions';
 import { formatDate } from '@/core/utils/dates';
 import BaseHeader from '@/core/components/BaseHeader.vue';
@@ -42,11 +33,7 @@ const closeModal = () => {
             <ion-label> {{ formatDate(date.toString(), 'DD.MM.YYYY dddd') }} </ion-label>
           </ion-item-divider>
 
-          <TransactionListItem
-            v-for="transaction in transactions"
-            :key="transaction.id"
-            :transaction="transaction"
-          />
+          <TransactionListItem v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
         </ion-item-group>
       </ion-list>
     </ion-content>
