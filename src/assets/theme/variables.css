@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import './tokens.css';
 
 :root {
   --ion-font-family: 'Manrope', sans-serif;
@@ -25,11 +26,11 @@
   --ion-color-secondary-tint: #539c7b;
 
   --ion-color-tertiary: #ff9f1c;
-  --ion-color-tertiary-rgb: 0, 0, 0;
+  --ion-color-tertiary-rgb: 255, 159, 28;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #000000;
-  --ion-color-tertiary-tint: #1a1a1a;
+  --ion-color-tertiary-shade: #e08c19;
+  --ion-color-tertiary-tint: #ffa933;
 
   --ion-color-success: #2dd55b;
   --ion-color-success-rgb: 45, 213, 91;
