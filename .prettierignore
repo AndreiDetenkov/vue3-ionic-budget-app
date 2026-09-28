@@ -5,3 +5,4 @@ android/app/src/main/AndroidManifest.xml
 /android
 /ios
 /src/core/plugins/database.types.ts
+/docs/design

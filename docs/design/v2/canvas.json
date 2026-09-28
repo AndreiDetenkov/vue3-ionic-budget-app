@@ -1,0 +1,162 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AddEmpty.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Новый расход — пусто",
+      "w": 390,
+      "x": 0,
+      "y": 1204
+    },
+    "AddTransaction.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Новый расход — заполнено",
+      "w": 390,
+      "x": 470,
+      "y": 1204
+    },
+    "AllTransactions.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Все транзакции",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "ComponentsCore.dc.html": {
+      "h": 1560,
+      "page": "components",
+      "title": "Компоненты · базовые",
+      "w": 1280,
+      "x": 1360,
+      "y": 0
+    },
+    "ComponentsLists.dc.html": {
+      "h": 1500,
+      "page": "components",
+      "title": "Компоненты · списки",
+      "w": 1280,
+      "x": 2720,
+      "y": 0
+    },
+    "EditTransaction.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Изменить расход (шторка 0.9)",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Foundations.dc.html": {
+      "h": 1520,
+      "page": "components",
+      "title": "Основы",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Главная",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "MainEmpty.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Главная — пусто",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Reports.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Отчёты",
+      "w": 390,
+      "x": 940,
+      "y": 1204
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-28T09:27:16.733Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "page": "screens",
+    "view": "canvas"
+  },
+  "notes": {
+    "componentsTitle": {
+      "kind": "title1",
+      "maxW": 4000,
+      "page": "components",
+      "text": "Основы и компоненты",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "screensP1": {
+      "fill": "green",
+      "page": "screens",
+      "text": "Уже с P1: глаз (приватность — Tweaks › privacy на «Главной»), выбор месяца и сравнение в hero, центральная кнопка «Добавить», поиск, суммы в разделителях дат, шторка вместо таба.\n\nТема: Tweaks › theme = dark показывает черновик тёмной палитры (P2).",
+      "w": 320,
+      "x": 1920,
+      "y": 0
+    },
+    "screensRow1": {
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "screens",
+      "text": "Транзакции",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "screensRow2": {
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "screens",
+      "text": "Добавление и отчёты",
+      "w": 240,
+      "x": 0,
+      "y": 904
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "AllTransactions.dc.html",
+    "EditTransaction.dc.html",
+    "MainEmpty.dc.html",
+    "AddEmpty.dc.html",
+    "AddTransaction.dc.html",
+    "Reports.dc.html",
+    "Foundations.dc.html",
+    "ComponentsCore.dc.html",
+    "ComponentsLists.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "screens",
+      "name": "Экраны"
+    },
+    {
+      "id": "components",
+      "name": "Компоненты"
+    }
+  ],
+  "title": "Budget App v2 — экраны и компоненты"
+}

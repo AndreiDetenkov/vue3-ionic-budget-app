@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Все транзакции</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+  <helmet>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&amp;display=swap" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background: #e7ebe9
+      }
+
+      :root {
+        --ds-green-950: #0f2a1f;
+        --ds-green-900: #1b4332;
+        --ds-green-800: #325647;
+        --ds-green-700: #2d6a4f;
+        --ds-green-600: #40916c;
+        --ds-green-400: #74c69d;
+        --ds-green-300: #95d5b2;
+        --ds-green-200: #c2d9c3;
+        --ds-green-100: #dde7d1;
+        --ds-green-50: #edf0ef;
+        --ds-mint-100: #d0fde4;
+        --ds-neutral-0: #ffffff;
+        --ds-neutral-25: #f8f9fa;
+        --ds-neutral-50: #f2f4f4;
+        --ds-neutral-150: #dadbdc;
+        --ds-neutral-200: #dadddf;
+        --ds-neutral-500: #66706c;
+        --ds-neutral-600: #5f5f5f;
+        --ds-neutral-800: #2f2f2f;
+        --ds-neutral-900: #1d201f;
+        --ds-red-600: #c5000f;
+        --ds-red-50: #fdecec;
+        --ds-bg-app: var(--ds-neutral-50);
+        --ds-bg-surface: var(--ds-neutral-0);
+        --ds-bg-subtle: var(--ds-green-50);
+        --ds-bg-selected: var(--ds-green-100);
+        --ds-bg-brand: var(--ds-green-900);
+        --ds-bg-brand-gradient: linear-gradient(90deg, var(--ds-green-900) 0%, var(--ds-green-700) 100%);
+        --ds-bg-on-brand: rgba(208, 253, 228, 0.14);
+        --ds-bg-danger-subtle: var(--ds-red-50);
+        --ds-text-primary: var(--ds-neutral-800);
+        --ds-text-secondary: var(--ds-neutral-600);
+        --ds-text-placeholder: var(--ds-neutral-500);
+        --ds-text-heading: var(--ds-green-800);
+        --ds-text-brand: var(--ds-green-900);
+        --ds-text-on-brand: var(--ds-mint-100);
+        --ds-text-on-brand-muted: rgba(208, 253, 228, 0.72);
+        --ds-text-danger: var(--ds-red-600);
+        --ds-icon-default: var(--ds-neutral-600);
+        --ds-icon-brand: var(--ds-green-800);
+        --ds-border-default: var(--ds-neutral-150);
+        --ds-border-strong: var(--ds-neutral-600);
+        --ds-border-focus: var(--ds-green-600);
+        --ds-shadow-sm: 0 1px 2px rgba(27, 67, 50, 0.06);
+        --ds-shadow-md: 0 4px 12px rgba(27, 67, 50, 0.1);
+        --ds-shadow-hero: 0 10px 24px -8px rgba(27, 67, 50, 0.45);
+        --ds-scrim: rgba(15, 42, 31, 0.4);
+        --ds-inverse-bg: var(--ds-neutral-900);
+        --ds-inverse-text: var(--ds-neutral-0);
+        --ds-cat-food-bg: #fee6d4;
+        --ds-cat-food-fg: #6c411a;
+        --ds-cat-housing-bg: #ffe3df;
+        --ds-cat-housing-fg: #733a36;
+        --ds-cat-transportation-bg: #daeeff;
+        --ds-cat-transportation-fg: #285077;
+        --ds-cat-utilities-bg: #f6ead1;
+        --ds-cat-utilities-fg: #61490c;
+        --ds-cat-health-bg: #ffe2e6;
+        --ds-cat-health-fg: #723943;
+        --ds-cat-clothes-bg: #f9e3f7;
+        --ds-cat-clothes-fg: #653c62;
+        --ds-cat-beauty-bg: #ffe2ec;
+        --ds-cat-beauty-fg: #6f394f;
+        --ds-cat-shopping-bg: #ece7ff;
+        --ds-cat-shopping-fg: #504374;
+        --ds-cat-entertainment-bg: #e4eaff;
+        --ds-cat-entertainment-fg: #414978;
+        --ds-cat-recreation-bg: #d1f3f4;
+        --ds-cat-recreation-fg: #005a5e;
+        --ds-cat-education-bg: #d4f0fe;
+        --ds-cat-education-fg: #0a5470;
+        --ds-cat-sport-bg: #e1f1da;
+        --ds-cat-sport-fg: #395728;
+        --ds-cat-pets-bg: #ffe5d8;
+        --ds-cat-pets-fg: #713e26;
+        --ds-cat-other-bg: var(--ds-green-100);
+        --ds-cat-other-fg: var(--ds-green-800);
+      }
+
+      .theme-dark {
+        --ds-bg-app: #111614;
+        --ds-bg-surface: #1a211e;
+        --ds-bg-subtle: #212a26;
+        --ds-bg-selected: #25392f;
+        --ds-bg-brand-gradient: linear-gradient(90deg, #163a2a 0%, #24583f 100%);
+        --ds-text-primary: #e8efeb;
+        --ds-text-secondary: #a3aba7;
+        --ds-text-placeholder: #7d8783;
+        --ds-text-heading: #b7e4c7;
+        --ds-text-brand: #95d5b2;
+        --ds-icon-default: #a3aba7;
+        --ds-icon-brand: #95d5b2;
+        --ds-border-default: #2c3632;
+        --ds-border-strong: #7d8783;
+        --ds-shadow-hero: 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+        --ds-scrim: rgba(0, 0, 0, 0.55);
+        --ds-inverse-bg: #e8efeb;
+        --ds-inverse-text: #111614;
+      }
+
+      .ic {
+        display: block;
+        width: 55%;
+        height: 55%;
+        background: currentColor;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center
+      }
+
+      .m-beauty {
+        -webkit-mask-image: url(/_blob/ec39340f7f6c1194e1a31ff68852a7d4);
+        mask-image: url(/_blob/ec39340f7f6c1194e1a31ff68852a7d4)
+      }
+
+      .m-clothes {
+        -webkit-mask-image: url(/_blob/d954b0a0a732b4a75544df4381edcc1e);
+        mask-image: url(/_blob/d954b0a0a732b4a75544df4381edcc1e)
+      }
+
+      .m-education {
+        -webkit-mask-image: url(/_blob/e5dc0b1bd36eb5c93bda45cd8ef5e0e0);
+        mask-image: url(/_blob/e5dc0b1bd36eb5c93bda45cd8ef5e0e0)
+      }
+
+      .m-entertainment {
+        -webkit-mask-image: url(/_blob/e99e3eab909d1a553031af955fd7d017);
+        mask-image: url(/_blob/e99e3eab909d1a553031af955fd7d017)
+      }
+
+      .m-food {
+        -webkit-mask-image: url(/_blob/e3433ff36f3fb8777490063f159246ed);
+        mask-image: url(/_blob/e3433ff36f3fb8777490063f159246ed)
+      }
+
+      .m-health {
+        -webkit-mask-image: url(/_blob/dc072e4fdb8edafef38ac0b5892f0c0f);
+        mask-image: url(/_blob/dc072e4fdb8edafef38ac0b5892f0c0f)
+      }
+
+      .m-housing {
+        -webkit-mask-image: url(/_blob/8ed60cf6bd3a251404cb24eae39a793a);
+        mask-image: url(/_blob/8ed60cf6bd3a251404cb24eae39a793a)
+      }
+
+      .m-other {
+        -webkit-mask-image: url(/_blob/8a27feaf5e6163a9b57bc2606b80f7dd);
+        mask-image: url(/_blob/8a27feaf5e6163a9b57bc2606b80f7dd)
+      }
+
+      .m-pets {
+        -webkit-mask-image: url(/_blob/5436a62ff8d86e6f5dd6fa5d68a72263);
+        mask-image: url(/_blob/5436a62ff8d86e6f5dd6fa5d68a72263)
+      }
+
+      .m-recreation {
+        -webkit-mask-image: url(/_blob/1d7914325efe312b1325eab7c9dbf2e7);
+        mask-image: url(/_blob/1d7914325efe312b1325eab7c9dbf2e7)
+      }
+
+      .m-shopping {
+        -webkit-mask-image: url(/_blob/227a6ad97323db507124509b6bc81738);
+        mask-image: url(/_blob/227a6ad97323db507124509b6bc81738)
+      }
+
+      .m-sport {
+        -webkit-mask-image: url(/_blob/2253f6f4dfbfcddd232d35fa293d7b1d);
+        mask-image: url(/_blob/2253f6f4dfbfcddd232d35fa293d7b1d)
+      }
+
+      .m-transportation {
+        -webkit-mask-image: url(/_blob/16a23d9e08326755c5b7d3b8302c051c);
+        mask-image: url(/_blob/16a23d9e08326755c5b7d3b8302c051c)
+      }
+
+      .m-utilities {
+        -webkit-mask-image: url(/_blob/20ca35dfb9a7115f9343e5ea7c522e08);
+        mask-image: url(/_blob/20ca35dfb9a7115f9343e5ea7c522e08)
+      }
+
+      .cat-food {
+        background: var(--ds-cat-food-bg);
+        color: var(--ds-cat-food-fg)
+      }
+
+      .cat-housing {
+        background: var(--ds-cat-housing-bg);
+        color: var(--ds-cat-housing-fg)
+      }
+
+      .cat-transportation {
+        background: var(--ds-cat-transportation-bg);
+        color: var(--ds-cat-transportation-fg)
+      }
+
+      .cat-utilities {
+        background: var(--ds-cat-utilities-bg);
+        color: var(--ds-cat-utilities-fg)
+      }
+
+      .cat-health {
+        background: var(--ds-cat-health-bg);
+        color: var(--ds-cat-health-fg)
+      }
+
+      .cat-clothes {
+        background: var(--ds-cat-clothes-bg);
+        color: var(--ds-cat-clothes-fg)
+      }
+
+      .cat-beauty {
+        background: var(--ds-cat-beauty-bg);
+        color: var(--ds-cat-beauty-fg)
+      }
+
+      .cat-shopping {
+        background: var(--ds-cat-shopping-bg);
+        color: var(--ds-cat-shopping-fg)
+      }
+
+      .cat-entertainment {
+        background: var(--ds-cat-entertainment-bg);
+        color: var(--ds-cat-entertainment-fg)
+      }
+
+      .cat-recreation {
+        background: var(--ds-cat-recreation-bg);
+        color: var(--ds-cat-recreation-fg)
+      }
+
+      .cat-education {
+        background: var(--ds-cat-education-bg);
+        color: var(--ds-cat-education-fg)
+      }
+
+      .cat-sport {
+        background: var(--ds-cat-sport-bg);
+        color: var(--ds-cat-sport-fg)
+      }
+
+      .cat-pets {
+        background: var(--ds-cat-pets-bg);
+        color: var(--ds-cat-pets-fg)
+      }
+
+      .cat-other {
+        background: var(--ds-cat-other-bg);
+        color: var(--ds-cat-other-fg)
+      }
+
+      .cat-brand {
+        background: var(--ds-bg-selected);
+        color: var(--ds-icon-brand)
+      }
+
+      button, input {
+        font-family: inherit
+      }
+
+      input::placeholder {
+        color: var(--ds-text-placeholder);
+        opacity: 1
+      }
+
+      .num {
+        font-variant-numeric: tabular-nums
+      }
+
+      a {
+        color: var(--ds-text-brand)
+      }
+
+      a:hover {
+        color: var(--ds-green-700)
+      }
+    </style>
+  </helmet>
+  <div class="theme-{{theme}}"
+       style="position:relative;width:390px;height:844px;box-sizing:border-box;overflow:hidden;background:var(--ds-bg-app);font-family:'Manrope',system-ui,sans-serif;color:var(--ds-text-primary)">
+    <header style="display:flex;align-items:center;gap:8px;padding:20px 16px 12px;min-height:44px"><h1
+      style="margin:0;flex-grow:1;font-size:28px;line-height:1.2;font-weight:800;color:var(--ds-text-heading)">Все
+      транзакции</h1><a href="Main.dc.html"
+                        style="height:44px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:transparent;border-radius:999px;font-size:16px;font-weight:600;color:var(--ds-text-brand);text-decoration:none;margin-right:-12px">Закрыть</a>
+    </header>
+    <main style="display:flex;flex-direction:column;gap:8px;padding:4px 16px 32px">
+      <div style="position:relative;display:flex;align-items:center"><span
+        style="position:absolute;left:18px;display:grid;color:var(--ds-icon-default)"><svg width="20" height="20"
+                                                                                           viewBox="0 0 24 24"
+                                                                                           fill="none"
+                                                                                           stroke="currentColor"
+                                                                                           stroke-width="2"
+                                                                                           stroke-linecap="round"
+                                                                                           stroke-linejoin="round"
+                                                                                           aria-hidden="true"><circle
+        cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span><label for="q"
+                                                                                            style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Поиск</label><input
+        id="q" type="search" placeholder="Поиск по названию"
+        style="width:100%;height:48px;box-sizing:border-box;padding:0 20px 0 48px;border:1px solid var(--ds-border-default);border-radius:999px;background:var(--ds-bg-subtle);font-size:16px;font-weight:500;color:var(--ds-text-primary);outline:none">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-top:16px"><span
+        style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ds-text-secondary)">Сегодня</span><span
+        class="num"
+        style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:14px;font-weight:600;line-height:1.35;color:var(--ds-text-secondary)"><span>2 740</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-food"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-food"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Globus</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Еда</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>1 850</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-transportation"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-transportation"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Яндекс Go</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Транспорт</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>340</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-food"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-food"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Kulikov</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Еда</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>550</span></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-top:16px"><span
+        style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ds-text-secondary)">Вчера</span><span
+        class="num"
+        style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:14px;font-weight:600;line-height:1.35;color:var(--ds-text-secondary)"><span>3 520</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-utilities"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-utilities"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Электричество</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Коммуналка</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>2 400</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-health"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-health"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Аптека</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Здоровье</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>1 120</span></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-top:16px"><span
+        style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ds-text-secondary)">Сб, 26 сентября</span><span
+        class="num"
+        style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:14px;font-weight:600;line-height:1.35;color:var(--ds-text-secondary)"><span>4 190</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-food"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-food"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Фрунзе</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Еда</span></div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>3 290</span></span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ds-bg-surface);border:1px solid var(--ds-border-default);border-radius:16px;">
+        <span class="cat-entertainment"
+              style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none"
+              aria-hidden="true"><span class="ic m-entertainment"></span></span>
+        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span
+          style="font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Cinematica</span><span
+          style="font-size:14px;font-weight:500;line-height:1.35;color:var(--ds-text-secondary)">Развлечения</span>
+        </div>
+        <span class="num"
+              style="display:inline-flex;align-items:baseline;gap:0.3em;white-space:nowrap;font-size:17px;font-weight:600;line-height:1.35;color:var(--ds-text-primary)"><span>900</span></span>
+      </div>
+    </main>
+  </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script
+        data-props='{"theme": {"editor": "enum", "options": ["light", "dark"], "default": "light", "section": "Тема"}, "$preview": {"width": 390, "height": 844}}'>
+  class Component extends DCLogic {
+  renderVals() {
+  return { theme: this.props.theme ?? 'light' };
+  }
+  }
+</script>
+</body>
+</html>
