@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ splash icon: the canvas is 288dp and only the inner 192dp circle is visible,
+  so the logo is inset to fit inside that circle on a transparent background.
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="25%" />

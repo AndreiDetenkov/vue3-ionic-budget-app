@@ -39,3 +39,5 @@ android/**/*.orig
 
 /tsconfig.node.tsbuildinfo
 /tsconfig.tsbuildinfo
+
+.claude/
