@@ -1,10 +1,11 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getStorage, type Transaction } from '@/core/storage';
+import { useStorage, type Transaction } from '@/core/storage';
 import { Report } from '@/modules/reports';
 import { formatAmount } from '@/core/utils';
 
 export const useReportStore = defineStore('reportStore', () => {
+  const storage = useStorage();
   const isLoading = ref(false);
   const reports = ref<Transaction[]>();
 
@@ -49,7 +50,7 @@ export const useReportStore = defineStore('reportStore', () => {
   const getReports = async (from: string, to: string) => {
     isLoading.value = true;
     try {
-      reports.value = await getStorage().getTransactionsByRange({ from, to });
+      reports.value = await storage.getTransactionsByRange({ from, to });
     } catch {
       reports.value = [];
     } finally {

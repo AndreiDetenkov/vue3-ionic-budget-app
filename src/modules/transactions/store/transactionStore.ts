@@ -4,7 +4,7 @@ import dayjs, { type OpUnitType } from 'dayjs';
 
 import { getRangeDates } from '@/core/utils/dates';
 import {
-  getStorage,
+  useStorage,
   toError,
   type CreateTransactionInput,
   type Transaction,
@@ -12,6 +12,7 @@ import {
 } from '@/core/storage';
 
 export const useTransactionStore = defineStore('transactionStore', () => {
+  const storage = useStorage();
   const transactions = ref<Transaction[]>([]);
   const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
@@ -69,7 +70,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     loading.value = true;
 
     try {
-      transactions.value = await getStorage().getTransactionsByRange({
+      transactions.value = await storage.getTransactionsByRange({
         from: startDate,
         to: endDate,
       });
@@ -85,7 +86,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     creating.value = true;
 
     try {
-      await getStorage().createTransaction(payload);
+      await storage.createTransaction(payload);
       await getTransactionsByRange(transactionsUnit.value);
       return { success: true };
     } catch (err) {
@@ -101,7 +102,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     loading.value = true;
 
     try {
-      await getStorage().removeTransaction(id);
+      await storage.removeTransaction(id);
       await getTransactionsByRange(transactionsUnit.value);
     } catch (err) {
       error.value = toError(err);
@@ -115,7 +116,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     loading.value = true;
 
     try {
-      await getStorage().updateTransaction(transactionItems.value);
+      await storage.updateTransaction(transactionItems.value);
       await getTransactionsByRange(transactionsUnit.value);
       return { success: true };
     } catch (err) {

@@ -3,8 +3,16 @@ import type { BudgetStorage } from './types';
 
 let activeStorage: BudgetStorage = createSupabaseStorage();
 
-export function getStorage(): BudgetStorage {
-  return activeStorage;
+const storageProxy: BudgetStorage = {
+  getTransactionsByRange: (range) => activeStorage.getTransactionsByRange(range),
+  createTransaction: (input) => activeStorage.createTransaction(input),
+  updateTransaction: (input) => activeStorage.updateTransaction(input),
+  removeTransaction: (id) => activeStorage.removeTransaction(id),
+  getCategories: () => activeStorage.getCategories(),
+};
+
+export function useStorage(): BudgetStorage {
+  return storageProxy;
 }
 
 export function setStorage(storage: BudgetStorage): void {

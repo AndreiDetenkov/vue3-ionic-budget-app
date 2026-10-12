@@ -1,26 +1,13 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getStorage, toError } from '@/core/storage';
-import type { Category, PressedCategory } from '../types';
+import { useStorage, toError } from '@/core/storage';
+import type { Category } from '../types';
 
 export const useCategoryStore = defineStore('categoryStore', () => {
+  const storage = useStorage();
   const categories = ref<Category[]>([]);
-  const pressedCategories = ref<PressedCategory[]>([]);
   const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
-
-  function setCategoriesToPressed(newCategories: Category[]): void {
-    pressedCategories.value = newCategories.map((category: Category): PressedCategory => ({
-      ...category,
-      isPressed: false,
-    }));
-  }
-
-  function resetPressedCategories(): void {
-    pressedCategories.value.forEach((category: PressedCategory): void => {
-      category.isPressed = false;
-    });
-  }
 
   async function getCategoryList(): Promise<void> {
     if (categories.value.length > 0) {
@@ -31,9 +18,7 @@ export const useCategoryStore = defineStore('categoryStore', () => {
     loading.value = true;
 
     try {
-      const data = await getStorage().getCategories();
-      categories.value = data;
-      setCategoriesToPressed(data);
+      categories.value = await storage.getCategories();
     } catch (err) {
       error.value = toError(err);
     } finally {
@@ -43,11 +28,8 @@ export const useCategoryStore = defineStore('categoryStore', () => {
 
   return {
     categories,
-    pressedCategories,
     error,
     loading,
-    setCategoriesToPressed,
-    resetPressedCategories,
     getCategoryList,
   };
 });

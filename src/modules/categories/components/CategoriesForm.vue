@@ -1,38 +1,31 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { IonCol, IonGrid, IonLabel, IonRippleEffect, IonRow } from '@ionic/vue';
-import { useCategoryStore } from '@/modules/categories/store/categoryStore';
-import { PressedCategory } from '@/modules/categories/types';
+import { useCategoryStore } from '@/modules/categories';
 import { getCategoryIconUrl } from '@/core/utils';
 
-const emit = defineEmits<{
-  'select-category': [id: string];
-}>();
+const selectedCategoryId = defineModel<string>({ required: true });
 
 const categoryStore = useCategoryStore();
-const { pressedCategories } = storeToRefs(categoryStore);
+const { categories } = storeToRefs(categoryStore);
 
 function onTapHandler(id: string): void {
   if (!id) {
     return;
   }
 
-  pressedCategories.value.forEach((category: PressedCategory): void => {
-    category.isPressed = category.id === id;
-  });
-
-  emit('select-category', id);
+  selectedCategoryId.value = id;
 }
 </script>
 
 <template>
   <ion-grid class="ion-margin-bottom">
     <ion-row>
-      <ion-col v-for="{ id, title, icon, isPressed } in pressedCategories" :key="id.toString()" size="4">
+      <ion-col v-for="{ id, title, icon } in categories" :key="id" size="4">
         <div
           @click.stop="onTapHandler(id)"
           class="ion-activatable ripple-parent card"
-          :class="{ 'pressed-card': isPressed }"
+          :class="{ 'pressed-card': id === selectedCategoryId }"
         >
           <ion-ripple-effect class="card-custom-ripple" />
           <div class="category-icon" :style="{ maskImage: `url(${getCategoryIconUrl(icon)})` }" />
