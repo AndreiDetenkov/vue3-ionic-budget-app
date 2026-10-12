@@ -51,3 +51,18 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
   version in `android/app/build.gradle` (`versionName`) and `ios/App/App.xcodeproj/project.pbxproj`
   (`MARKETING_VERSION`, Debug and Release).
 - Vue/Pinia guidance for agents is in `.agents/skills/` (vue-best-practices, vue-pinia-best-practices, vue-testing-best-practices, vue-debug-guides).
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in GitHub Issues (`AndreiDetenkov/vue3-ionic-budget-app`) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five canonical triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`GLOSSARY.md` and `docs/adr/` at the repo root). See `docs/agents/domain.md`.
+
