@@ -43,7 +43,7 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
   edit it by hand.
 - **TanStack Vue Query** is installed and registered (`src/core/plugins/vue-query.ts`) but not used yet. Data fetching currently goes through Pinia stores.
 - **Shared code** (`src/core/`): `BaseHeader`/`BaseRefresher` components, the `useToast` composable (programmatic `toastController` with `showErrorToast`/`showSuccessToast`, see `docs/features/toast-notifications.md`; use it instead of `<ion-toast>` in templates), and utils for dayjs date ranges, amount formatting and sessionStorage.
-- **Build**: `vite.config.ts` splits vendor chunks (vue, ionic, supabase, query, dayjs) and uses `@vitejs/plugin-legacy`.
+- **Build**: `vite.config.ts` splits vendor chunks (vue, ionic, supabase, query, dayjs).
 
 ## Conventions
 
@@ -70,4 +70,3 @@ Default five canonical triage labels (`needs-triage`, `needs-info`, `ready-for-a
 ### Domain docs
 
 Single-context layout (`GLOSSARY.md` and `docs/adr/` at the repo root). See `docs/agents/domain.md`.
-

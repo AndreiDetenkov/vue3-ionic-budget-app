@@ -1,11 +1,10 @@
-import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [vue(), legacy()],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -58,5 +57,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    fsModuleCache: true,
+    deps: {
+      optimizer: {
+        client: {
+          enabled: true,
+          include: ['@ionic/vue', '@ionic/vue-router'],
+        },
+      },
+    },
   },
 });
