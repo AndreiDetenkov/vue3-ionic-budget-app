@@ -3,7 +3,13 @@ import { defineStore } from 'pinia';
 import dayjs, { type OpUnitType } from 'dayjs';
 
 import { getRangeDates } from '@/core/utils/dates';
-import { getStorage, type CreateTransactionInput, type Transaction, type UpdateTransactionInput } from '@/core/storage';
+import {
+  getStorage,
+  toError,
+  type CreateTransactionInput,
+  type Transaction,
+  type UpdateTransactionInput,
+} from '@/core/storage';
 
 export const useTransactionStore = defineStore('transactionStore', () => {
   const transactions = ref<Transaction[]>([]);
@@ -68,7 +74,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
         to: endDate,
       });
     } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
+      error.value = toError(err);
     } finally {
       loading.value = false;
     }
@@ -83,7 +89,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
       await getTransactionsByRange(transactionsUnit.value);
       return { success: true };
     } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
+      error.value = toError(err);
       return { success: false };
     } finally {
       creating.value = false;
@@ -98,7 +104,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
       await getStorage().removeTransaction(id);
       await getTransactionsByRange(transactionsUnit.value);
     } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
+      error.value = toError(err);
     } finally {
       loading.value = false;
     }
@@ -113,7 +119,7 @@ export const useTransactionStore = defineStore('transactionStore', () => {
       await getTransactionsByRange(transactionsUnit.value);
       return { success: true };
     } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
+      error.value = toError(err);
       return { success: false };
     } finally {
       loading.value = false;

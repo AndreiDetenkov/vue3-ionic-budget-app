@@ -20,20 +20,25 @@ function cloneCategory(category: Category): Category {
   };
 }
 
-function cloneTransaction(transaction: Transaction): Transaction {
+function cloneTransaction(transaction: Transaction, resolvedCategory?: Category): Transaction {
   return {
     id: transaction.id,
     name: transaction.name,
     value: transaction.value,
     createdAt: transaction.createdAt,
     categoryId: transaction.categoryId,
-    category: cloneCategory(transaction.category),
+    category: cloneCategory(resolvedCategory ?? transaction.category),
   };
 }
 
 export function createInMemoryStorage(seed: InMemoryStorageSeed = {}): BudgetStorage {
   const categories: Category[] = (seed.categories ?? []).map(cloneCategory);
-  let transactions: Transaction[] = (seed.transactions ?? []).map(cloneTransaction);
+  let transactions: Transaction[] = (seed.transactions ?? []).map((tx) =>
+    cloneTransaction(
+      tx,
+      categories.find((cat) => cat.id === tx.categoryId),
+    ),
+  );
   let nextId = transactions.length + 1;
 
   function findCategoryOrThrow(categoryId: string): Category {
@@ -42,6 +47,14 @@ export function createInMemoryStorage(seed: InMemoryStorageSeed = {}): BudgetSto
       throw new Error(`Category not found: ${categoryId}`);
     }
     return cloneCategory(category);
+  }
+
+  function generateUniqueId(): string {
+    let candidate = `tx-${nextId++}`;
+    while (transactions.some((item) => item.id === candidate)) {
+      candidate = `tx-${nextId++}`;
+    }
+    return candidate;
   }
 
   return {
@@ -68,12 +81,17 @@ export function createInMemoryStorage(seed: InMemoryStorageSeed = {}): BudgetSto
           }
           return b.createdAt.localeCompare(a.createdAt);
         })
-        .map(cloneTransaction);
+        .map((tx) =>
+          cloneTransaction(
+            tx,
+            categories.find((cat) => cat.id === tx.categoryId),
+          ),
+        );
     },
 
     async createTransaction(input: CreateTransactionInput): Promise<void> {
       const category = findCategoryOrThrow(input.categoryId);
-      const id = `tx-${nextId++}`;
+      const id = generateUniqueId();
       const createdAt = new Date().toISOString();
 
       transactions.push({

@@ -10,7 +10,7 @@ describe('BudgetStorage adapters', () => {
   });
 
   describe('createInMemoryStorage', () => {
-    it('filters Transactions inclusively by Date Range boundaries and sorts by createdAt descending', async () => {
+    it('sorts Categories alphabetically by title ascending and filters Transactions inclusively by Date Range sorted by createdAt descending', async () => {
       const storage = createInMemoryStorage({
         categories: [food, clothes],
         transactions: [
@@ -41,6 +41,9 @@ describe('BudgetStorage adapters', () => {
         ],
       });
 
+      const categories = await storage.getCategories();
+      expect(categories.map((c) => c.title)).toEqual(['Clothes', 'Food']);
+
       const result = await storage.getTransactionsByRange({
         from: '2026-10-01T00:00:00.000Z',
         to: '2026-10-31T23:59:59.999Z',
@@ -49,9 +52,19 @@ describe('BudgetStorage adapters', () => {
       expect(result.map((t) => t.id)).toEqual(['tx-end', 'tx-start']);
     });
 
-    it('enforces Category referential integrity on createTransaction and updateTransaction, and is idempotent on removeTransaction', async () => {
+    it('generates non-colliding id and createdAt, updates valid Transactions, enforces Category referential integrity, and is idempotent on removeTransaction', async () => {
       const storage = createInMemoryStorage({
-        categories: [food],
+        categories: [food, clothes],
+        transactions: [
+          {
+            id: 'tx-2',
+            name: 'Pre-seeded tx-2',
+            value: 10,
+            createdAt: '2026-10-01T00:00:00.000Z',
+            categoryId: food.id,
+            category: food,
+          },
+        ],
       });
 
       await expect(
@@ -68,16 +81,38 @@ describe('BudgetStorage adapters', () => {
         categoryId: food.id,
       });
 
-      const created = await storage.getTransactionsByRange({
+      const allAfterCreate = await storage.getTransactionsByRange({
         from: '2000-01-01T00:00:00.000Z',
         to: '2100-01-01T00:00:00.000Z',
       });
-      expect(created).toHaveLength(1);
-      expect(created[0].id).toBeTruthy();
+      expect(allAfterCreate).toHaveLength(2);
+      const createdTx = allAfterCreate.find((t) => t.name === 'Valid Tx')!;
+      expect(createdTx.id).not.toBe('tx-2');
+      expect(Number.isNaN(Date.parse(createdTx.createdAt))).toBe(false);
+
+      await storage.updateTransaction({
+        id: createdTx.id,
+        name: 'Updated Valid Tx',
+        value: 95,
+        categoryId: clothes.id,
+      });
+
+      const allAfterUpdate = await storage.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+      const updatedTx = allAfterUpdate.find((t) => t.id === createdTx.id)!;
+      expect(updatedTx).toMatchObject({
+        id: createdTx.id,
+        name: 'Updated Valid Tx',
+        value: 95,
+        categoryId: clothes.id,
+        category: clothes,
+      });
 
       await expect(
         storage.updateTransaction({
-          id: created[0].id,
+          id: createdTx.id,
           name: 'Updated with bad category',
           value: 80,
           categoryId: 'non-existent-category',
@@ -95,7 +130,8 @@ describe('BudgetStorage adapters', () => {
 
       // Idempotent removal of unknown and known IDs
       await expect(storage.removeTransaction('non-existent-id')).resolves.toBeUndefined();
-      await expect(storage.removeTransaction(created[0].id)).resolves.toBeUndefined();
+      await expect(storage.removeTransaction(createdTx.id)).resolves.toBeUndefined();
+      await expect(storage.removeTransaction('tx-2')).resolves.toBeUndefined();
 
       const afterRemove = await storage.getTransactionsByRange({
         from: '2000-01-01T00:00:00.000Z',

@@ -11,8 +11,8 @@ export function setStorage(storage: BudgetStorage): void {
   activeStorage = storage;
 }
 
-export function resetStorage(): void {
-  activeStorage = createSupabaseStorage();
+export function toError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(String(err));
 }
 
 export * from './types';

@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getStorage } from '@/core/storage';
-import type { Category, PressedCategory } from '@/modules/categories/types';
+import { getStorage, toError } from '@/core/storage';
+import type { Category, PressedCategory } from '../types';
 
 export const useCategoryStore = defineStore('categoryStore', () => {
   const categories = ref<Category[]>([]);
@@ -35,7 +35,7 @@ export const useCategoryStore = defineStore('categoryStore', () => {
       categories.value = data;
       setCategoriesToPressed(data);
     } catch (err) {
-      error.value = err instanceof Error ? err : new Error(String(err));
+      error.value = toError(err);
     } finally {
       loading.value = false;
     }

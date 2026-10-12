@@ -5,9 +5,8 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import { useToast } from '@/core/composables/useToast';
-import { FormValues, CreateTransactionInput } from '@/modules/transactions/types';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
-import { useCategoryStore } from '@/modules/categories/store/categoryStore';
+import { type FormValues, type CreateTransactionInput, useTransactionStore } from '@/modules/transactions';
+import { useCategoryStore } from '@/modules/categories';
 import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
