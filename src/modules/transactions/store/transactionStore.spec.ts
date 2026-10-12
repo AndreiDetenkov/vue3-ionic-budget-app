@@ -1,96 +1,151 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import dayjs from 'dayjs';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
-import type { Transaction } from '@/modules/transactions';
+import { createInMemoryStorage, setStorage, type Category } from '@/core/storage';
+import { useTransactionStore } from './transactionStore';
 
-const mockCategory = {
-  id: 'cat-1',
-  title: 'Food',
-  icon: 'fast-food-outline',
-  created_at: '2026-07-11T00:00:00Z',
-};
+const foodCategory: Category = { id: 'cat-food', title: 'Food', icon: 'food' };
+const housingCategory: Category = { id: 'cat-housing', title: 'Housing', icon: 'housing' };
 
-const createMockTransaction = (id: string, value: number, createdAt: string): Transaction => ({
-  id,
-  name: `Transaction ${id}`,
-  value,
-  createdAt,
-  categoryId: 'cat-1',
-  category: mockCategory,
-});
-
-describe('transactionStore computed properties', () => {
+describe('useTransactionStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
   });
 
-  describe('total', () => {
-    test('returns 0 when transactions array is empty', () => {
-      const store = useTransactionStore();
-      store.transactions = [];
-      expect(store.total).toBe(0);
-    });
+  it('loads Transactions for the selected Date Range, sorts them newest-first, and computes total, recentTransactions, and transactionsByDate', async () => {
+    const todayIso = dayjs().hour(10).minute(0).second(0).millisecond(0).toISOString();
+    const yesterdayIso = dayjs().subtract(1, 'day').hour(12).minute(0).second(0).millisecond(0).toISOString();
+    const lastYearIso = dayjs().subtract(1, 'year').toISOString();
 
-    test('calculates correct total for positive and negative transactions', () => {
-      const store = useTransactionStore();
-      store.transactions = [
-        createMockTransaction('1', 100, '2026-07-11T12:00:00Z'),
-        createMockTransaction('2', 250, '2026-07-11T13:00:00Z'),
-        createMockTransaction('3', -50, '2026-07-11T14:00:00Z'),
-      ];
-      expect(store.total).toBe(300);
-    });
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory, housingCategory],
+        transactions: [
+          {
+            id: 'tx-yesterday',
+            name: 'Groceries',
+            value: 150,
+            createdAt: yesterdayIso,
+            categoryId: foodCategory.id,
+            category: foodCategory,
+          },
+          {
+            id: 'tx-today',
+            name: 'Coffee',
+            value: 50,
+            createdAt: todayIso,
+            categoryId: foodCategory.id,
+            category: foodCategory,
+          },
+          {
+            id: 'tx-old',
+            name: 'Old Rent',
+            value: 1000,
+            createdAt: lastYearIso,
+            categoryId: housingCategory.id,
+            category: housingCategory,
+          },
+        ],
+      }),
+    );
+
+    const store = useTransactionStore();
+    expect(store.total).toBe(0);
+    expect(store.recentTransactions).toEqual({ today: [], yesterday: [] });
+    expect(store.transactionsByDate).toEqual({});
+
+    await store.getTransactionsByRange('year');
+
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeNull();
+    expect(store.transactions.map((t) => t.id)).toEqual(['tx-today', 'tx-yesterday']);
+    expect(store.total).toBe(200);
+    expect(store.recentTransactions.today.map((t) => t.id)).toEqual(['tx-today']);
+    expect(store.recentTransactions.yesterday.map((t) => t.id)).toEqual(['tx-yesterday']);
+    expect(Object.keys(store.transactionsByDate)).toContain(todayIso.split('T')[0]);
   });
 
-  describe('recentTransactions', () => {
-    test('groups transactions into today and yesterday categories', () => {
-      const store = useTransactionStore();
+  it('creates, updates, and removes a Transaction using camelCase domain inputs and refreshes the current Date Range', async () => {
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory, housingCategory],
+      }),
+    );
 
-      const todayStr = dayjs().toISOString();
-      const yesterdayStr = dayjs().subtract(1, 'day').toISOString();
-      const otherDayStr = dayjs().subtract(2, 'days').toISOString();
+    const store = useTransactionStore();
 
-      const tToday = createMockTransaction('1', 100, todayStr);
-      const tYesterday = createMockTransaction('2', 200, yesterdayStr);
-      const tOther = createMockTransaction('3', 300, otherDayStr);
-
-      store.transactions = [tToday, tYesterday, tOther];
-
-      expect(store.recentTransactions.today).toEqual([tToday]);
-      expect(store.recentTransactions.yesterday).toEqual([tYesterday]);
+    const createResult = await store.createTransaction({
+      name: 'Lunch',
+      value: 120,
+      categoryId: foodCategory.id,
     });
 
-    test('returns empty arrays when no transactions match today or yesterday', () => {
-      const store = useTransactionStore();
-      const otherDayStr = dayjs().subtract(2, 'days').toISOString();
-      store.transactions = [createMockTransaction('1', 100, otherDayStr)];
-
-      expect(store.recentTransactions.today).toEqual([]);
-      expect(store.recentTransactions.yesterday).toEqual([]);
+    expect(createResult).toEqual({ success: true });
+    expect(store.creating).toBe(false);
+    expect(store.error).toBeNull();
+    expect(store.transactions).toHaveLength(1);
+    expect(store.transactions[0]).toMatchObject({
+      name: 'Lunch',
+      value: 120,
+      categoryId: foodCategory.id,
+      category: foodCategory,
     });
+
+    const createdId = store.transactions[0].id;
+    store.setTransactionItems({
+      id: createdId,
+      name: 'Team Lunch',
+      value: 250,
+      categoryId: housingCategory.id,
+    });
+
+    const updateResult = await store.updateTransaction();
+    expect(updateResult).toEqual({ success: true });
+    expect(store.loading).toBe(false);
+    expect(store.transactions[0]).toMatchObject({
+      id: createdId,
+      name: 'Team Lunch',
+      value: 250,
+      categoryId: housingCategory.id,
+      category: housingCategory,
+    });
+
+    await store.removeTransaction(createdId);
+    expect(store.loading).toBe(false);
+    expect(store.transactions).toEqual([]);
   });
 
-  describe('transactionsByDate', () => {
-    test('groups transactions by their date string representation', () => {
-      const store = useTransactionStore();
+  it('records an Error and returns { success: false } when creating or updating a Transaction fails', async () => {
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+      }),
+    );
 
-      const t1 = createMockTransaction('1', 100, '2026-07-11T10:00:00Z');
-      const t2 = createMockTransaction('2', 150, '2026-07-11T15:30:00Z');
-      const t3 = createMockTransaction('3', 200, '2026-07-12T08:00:00Z');
+    const store = useTransactionStore();
 
-      store.transactions = [t1, t2, t3];
-
-      expect(store.transactionsByDate).toEqual({
-        '2026-07-11': [t1, t2],
-        '2026-07-12': [t3],
-      });
+    const createResult = await store.createTransaction({
+      name: 'Mystery expense',
+      value: 99,
+      categoryId: 'unknown-category',
     });
 
-    test('returns empty object when there are no transactions', () => {
-      const store = useTransactionStore();
-      store.transactions = [];
-      expect(store.transactionsByDate).toEqual({});
+    expect(createResult).toEqual({ success: false });
+    expect(store.creating).toBe(false);
+    expect(store.error).toBeInstanceOf(Error);
+    expect(store.error?.message).toContain('unknown-category');
+
+    store.setTransactionItems({
+      id: 'missing-tx',
+      name: 'Ghost',
+      value: 10,
+      categoryId: foodCategory.id,
     });
+
+    const updateResult = await store.updateTransaction();
+    expect(updateResult).toEqual({ success: false });
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeInstanceOf(Error);
+    expect(store.error?.message).toContain('missing-tx');
   });
 });

@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import { useToast } from '@/core/composables/useToast';
-import { FormValues, TransactionPayload } from '@/modules/transactions/types';
+import { FormValues, CreateTransactionInput } from '@/modules/transactions/types';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
 import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
@@ -28,13 +28,13 @@ function setCategoryId(id: string): void {
   state.value.categoryId = id;
 }
 
-function createPayload(): TransactionPayload {
+function createPayload(): CreateTransactionInput {
   const { transaction, categoryId, amount } = state.value;
 
   return {
     name: transaction,
     value: parseInt(amount, 10),
-    category_id: categoryId,
+    categoryId,
   };
 }
 

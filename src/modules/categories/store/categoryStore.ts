@@ -1,11 +1,12 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { getCategoriesApi, CategoriesResponseError, Category, PressedCategory } from '@/modules/categories';
+import { getStorage } from '@/core/storage';
+import type { Category, PressedCategory } from '@/modules/categories/types';
 
 export const useCategoryStore = defineStore('categoryStore', () => {
   const categories = ref<Category[]>([]);
   const pressedCategories = ref<PressedCategory[]>([]);
-  const error = ref<CategoriesResponseError | null>(null);
+  const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
 
   function setCategoriesToPressed(newCategories: Category[]): void {
@@ -26,17 +27,15 @@ export const useCategoryStore = defineStore('categoryStore', () => {
       return;
     }
 
+    error.value = null;
+    loading.value = true;
+
     try {
-      loading.value = true;
-      const { data, error: apiError } = await getCategoriesApi();
-
-      if (apiError) {
-        error.value = apiError;
-        return;
-      }
-
+      const data = await getStorage().getCategories();
       categories.value = data;
       setCategoriesToPressed(data);
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
       loading.value = false;
     }

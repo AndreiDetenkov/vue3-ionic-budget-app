@@ -1,28 +1,17 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import dayjs from 'dayjs';
+import dayjs, { type OpUnitType } from 'dayjs';
 
 import { getRangeDates } from '@/core/utils/dates';
-import {
-  createTransactionApi,
-  getTransactionsByRangeApi,
-  removeTransactionApi,
-  updateTransactionApi,
-  TransactionItemsForUpdate,
-  TransactionPayload,
-  type Transaction,
-} from '@/modules/transactions';
-import { PostgrestError } from '@supabase/supabase-js';
-import type { OpUnitType } from 'dayjs';
-import { mappedTransactions } from '@/modules/transactions/utils';
+import { getStorage, type CreateTransactionInput, type Transaction, type UpdateTransactionInput } from '@/core/storage';
 
 export const useTransactionStore = defineStore('transactionStore', () => {
   const transactions = ref<Transaction[]>([]);
-  const error = ref<PostgrestError | null>(null);
+  const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
   const creating = ref<boolean>(false);
   const transactionsUnit = ref<OpUnitType>('month');
-  const transactionItems = ref<TransactionItemsForUpdate>({ id: '', name: '', value: 0, categoryId: '' });
+  const transactionItems = ref<UpdateTransactionInput>({ id: '', name: '', value: 0, categoryId: '' });
 
   const total = computed<number>(() => {
     if (!transactions.value) return 0;
@@ -70,77 +59,68 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     transactionsUnit.value = unit;
     const { startDate, endDate } = getRangeDates(unit);
 
+    error.value = null;
     loading.value = true;
 
     try {
-      const { data, error: apiError } = await getTransactionsByRangeApi({
+      transactions.value = await getStorage().getTransactionsByRange({
         from: startDate,
         to: endDate,
       });
-
-      if (apiError instanceof PostgrestError) {
-        error.value = apiError;
-        return;
-      }
-
-      transactions.value = mappedTransactions(data);
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
       loading.value = false;
     }
   }
 
-  async function createTransaction(payload: TransactionPayload): Promise<{ success: boolean }> {
+  async function createTransaction(payload: CreateTransactionInput): Promise<{ success: boolean }> {
+    error.value = null;
+    creating.value = true;
+
     try {
-      creating.value = true;
-      const { error: apiError } = await createTransactionApi(payload);
-
-      if (apiError) {
-        error.value = apiError;
-        return { success: false };
-      }
-
+      await getStorage().createTransaction(payload);
       await getTransactionsByRange(transactionsUnit.value);
-
       return { success: true };
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
+      return { success: false };
     } finally {
       creating.value = false;
     }
   }
 
   async function removeTransaction(id: string): Promise<void> {
-    try {
-      loading.value = true;
-      const { error: apiError } = await removeTransactionApi(id);
+    error.value = null;
+    loading.value = true;
 
-      if (apiError) {
-        error.value = apiError;
-      } else {
-        await getTransactionsByRange(transactionsUnit.value);
-      }
+    try {
+      await getStorage().removeTransaction(id);
+      await getTransactionsByRange(transactionsUnit.value);
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
       loading.value = false;
     }
   }
 
   async function updateTransaction(): Promise<{ success: boolean }> {
+    error.value = null;
+    loading.value = true;
+
     try {
-      loading.value = true;
-      const { error: apiError } = await updateTransactionApi(transactionItems.value);
-
-      if (apiError) {
-        error.value = apiError;
-        return { success: false };
-      }
-
+      await getStorage().updateTransaction(transactionItems.value);
       await getTransactionsByRange(transactionsUnit.value);
-
       return { success: true };
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err));
+      return { success: false };
     } finally {
       loading.value = false;
     }
   }
 
-  function setTransactionItems({ id, name, value, categoryId }: TransactionItemsForUpdate): void {
+  function setTransactionItems({ id, name, value, categoryId }: UpdateTransactionInput): void {
     transactionItems.value.id = id;
     transactionItems.value.name = name;
     transactionItems.value.value = value;
