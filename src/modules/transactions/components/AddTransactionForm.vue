@@ -6,13 +6,11 @@ import { storeToRefs } from 'pinia';
 
 import { useToast } from '@/core/composables/useToast';
 import { type FormValues, type CreateTransactionInput, useTransactionStore } from '@/modules/transactions';
-import { useCategoryStore } from '@/modules/categories';
 import CategoriesForm from '@/modules/categories/components/CategoriesForm.vue';
 
 const router = useRouter();
 const transactionStore = useTransactionStore();
 const { creating } = storeToRefs(transactionStore);
-const categoryStore = useCategoryStore();
 const { showErrorToast } = useToast();
 
 const state = ref<FormValues>({
@@ -22,10 +20,6 @@ const state = ref<FormValues>({
 });
 
 const notValidForm = computed(() => Object.values(state.value).some((item) => !item));
-
-function setCategoryId(id: string): void {
-  state.value.categoryId = id;
-}
 
 function createPayload(): CreateTransactionInput {
   const { transaction, categoryId, amount } = state.value;
@@ -39,7 +33,6 @@ function createPayload(): CreateTransactionInput {
 
 function clearState(): void {
   state.value.transaction = state.value.amount = state.value.categoryId = '';
-  categoryStore.resetPressedCategories();
 }
 
 async function onSubmitFormHandler(): Promise<void> {
@@ -77,7 +70,7 @@ async function onSubmitFormHandler(): Promise<void> {
       </ion-row>
     </ion-grid>
 
-    <CategoriesForm @select-category="setCategoryId" class="ion-margin-bottom" />
+    <CategoriesForm v-model="state.categoryId" class="ion-margin-bottom" />
 
     <div class="transaction-name-group">
       <ion-label class="transaction-name-label">What is this for?</ion-label>

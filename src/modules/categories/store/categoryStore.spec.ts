@@ -27,10 +27,6 @@ describe('useCategoryStore', () => {
       { id: 'cat-1', title: 'Food', icon: 'food' },
       { id: 'cat-2', title: 'Transportation', icon: 'transportation' },
     ]);
-    expect(store.pressedCategories).toEqual([
-      { id: 'cat-1', title: 'Food', icon: 'food', isPressed: false },
-      { id: 'cat-2', title: 'Transportation', icon: 'transportation', isPressed: false },
-    ]);
 
     // Subsequent call keeps cached categories even if storage is replaced
     setStorage(createInMemoryStorage({ categories: [] }));
