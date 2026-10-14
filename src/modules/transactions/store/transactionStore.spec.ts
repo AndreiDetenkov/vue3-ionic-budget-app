@@ -92,14 +92,13 @@ describe('useTransactionStore', () => {
     });
 
     const createdId = store.transactions[0].id;
-    store.setTransactionItems({
+    const updateResult = await store.updateTransaction({
       id: createdId,
       name: 'Team Lunch',
       value: 250,
       categoryId: housingCategory.id,
     });
 
-    const updateResult = await store.updateTransaction();
     expect(updateResult).toEqual({ success: true });
     expect(store.loading).toBe(false);
     expect(store.transactions[0]).toMatchObject({
@@ -110,7 +109,8 @@ describe('useTransactionStore', () => {
       category: housingCategory,
     });
 
-    await store.removeTransaction(createdId);
+    const removeResult = await store.removeTransaction(createdId);
+    expect(removeResult).toEqual({ success: true });
     expect(store.loading).toBe(false);
     expect(store.transactions).toEqual([]);
   });
@@ -135,17 +135,37 @@ describe('useTransactionStore', () => {
     expect(store.error).toBeInstanceOf(Error);
     expect(store.error?.message).toContain('unknown-category');
 
-    store.setTransactionItems({
+    const updateResult = await store.updateTransaction({
       id: 'missing-tx',
       name: 'Ghost',
       value: 10,
       categoryId: foodCategory.id,
     });
-
-    const updateResult = await store.updateTransaction();
     expect(updateResult).toEqual({ success: false });
     expect(store.loading).toBe(false);
     expect(store.error).toBeInstanceOf(Error);
     expect(store.error?.message).toContain('missing-tx');
+  });
+
+  it('records an Error and returns { success: false } when removing a Transaction fails', async () => {
+    const errorStorage = createInMemoryStorage({ categories: [foodCategory] });
+    errorStorage.removeTransaction = async () => {
+      throw new Error('Database delete constraint error');
+    };
+    setStorage(errorStorage);
+
+    const store = useTransactionStore();
+    const removeResult = await store.removeTransaction('tx-1');
+
+    expect(removeResult).toEqual({ success: false });
+    expect(store.loading).toBe(false);
+    expect(store.error).toBeInstanceOf(Error);
+    expect(store.error?.message).toContain('Database delete constraint error');
+  });
+
+  it('does not expose global mutable transactionItems draft or setTransactionItems in store interface', () => {
+    const store = useTransactionStore();
+    expect('transactionItems' in store).toBe(false);
+    expect('setTransactionItems' in store).toBe(false);
   });
 });

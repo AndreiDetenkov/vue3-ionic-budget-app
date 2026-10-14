@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import {
   IonContent,
   IonButtons,
@@ -10,20 +11,60 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/vue';
-import { storeToRefs } from 'pinia';
 import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
 import { useCategoryStore } from '@/modules/categories/store/categoryStore';
+import { useToast } from '@/core/composables/useToast';
+import type { Transaction } from '@/core/storage';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 
+const props = defineProps<{
+  transaction: Transaction;
+}>();
+
 const transactionStore = useTransactionStore();
-const { transactionItems } = storeToRefs(transactionStore);
 const categoryStore = useCategoryStore();
+const { showSuccessToast, showErrorToast } = useToast();
+
+onMounted(async () => {
+  await categoryStore.getCategoryList();
+});
+
+const draft = ref({
+  name: props.transaction.name,
+  value: String(props.transaction.value),
+  categoryId: props.transaction.categoryId,
+});
+
+const isValid = computed(() => {
+  const numericValue = Number(draft.value.value);
+  return (
+    draft.value.name.trim().length > 0 &&
+    draft.value.categoryId.length > 0 &&
+    Number.isFinite(numericValue) &&
+    numericValue > 0
+  );
+});
 
 const cancelHandler = async () => modalController.dismiss(null, 'cancel');
 
 const confirmHandler = async () => {
-  const { success } = await transactionStore.updateTransaction();
-  await modalController.dismiss(success, 'confirm');
+  if (!isValid.value) {
+    return;
+  }
+
+  const { success } = await transactionStore.updateTransaction({
+    id: props.transaction.id,
+    name: draft.value.name.trim(),
+    value: Number(draft.value.value),
+    categoryId: draft.value.categoryId,
+  });
+
+  if (success) {
+    await showSuccessToast('Successfully updated!');
+    await modalController.dismiss(true, 'confirm');
+  } else {
+    await showErrorToast('Oops...Something went wrong');
+  }
 };
 </script>
 
@@ -37,9 +78,9 @@ const confirmHandler = async () => {
   </BaseHeader>
 
   <ion-content class="ion-padding">
-    <form @submit.prevent="confirmHandler" v-if="transactionItems">
+    <form @submit.prevent="confirmHandler">
       <ion-input
-        v-model="transactionItems.name"
+        v-model="draft.name"
         label="Transaction"
         label-placement="floating"
         fill="outline"
@@ -50,7 +91,8 @@ const confirmHandler = async () => {
       />
 
       <ion-input
-        v-model="transactionItems.value"
+        v-model="draft.value"
+        type="number"
         inputmode="numeric"
         label="Amount"
         label-placement="floating"
@@ -59,7 +101,7 @@ const confirmHandler = async () => {
       />
 
       <ion-select
-        v-model="transactionItems.categoryId"
+        v-model="draft.categoryId"
         label="Category"
         placeholder="Select category"
         label-placement="floating"
@@ -72,7 +114,7 @@ const confirmHandler = async () => {
         </ion-select-option>
       </ion-select>
 
-      <ion-button expand="block" type="submit" :disabled="transactionStore.loading">
+      <ion-button expand="block" type="submit" :disabled="transactionStore.loading || !isValid">
         <ion-spinner name="lines" v-if="transactionStore.loading" />
         <span v-else>Update transaction</span>
       </ion-button>
