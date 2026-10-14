@@ -18,7 +18,6 @@ export const useTransactionStore = defineStore('transactionStore', () => {
   const loading = ref<boolean>(false);
   const creating = ref<boolean>(false);
   const transactionsUnit = ref<OpUnitType>('month');
-  const transactionItems = ref<UpdateTransactionInput>({ id: '', name: '', value: 0, categoryId: '' });
 
   const total = computed<number>(() => {
     if (!transactions.value) return 0;
@@ -97,26 +96,12 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     }
   }
 
-  async function removeTransaction(id: string): Promise<void> {
+  async function removeTransaction(id: string): Promise<{ success: boolean }> {
     error.value = null;
     loading.value = true;
 
     try {
       await storage.removeTransaction(id);
-      await getTransactionsByRange(transactionsUnit.value);
-    } catch (err) {
-      error.value = toError(err);
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  async function updateTransaction(): Promise<{ success: boolean }> {
-    error.value = null;
-    loading.value = true;
-
-    try {
-      await storage.updateTransaction(transactionItems.value);
       await getTransactionsByRange(transactionsUnit.value);
       return { success: true };
     } catch (err) {
@@ -127,11 +112,20 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     }
   }
 
-  function setTransactionItems({ id, name, value, categoryId }: UpdateTransactionInput): void {
-    transactionItems.value.id = id;
-    transactionItems.value.name = name;
-    transactionItems.value.value = value;
-    transactionItems.value.categoryId = categoryId;
+  async function updateTransaction(payload: UpdateTransactionInput): Promise<{ success: boolean }> {
+    error.value = null;
+    loading.value = true;
+
+    try {
+      await storage.updateTransaction(payload);
+      await getTransactionsByRange(transactionsUnit.value);
+      return { success: true };
+    } catch (err) {
+      error.value = toError(err);
+      return { success: false };
+    } finally {
+      loading.value = false;
+    }
   }
 
   return {
@@ -140,7 +134,6 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     loading,
     creating,
     transactionsUnit,
-    transactionItems,
     total,
     recentTransactions,
     transactionsByDate,
@@ -148,6 +141,5 @@ export const useTransactionStore = defineStore('transactionStore', () => {
     createTransaction,
     removeTransaction,
     updateTransaction,
-    setTransactionItems,
   };
 });
