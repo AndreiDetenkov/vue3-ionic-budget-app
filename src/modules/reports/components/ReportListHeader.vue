@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { IonCol, IonGrid, IonItem, IonLabel, IonRow, IonThumbnail } from '@ionic/vue';
-import { Report } from '@/modules/reports';
+import { type CategoryReport } from '@/modules/reports';
 import { formatAmount, getCategoryIconUrl } from '@/core/utils';
 
 interface Props {
-  name: Report['name'];
-  value: Report['value'];
-  icon: Report['icon'];
+  name: CategoryReport['name'];
+  value: CategoryReport['value'];
+  icon: CategoryReport['icon'];
 }
 
 const { icon, name, value } = defineProps<Props>();

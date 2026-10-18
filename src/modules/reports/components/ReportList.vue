@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { IonAccordion, IonAccordionGroup, IonList, IonLabel, IonListHeader } from '@ionic/vue';
-import { Report } from '@/modules/reports';
+import { type CategoryReport } from '@/modules/reports';
 import ReportListItem from '@/modules/reports/components/ReportListItem.vue';
 import ReportListHeader from '@/modules/reports/components/ReportListHeader.vue';
 
 defineProps<{
-  reports: Report[];
+  reports: CategoryReport[];
 }>();
 </script>
 

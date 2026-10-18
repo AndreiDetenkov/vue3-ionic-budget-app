@@ -1,35 +1,42 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useStorage, type Transaction } from '@/core/storage';
-import { Report } from '@/modules/reports';
-import { formatAmount } from '@/core/utils';
+import { useStorage, type DateRange, type Transaction } from '@/core/storage';
+import { type CategoryReport, type ReportPeriod } from '@/modules/reports';
+import { formatAmount, getDateRange } from '@/core/utils';
+
+const PERIOD_RANGES: Record<ReportPeriod, () => DateRange> = {
+  lastYear: () => getDateRange('year', 1),
+  currentYear: () => getDateRange('year', 0),
+  lastMonth: () => getDateRange('month', 1),
+  currentMonth: () => getDateRange('month', 0),
+};
 
 export const useReportStore = defineStore('reportStore', () => {
   const storage = useStorage();
   const isLoading = ref(false);
-  const reports = ref<Transaction[]>();
+  const transactions = ref<Transaction[]>([]);
+  const selectedPeriod = ref<ReportPeriod>('currentMonth');
 
-  const reportList = computed((): Report[] => {
-    if (!reports.value) {
-      return [];
-    }
+  const reportList = computed((): CategoryReport[] => {
+    const categoryGroups = transactions.value.reduce(
+      (acc: Record<string, CategoryReport>, transaction: Transaction) => {
+        const categoryId = transaction.category.id;
 
-    const categoryGroups = reports.value.reduce((acc: Record<string, Report>, transaction: Transaction) => {
-      const categoryId = transaction.category.id;
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            name: transaction.category.title,
+            value: 0,
+            icon: transaction.category.icon ?? '',
+            transactions: [],
+          };
+        }
 
-      if (!acc[categoryId]) {
-        acc[categoryId] = {
-          name: transaction.category.title,
-          value: 0,
-          icon: transaction.category.icon ?? '',
-          transactions: [],
-        };
-      }
-
-      acc[categoryId].value += transaction.value;
-      acc[categoryId].transactions.push(transaction);
-      return acc;
-    }, {});
+        acc[categoryId].value += transaction.value;
+        acc[categoryId].transactions.push(transaction);
+        return acc;
+      },
+      {},
+    );
 
     return Object.entries(categoryGroups).map(([, data]) => ({
       name: data.name,
@@ -39,24 +46,33 @@ export const useReportStore = defineStore('reportStore', () => {
     }));
   });
 
-  const totalAmount = computed(() => {
-    if (!reports.value) {
-      return 0;
-    }
-
-    return formatAmount(reports.value.reduce((acc, transaction) => acc + transaction.value, 0));
+  const totalAmount = computed<string>(() => {
+    return formatAmount(transactions.value.reduce((acc, transaction) => acc + transaction.value, 0));
   });
 
-  const getReports = async (from: string, to: string) => {
+  const refreshReports = async (): Promise<void> => {
     isLoading.value = true;
     try {
-      reports.value = await storage.getTransactionsByRange({ from, to });
+      const range = PERIOD_RANGES[selectedPeriod.value]();
+      transactions.value = await storage.getTransactionsByRange(range);
     } catch {
-      reports.value = [];
+      transactions.value = [];
     } finally {
       isLoading.value = false;
     }
   };
 
-  return { reportList, isLoading, getReports, reports, totalAmount };
+  const setPeriod = async (period: ReportPeriod): Promise<void> => {
+    selectedPeriod.value = period;
+    await refreshReports();
+  };
+
+  return {
+    reportList,
+    totalAmount,
+    isLoading,
+    selectedPeriod,
+    setPeriod,
+    refreshReports,
+  };
 });

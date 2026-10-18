@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useReportStore } from '@/modules/reports/store/reportStore';
+import { useReportStore } from '@/modules/reports';
 
 const reportStore = useReportStore();
 </script>
