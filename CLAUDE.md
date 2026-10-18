@@ -59,6 +59,10 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
 
 ## Agent skills
 
+### SDLC workflow
+
+Start every task with `using-agent-skills` to route work through its **Skill Discovery** tree and **Lifecycle Sequence** (`interview-me` / `idea-refine` / `spec-driven-development` → `planning-and-task-breakdown` → `incremental-implementation` + `test-driven-development` → `code-review-and-quality` → `code-simplification` → `git-workflow-and-versioning` + `pr`), applying this repository's skill bindings. See `docs/agents/sdlc.md`.
+
 ### Issue tracker
 
 Issues, specs, implementation plans, and task breakdowns live exclusively in GitHub Issues (`AndreiDetenkov/vue3-ionic-budget-app`) via the `gh` CLI — keep them out of local repo files (`tasks/`, `docs/specs/`). See `docs/agents/issue-tracker.md`.
