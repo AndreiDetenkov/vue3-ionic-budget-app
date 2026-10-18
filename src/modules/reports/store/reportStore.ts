@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { useStorage, type DateRange, type Transaction } from '@/core/storage';
-import { type CategoryReport, type ReportPeriod } from '@/modules/reports';
 import { formatAmount, getDateRange } from '@/core/utils';
+import type { CategoryReport, ReportPeriod } from '../types';
 
 const PERIOD_RANGES: Record<ReportPeriod, () => DateRange> = {
   lastYear: () => getDateRange('year', 1),
@@ -16,6 +16,7 @@ export const useReportStore = defineStore('reportStore', () => {
   const isLoading = ref(false);
   const transactions = ref<Transaction[]>([]);
   const selectedPeriod = ref<ReportPeriod>('currentMonth');
+  let latestRequestId = 0;
 
   const reportList = computed((): CategoryReport[] => {
     const categoryGroups = transactions.value.reduce(
@@ -38,12 +39,7 @@ export const useReportStore = defineStore('reportStore', () => {
       {},
     );
 
-    return Object.entries(categoryGroups).map(([, data]) => ({
-      name: data.name,
-      value: data.value,
-      icon: data.icon,
-      transactions: data.transactions,
-    }));
+    return Object.values(categoryGroups);
   });
 
   const totalAmount = computed<string>(() => {
@@ -51,14 +47,22 @@ export const useReportStore = defineStore('reportStore', () => {
   });
 
   const refreshReports = async (): Promise<void> => {
+    const requestId = ++latestRequestId;
     isLoading.value = true;
     try {
       const range = PERIOD_RANGES[selectedPeriod.value]();
-      transactions.value = await storage.getTransactionsByRange(range);
+      const result = await storage.getTransactionsByRange(range);
+      if (requestId === latestRequestId) {
+        transactions.value = result;
+      }
     } catch {
-      transactions.value = [];
+      if (requestId === latestRequestId) {
+        transactions.value = [];
+      }
     } finally {
-      isLoading.value = false;
+      if (requestId === latestRequestId) {
+        isLoading.value = false;
+      }
     }
   };
 

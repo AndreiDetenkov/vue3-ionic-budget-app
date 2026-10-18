@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { createInMemoryStorage, setStorage, type BudgetStorage, type Category } from '@/core/storage';
+import { createInMemoryStorage, setStorage, type BudgetStorage, type Category, type Transaction } from '@/core/storage';
 import { useReportStore } from './reportStore';
 
 const foodCategory: Category = { id: 'cat-food', title: 'Food', icon: 'food' };
@@ -273,5 +273,57 @@ describe('useReportStore', () => {
     expect(store.isLoading).toBe(false);
     expect(store.reportList).toEqual([]);
     expect(store.totalAmount).toBe('0');
+  });
+
+  it('ignores stale out-of-order responses when setPeriod() is called concurrently', async () => {
+    const resolvers: Array<(value: Transaction[]) => void> = [];
+    const slowStorage: BudgetStorage = {
+      ...createInMemoryStorage(),
+      getTransactionsByRange() {
+        return new Promise<Transaction[]>((resolve) => {
+          resolvers.push(resolve);
+        });
+      },
+    };
+    setStorage(slowStorage);
+
+    const store = useReportStore();
+
+    const firstCall = store.setPeriod('lastYear');
+    const secondCall = store.setPeriod('lastMonth');
+
+    expect(store.selectedPeriod).toBe('lastMonth');
+    expect(store.isLoading).toBe(true);
+
+    // Resolve the second (newer) request first
+    resolvers[1]([
+      {
+        id: 'tx-last-month',
+        name: 'September Grocery',
+        value: 900,
+        createdAt: '2026-09-15T12:00:00.000Z',
+        categoryId: foodCategory.id,
+        category: foodCategory,
+      },
+    ]);
+    await secondCall;
+
+    expect(store.isLoading).toBe(false);
+    expect(store.totalAmount).toBe('900');
+
+    // Resolve the first (stale) request afterwards — should be ignored
+    resolvers[0]([
+      {
+        id: 'tx-last-year',
+        name: '2025 Equipment',
+        value: 2500,
+        createdAt: '2025-07-20T12:00:00.000Z',
+        categoryId: sportCategory.id,
+        category: sportCategory,
+      },
+    ]);
+    await firstCall;
+
+    expect(store.totalAmount).toBe('900');
   });
 });
