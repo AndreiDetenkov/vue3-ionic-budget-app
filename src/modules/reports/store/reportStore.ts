@@ -6,9 +6,9 @@ import type { CategoryReport, ReportPeriod } from '../types';
 
 const PERIOD_RANGES: Record<ReportPeriod, () => DateRange> = {
   lastYear: () => getDateRange('year', 1),
-  currentYear: () => getDateRange('year', 0),
+  currentYear: () => getDateRange('year'),
   lastMonth: () => getDateRange('month', 1),
-  currentMonth: () => getDateRange('month', 0),
+  currentMonth: () => getDateRange('month'),
 };
 
 export const useReportStore = defineStore('reportStore', () => {
@@ -18,28 +18,17 @@ export const useReportStore = defineStore('reportStore', () => {
   const selectedPeriod = ref<ReportPeriod>('currentMonth');
   let latestRequestId = 0;
 
-  const reportList = computed((): CategoryReport[] => {
-    const categoryGroups = transactions.value.reduce(
-      (acc: Record<string, CategoryReport>, transaction: Transaction) => {
-        const categoryId = transaction.category.id;
+  const reportList = computed<CategoryReport[]>(() => {
+    const groups: Record<string, CategoryReport> = {};
 
-        if (!acc[categoryId]) {
-          acc[categoryId] = {
-            name: transaction.category.title,
-            value: 0,
-            icon: transaction.category.icon ?? '',
-            transactions: [],
-          };
-        }
+    for (const transaction of transactions.value) {
+      const { id, title, icon } = transaction.category;
+      groups[id] ??= { name: title, value: 0, icon: icon ?? '', transactions: [] };
+      groups[id].value += transaction.value;
+      groups[id].transactions.push(transaction);
+    }
 
-        acc[categoryId].value += transaction.value;
-        acc[categoryId].transactions.push(transaction);
-        return acc;
-      },
-      {},
-    );
-
-    return Object.values(categoryGroups);
+    return Object.values(groups);
   });
 
   const totalAmount = computed<string>(() => {
@@ -66,9 +55,9 @@ export const useReportStore = defineStore('reportStore', () => {
     }
   };
 
-  const setPeriod = async (period: ReportPeriod): Promise<void> => {
+  const setPeriod = (period: ReportPeriod): Promise<void> => {
     selectedPeriod.value = period;
-    await refreshReports();
+    return refreshReports();
   };
 
   return {
