@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { IonCardSubtitle, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonChip } from '@ionic/vue';
-import { formatDateByTemplate } from '@/core/utils/dates';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
-import { formatAmount } from '@/core/utils';
+import { useTransactionStore } from '@/modules/transactions';
+import { formatAmount, formatDate } from '@/core/utils';
 
 const store = useTransactionStore();
 
@@ -21,7 +20,7 @@ const formattedTotal = computed<string>(() => formatAmount(store.total));
     </ion-card-header>
     <ion-card-content>
       <ion-chip>
-        {{ formatDateByTemplate('MMMM YYYY') }}
+        {{ formatDate(undefined, 'MMMM YYYY') }}
       </ion-chip>
     </ion-card-content>
   </ion-card>

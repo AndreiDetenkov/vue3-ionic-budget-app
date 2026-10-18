@@ -27,10 +27,6 @@ export const getDateRange = (unit: OpUnitType & ManipulateType, offset = 0): Dat
   };
 };
 
-export const formatDateByTemplate = (template: string): string => {
-  return dayjs().format(template);
-};
-
-export const formatDate = (date: string, template = 'DD.MM.YYYY'): string => {
+export const formatDate = (date?: string, template = 'DD.MM.YYYY'): string => {
   return dayjs(date).format(template);
 };
