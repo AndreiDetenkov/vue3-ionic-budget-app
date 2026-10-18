@@ -1,10 +1,11 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
+Issues, specs, implementation plans, and task breakdowns for this repo live exclusively as GitHub issues. Use the `gh` CLI for all operations.
 
 ## Conventions
 
-- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
+- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc or `--body-file` for multi-line bodies.
+- **Update an issue**: `gh issue edit <number> --body "..."` (or `--body-file`).
 - **Read an issue**: `gh issue view <number> --json number,title,body,labels,comments`.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
 - **Make an issue a sub-issue of a parent**: `gh issue create --parent <parent> ...`, or `gh issue edit <parent> --add-sub-issue <child>` afterwards (`gh` 2.94+). Older `gh`: `gh api --method POST repos/<owner>/<repo>/issues/<parent>/sub_issues -F sub_issue_id=<child-db-id>` (database id, as in **Blocking** below). Without sub-issues, put `Part of #<parent>` at the top of the child body.
@@ -26,9 +27,9 @@ When set to `yes`, PRs run through the same labels and states as issues, using t
 
 GitHub shares one number space across issues and PRs, so a bare `#42` may be either: resolve with `gh pr view 42` and fall back to `gh issue view 42`.
 
-## When a skill says "publish to the issue tracker"
+## When a skill writes a spec, plan, or task list
 
-Create a GitHub issue.
+Publish or update it directly in the GitHub issue via `gh issue create` / `gh issue edit` instead of creating local files in the repository (`SPEC.md`, `docs/specs/`, `tasks/plan.md`, `tasks/todo.md`).
 
 ## When a skill says "fetch the relevant ticket"
 
