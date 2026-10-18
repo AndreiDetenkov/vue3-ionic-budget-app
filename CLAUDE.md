@@ -61,7 +61,7 @@ Vitest runs in `jsdom` with `globals: true`. Specs sit next to the code (`*.spec
 
 ### Issue tracker
 
-Issues and specs are tracked in GitHub Issues (`AndreiDetenkov/vue3-ionic-budget-app`) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues, specs, implementation plans, and task breakdowns live exclusively in GitHub Issues (`AndreiDetenkov/vue3-ionic-budget-app`) via the `gh` CLI — keep them out of local repo files (`tasks/`, `docs/specs/`). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

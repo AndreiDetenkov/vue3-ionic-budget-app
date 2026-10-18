@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonPage, IonContent, IonProgressBar } from '@ionic/vue';
+import { IonPage, IonContent, IonProgressBar, onIonViewWillEnter } from '@ionic/vue';
 import { useReportStore } from '@/modules/reports';
 import ReportList from '@/modules/reports/components/ReportList.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
@@ -8,9 +8,9 @@ import ReportTotalAmount from '@/modules/reports/components/ReportTotalAmount.vu
 
 const reportStore = useReportStore();
 
-const filter = (key: string) => {
-  console.log(key);
-};
+onIonViewWillEnter(() => {
+  reportStore.refreshReports();
+});
 </script>
 
 <template>
@@ -21,7 +21,7 @@ const filter = (key: string) => {
 
     <ion-content fullscreen>
       <ReportTotalAmount />
-      <ReportFilters @filter="filter" />
+      <ReportFilters />
       <ReportList :reports="reportStore.reportList" />
     </ion-content>
   </ion-page>

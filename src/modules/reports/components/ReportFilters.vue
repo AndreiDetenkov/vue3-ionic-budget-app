@@ -1,37 +1,15 @@
 <script setup lang="ts">
 import { IonChip } from '@ionic/vue';
-import { ref, watchEffect } from 'vue';
-import { useReportStore } from '@/modules/reports';
-import { currentMonthRange, currentYearRange, previousMonthRange, previousYearRange } from '@/core/utils/dates';
+import { useReportStore, type ReportPeriod } from '@/modules/reports';
 
-enum Filter {
-  LastYear = 'lastYear',
-  CurrentYear = 'currentYear',
-  LastMonth = 'lastMonth',
-  CurrentMonth = 'currentMonth',
-}
+const reportStore = useReportStore();
 
-const { getReports } = useReportStore();
-
-const selectedFilter = ref<Filter>(Filter.CurrentMonth);
-
-const filters = [
-  { value: Filter.LastYear, label: 'Last year', fn: previousYearRange },
-  { value: Filter.CurrentYear, label: 'Current year', fn: currentYearRange },
-  { value: Filter.LastMonth, label: 'Last month', fn: previousMonthRange },
-  { value: Filter.CurrentMonth, label: 'Current month', fn: currentMonthRange },
+const filters: { value: ReportPeriod; label: string }[] = [
+  { value: 'lastYear', label: 'Last year' },
+  { value: 'currentYear', label: 'Current year' },
+  { value: 'lastMonth', label: 'Last month' },
+  { value: 'currentMonth', label: 'Current month' },
 ];
-
-watchEffect(() => {
-  console.log(selectedFilter.value);
-  const result = filters.find((filter) => filter.value === selectedFilter.value);
-  if (!result?.fn) {
-    return;
-  }
-
-  const { startDate, endDate } = result.fn();
-  getReports(startDate, endDate);
-});
 </script>
 
 <template>
@@ -39,9 +17,9 @@ watchEffect(() => {
     <ion-chip
       v-for="filter in filters"
       :key="filter.value"
-      :outline="selectedFilter !== filter.value"
+      :outline="reportStore.selectedPeriod !== filter.value"
       color="primary"
-      @click="selectedFilter = filter.value"
+      @click="reportStore.setPeriod(filter.value)"
     >
       {{ filter.label }}
     </ion-chip>
