@@ -1,20 +1,22 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { IonTitle, IonList, IonListHeader, IonChip } from '@ionic/vue';
-import { useTransactionStore } from '@/modules/transactions/store/transactionStore';
+import { useTransactionStore } from '@/modules/transactions';
+import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 import SlideListItem from '@/modules/transactions/components/SlideTransaction/SlideListItem.vue';
-
-const emit = defineEmits(['viewAllTransactions']);
 
 const store = useTransactionStore();
 const { recentTransactions } = storeToRefs(store);
+
+const isModalOpen = ref(false);
 </script>
 
 <template>
   <ion-list lines="none">
     <ion-list-header>
       <ion-title>Recent Expenses</ion-title>
-      <ion-chip outline @click="emit('viewAllTransactions')"> View All </ion-chip>
+      <ion-chip outline @click="isModalOpen = true"> View All </ion-chip>
     </ion-list-header>
 
     <template v-if="recentTransactions.today.length">
@@ -39,6 +41,8 @@ const { recentTransactions } = storeToRefs(store);
       />
     </template>
   </ion-list>
+
+  <AllTransactionsModal v-model="isModalOpen" />
 </template>
 
 <style scoped>
