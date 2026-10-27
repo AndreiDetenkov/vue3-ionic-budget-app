@@ -39,10 +39,6 @@ export default defineConfig({
             return 'supabase-vendor';
           }
 
-          if (id.includes('node_modules/@tanstack/vue-query/')) {
-            return 'query-vendor';
-          }
-
           if (id.includes('node_modules/dayjs/')) {
             return 'utils';
           }
