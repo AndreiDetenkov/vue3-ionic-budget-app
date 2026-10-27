@@ -1,42 +1,6 @@
 # Changelog
 
 
-## v1.2.0
-
-[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.0.0...v1.2.0)
-
-### 🚀 Enhancements
-
-- Improve Vite build config with tree-shaking and chunk size limit adjustments ([5d06135](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5d06135))
-- Add design assets for v1 and v2 ([19d393d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/19d393d))
-- Remove design assets for v1 and v2 ([868dabc](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/868dabc))
-- Introduce design system v2 and semantic tokens ([a389709](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/a389709))
-- Add v2 design templates ([782a1af](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/782a1af))
-
-### 💅 Refactors
-
-- **categories:** Collapse Category selection state into a single v-model seam ([#8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/8))
-- **transactions:** Remove global transaction draft and isolate edit state ([#10](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/10))
-- **reports:** Deepen report period filtering and cross-tab sync ([#12](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/12))
-- **transactions:** Collapse transaction list transit state and remove dead utils ([#15](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/15))
-
-### 📖 Documentation
-
-- Describe v1.0.0 release in changelog ([323a3a9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/323a3a9))
-- **agents:** Document SDLC lifecycle and agent-skills bindings ([#13](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/13))
-
-### 🏡 Chore
-
-- Sync native app version to 1.0.0 in iOS and Android configurations ([3a34dcc](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3a34dcc))
-- Update Gradle to 9.6.0 and Android plugin to 9.4.1 ([d25469f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d25469f))
-- Remove legacy Vite plugin and update dependencies ([67ea450](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/67ea450))
-- Remove @tanstack/vue-query and update project documentation ([#17](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/17))
-
-### ❤️ Contributors
-
-- Andrei Detenkov
-- Andrei.detenkov <a.detenkov@gmail.com>
-
 ## v1.1.0
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.0.0...v1.1.0)
