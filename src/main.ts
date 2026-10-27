@@ -3,7 +3,6 @@ import { createPinia } from 'pinia';
 import { IonicVue } from '@ionic/vue';
 import router from '@/router';
 import App from '@/App.vue';
-import { vueQueryPlugin } from '@/core/plugins/vue-query';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -27,7 +26,6 @@ const app = createApp(App);
 
 app.use(IonicVue);
 app.use(router);
-app.use(vueQueryPlugin);
 app.use(createPinia());
 
 router.isReady().then(() => app.mount('#app'));
