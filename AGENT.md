@@ -66,10 +66,6 @@ Start every task with `using-agent-skills` to route work through its **Skill Dis
 
 Issues, specs, implementation plans, and task breakdowns live exclusively in GitHub Issues (`AndreiDetenkov/vue3-ionic-budget-app`) via the `gh` CLI — keep them out of local repo files (`tasks/`, `docs/specs/`). See `docs/agents/issue-tracker.md`.
 
-### Triage labels
-
-Default five canonical triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
-
 ### Domain docs
 
 Single-context layout (`GLOSSARY.md` and `docs/adr/` at the repo root). See `docs/agents/domain.md`.
