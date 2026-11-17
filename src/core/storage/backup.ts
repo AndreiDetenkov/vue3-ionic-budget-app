@@ -37,8 +37,12 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function isOptionalNullableString(value: unknown): value is string | null | undefined {
-  return value === undefined || value === null || typeof value === 'string';
+function isValidTimestamp(value: unknown): value is string {
+  return isNonEmptyString(value) && !Number.isNaN(Date.parse(value));
+}
+
+function isOptionalValidTimestamp(value: unknown): value is string | null | undefined {
+  return value === undefined || value === null || isValidTimestamp(value);
 }
 
 function cloneStoredCategory(category: StoredCategory): StoredCategory {
@@ -66,10 +70,13 @@ function cloneStoredTransaction(tx: StoredTransaction): StoredTransaction {
 function shouldIncomingWin(localUpdatedAt: string, incomingUpdatedAt: string): boolean {
   const localTime = Date.parse(localUpdatedAt);
   const incomingTime = Date.parse(incomingUpdatedAt);
-  if (!Number.isNaN(localTime) && !Number.isNaN(incomingTime)) {
-    return incomingTime >= localTime;
+  if (Number.isNaN(incomingTime)) {
+    return Number.isNaN(localTime);
   }
-  return true;
+  if (Number.isNaN(localTime)) {
+    return true;
+  }
+  return incomingTime >= localTime;
 }
 
 function mergeRecordsById<T extends { id: string; updatedAt: string }>(
@@ -133,8 +140,8 @@ function parseStoredCategory(raw: unknown): StoredCategory {
     !isNonEmptyString(id) ||
     !isNonEmptyString(title) ||
     !isValidIcon ||
-    !isNonEmptyString(updatedAt) ||
-    !isOptionalNullableString(deletedAt)
+    !isValidTimestamp(updatedAt) ||
+    !isOptionalValidTimestamp(deletedAt)
   ) {
     throw new Error('Invalid backup category');
   }
@@ -160,10 +167,10 @@ function parseStoredTransaction(raw: unknown): StoredTransaction {
     !isNonEmptyString(name) ||
     typeof value !== 'number' ||
     !Number.isFinite(value) ||
-    !isNonEmptyString(createdAt) ||
-    !isNonEmptyString(updatedAt) ||
+    !isValidTimestamp(createdAt) ||
+    !isValidTimestamp(updatedAt) ||
     !isNonEmptyString(categoryId) ||
-    !isOptionalNullableString(deletedAt)
+    !isOptionalValidTimestamp(deletedAt)
   ) {
     throw new Error('Invalid backup transaction');
   }
@@ -195,7 +202,7 @@ export function parseBackupSnapshot(rawJson: string): LocalStorageSnapshot {
     throw new Error(`Unsupported backup version: ${String(parsed.version)}`);
   }
 
-  if (!isNonEmptyString(parsed.updatedAt) || !Array.isArray(parsed.categories) || !Array.isArray(parsed.transactions)) {
+  if (!isValidTimestamp(parsed.updatedAt) || !Array.isArray(parsed.categories) || !Array.isArray(parsed.transactions)) {
     throw new Error('Invalid backup JSON');
   }
 
@@ -232,15 +239,26 @@ export async function migrateFromSupabase(
 ): Promise<MigrationResult> {
   const startYear = options.startYear ?? DEFAULT_MIGRATION_START_YEAR;
   const endYear = options.endYear ?? new Date().getUTCFullYear() + 1;
-  const remoteCategories = await remote.getCategories();
-
-  // Query year-by-year so multi-year histories do not silently truncate at PostgREST's 1000-row default limit
-  const transactionsById = new Map<string, Transaction>();
+  const years: number[] = [];
   for (let year = startYear; year <= endYear; year += 1) {
-    const chunk = await remote.getTransactionsByRange({
-      from: `${year}-01-01T00:00:00.000Z`,
-      to: `${year}-12-31T23:59:59.999Z`,
-    });
+    years.push(year);
+  }
+
+  // Query year-by-year in parallel so multi-year histories stay fast and avoid PostgREST's 1000-row cap
+  const [remoteCategories, yearlyChunks] = await Promise.all([
+    remote.getCategories(),
+    Promise.all(
+      years.map((year) =>
+        remote.getTransactionsByRange({
+          from: `${year}-01-01T00:00:00.000Z`,
+          to: `${year}-12-31T23:59:59.999Z`,
+        }),
+      ),
+    ),
+  ]);
+
+  const transactionsById = new Map<string, Transaction>();
+  for (const chunk of yearlyChunks) {
     for (const tx of chunk) {
       transactionsById.set(tx.id, tx);
     }
@@ -378,7 +396,8 @@ export function createAutoMigratingLocalStorage(options: AutoMigratingStorageOpt
       return local.getSnapshot();
     },
 
-    replaceSnapshot(snapshot) {
+    async replaceSnapshot(snapshot) {
+      await ensureMigratedOnce();
       return local.replaceSnapshot(snapshot);
     },
   };

@@ -7,6 +7,8 @@ import AllTransactionsModal from '@/modules/transactions/components/AllTransacti
 import BackupModal from '@/core/components/BackupModal.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
+import { useCategoryStore } from '@/modules/categories';
+import { useTransactionStore } from '@/modules/transactions';
 import TransactionsPage from './TransactionsPage.vue';
 
 let ionViewWillEnterCallback: (() => void) | undefined;
@@ -185,5 +187,31 @@ describe('TransactionsPage.vue', () => {
 
     expect(backupModal.props('modelValue')).toBe(true);
     expect(backupModal.text()).toContain('Backup & Sync');
+
+    const clothesCategory: Category = { id: 'cat-clothes', title: 'Clothes', icon: 'clothes' };
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory, clothesCategory],
+        transactions: [
+          {
+            id: 'tx-restored',
+            name: 'Restored Jacket',
+            value: 3200,
+            createdAt: '2026-10-15T10:00:00.000Z',
+            categoryId: clothesCategory.id,
+            category: clothesCategory,
+          },
+        ],
+      }),
+    );
+
+    const onRestored = backupModal.props('onRestored') as (() => Promise<void>) | undefined;
+    await onRestored?.();
+    await flushPromises();
+
+    const categoryStore = useCategoryStore();
+    const transactionStore = useTransactionStore();
+    expect(categoryStore.categories).toHaveLength(2);
+    expect(transactionStore.transactions.map((t) => t.name)).toEqual(['Restored Jacket']);
   });
 });

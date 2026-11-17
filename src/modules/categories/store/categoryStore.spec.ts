@@ -28,10 +28,13 @@ describe('useCategoryStore', () => {
       { id: 'cat-2', title: 'Transportation', icon: 'transportation' },
     ]);
 
-    // Subsequent call keeps cached categories even if storage is replaced
+    // Subsequent call keeps cached categories unless force=true is passed
     setStorage(createInMemoryStorage({ categories: [] }));
     await store.getCategoryList();
     expect(store.categories).toHaveLength(2);
+
+    await store.getCategoryList(true);
+    expect(store.categories).toEqual([]);
   });
 
   it('captures an Error and resets loading when BudgetStorage fails to load Categories', async () => {

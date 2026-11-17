@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
 import { cloudDownloadOutline, cloudUploadOutline, syncOutline } from 'ionicons/icons';
@@ -13,34 +13,26 @@ import {
   toError,
   type BudgetStorage,
 } from '@/core/storage';
-import { useCategoryStore } from '@/modules/categories';
-import { useTransactionStore } from '@/modules/transactions';
 
 type BusyAction = 'export' | 'import' | 'supabase' | null;
 
 const props = defineProps<{
   remoteStorage?: BudgetStorage;
+  onRestored?: () => Promise<void> | void;
 }>();
 
 const model = defineModel<boolean>({ default: false });
 
-const categoryStore = useCategoryStore();
-const transactionStore = useTransactionStore();
 const { showSuccessToast, showErrorToast } = useToast();
 
 const busyAction = ref<BusyAction>(null);
-const fileInputRef = ref<HTMLInputElement | null>(null);
+const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 
 const closeModal = () => {
-  model.value = false;
+  if (busyAction.value === null) {
+    model.value = false;
+  }
 };
-
-async function refreshStores(): Promise<void> {
-  // categoryStore skips reload when categories already exist, so clear before re-fetching
-  categoryStore.categories = [];
-  await categoryStore.getCategoryList();
-  await transactionStore.getTransactionsByRange(transactionStore.transactionsUnit);
-}
 
 function readFileAsText(file: File): Promise<string> {
   if (typeof file.text === 'function') {
@@ -50,7 +42,14 @@ function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ''));
-    reader.onerror = () => reject(reader.error ?? new Error('Failed to read backup file'));
+    reader.onerror = () => {
+      const err = reader.error;
+      const message =
+        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string' && err.message
+          ? err.message
+          : 'Failed to read backup file';
+      reject(new Error(message));
+    };
     reader.readAsText(file);
   });
 }
@@ -68,7 +67,7 @@ function downloadJsonFile(filename: string, content: string): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 async function runAction(action: Exclude<BusyAction, null>, task: () => Promise<void>): Promise<void> {
@@ -109,7 +108,7 @@ const handleFileSelected = async (event: Event) => {
     await runAction('import', async () => {
       const rawJson = await readFileAsText(file);
       const result = await importBackupJson(getLocalStorage(), rawJson);
-      await refreshStores();
+      await props.onRestored?.();
       await showSuccessToast(`Imported ${result.transactionsCount} transactions`);
     });
   } finally {
@@ -120,17 +119,17 @@ const handleFileSelected = async (event: Event) => {
 const handleSupabaseImport = () =>
   runAction('supabase', async () => {
     const result = await migrateFromSupabase(getLocalStorage(), props.remoteStorage);
-    await refreshStores();
+    await props.onRestored?.();
     await showSuccessToast(`Imported ${result.transactionsCount} transactions from Supabase`);
   });
 </script>
 
 <template>
-  <ion-modal :is-open="model" @didDismiss="closeModal">
+  <ion-modal :is-open="model" :backdrop-dismiss="busyAction === null" @didDismiss="closeModal">
     <BaseHeader title="Backup & Sync">
       <template #buttons>
         <ion-buttons slot="end">
-          <ion-chip color="primary" @click="closeModal">Close</ion-chip>
+          <ion-chip color="primary" :disabled="busyAction !== null" @click="closeModal">Close</ion-chip>
         </ion-buttons>
       </template>
     </BaseHeader>

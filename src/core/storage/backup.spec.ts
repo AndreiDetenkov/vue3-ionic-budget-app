@@ -3,6 +3,7 @@ import {
   createInMemoryStorage,
   createLocalStorage,
   type BudgetStorage,
+  type Category,
   type LocalStorageSnapshot,
 } from '@/core/storage';
 import {
@@ -207,6 +208,46 @@ describe('backup and snapshot merge utilities', () => {
       expect(restoredTx?.deletedAt).toBeNull();
       expect(restoredTx?.name).toBe('Restored Actively');
     });
+
+    it('keeps a valid local record when incoming updatedAt is unparseable', () => {
+      const local: LocalStorageSnapshot = {
+        version: 1,
+        updatedAt: '2026-10-10T10:00:00.000Z',
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-valid-local',
+            name: 'Valid Local Name',
+            value: 300,
+            createdAt: '2026-10-01T10:00:00.000Z',
+            updatedAt: '2026-10-05T10:00:00.000Z',
+            deletedAt: null,
+            categoryId: foodCategory.id,
+          },
+        ],
+      };
+
+      const incoming: LocalStorageSnapshot = {
+        version: 1,
+        updatedAt: '2026-10-12T10:00:00.000Z',
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-valid-local',
+            name: 'Corrupt Incoming Timestamp',
+            value: 999,
+            createdAt: '2026-10-01T10:00:00.000Z',
+            updatedAt: 'not-a-date',
+            deletedAt: null,
+            categoryId: foodCategory.id,
+          },
+        ],
+      };
+
+      const merged = mergeSnapshots(local, incoming);
+      expect(merged.transactions[0].name).toBe('Valid Local Name');
+      expect(merged.transactions[0].value).toBe(300);
+    });
   });
 
   describe('serializeBackupSnapshot and parseBackupSnapshot', () => {
@@ -269,9 +310,80 @@ describe('backup and snapshot merge utilities', () => {
               {
                 id: 'tx-1',
                 name: 'Dinner',
-                value: Number.NaN,
+                value: 'invalid',
                 createdAt: '2026-10-14T19:00:00.000Z',
                 updatedAt: '2026-10-14T19:00:00.000Z',
+                categoryId: foodCategory.id,
+              },
+            ],
+          }),
+        ),
+      ).toThrow('Invalid backup transaction');
+
+      expect(() =>
+        parseBackupSnapshot(
+          JSON.stringify({
+            version: 1,
+            updatedAt: 'not-a-date',
+            categories: [],
+            transactions: [],
+          }),
+        ),
+      ).toThrow('Invalid backup JSON');
+
+      expect(() =>
+        parseBackupSnapshot(
+          JSON.stringify({
+            version: 1,
+            updatedAt: '2026-10-15T12:00:00.000Z',
+            categories: [
+              {
+                id: 'cat-1',
+                title: 'Food',
+                icon: 'food',
+                updatedAt: '2026-10-15T12:00:00.000Z',
+                deletedAt: 'false',
+              },
+            ],
+            transactions: [],
+          }),
+        ),
+      ).toThrow('Invalid backup category');
+
+      expect(() =>
+        parseBackupSnapshot(
+          JSON.stringify({
+            version: 1,
+            updatedAt: '2026-10-15T12:00:00.000Z',
+            categories: [foodCategory],
+            transactions: [
+              {
+                id: 'tx-1',
+                name: 'Dinner',
+                value: 100,
+                createdAt: 'not-a-date',
+                updatedAt: '2026-10-14T19:00:00.000Z',
+                categoryId: foodCategory.id,
+              },
+            ],
+          }),
+        ),
+      ).toThrow('Invalid backup transaction');
+
+      expect(() =>
+        parseBackupSnapshot(
+          JSON.stringify({
+            version: 1,
+            updatedAt: '2026-10-15T12:00:00.000Z',
+            categories: [foodCategory],
+            transactions: [
+              {
+                id: 'tx-1',
+                name: 'Dinner',
+                value: 100,
+                createdAt: '2026-10-14T19:00:00.000Z',
+                updatedAt: '2026-10-14T19:00:00.000Z',
+                deletedAt: '',
                 categoryId: foodCategory.id,
               },
             ],
@@ -423,6 +535,44 @@ describe('backup and snapshot merge utilities', () => {
       expect(migrated.find((t) => t.id === 'tx-2025')?.name).toBe('Winter Coat');
       expect(migrated.find((t) => t.id === 'tx-edited-locally')?.name).toBe('Local Updated Name');
     });
+
+    it('deduplicates transactions when the same transaction id is returned across multiple yearly chunks', async () => {
+      const duplicateTx = {
+        id: 'tx-overlap',
+        name: 'Year Boundary Coffee',
+        value: 420,
+        createdAt: '2024-12-31T23:59:59.999Z',
+        categoryId: foodCategory.id,
+        category: { id: foodCategory.id, title: 'Food', icon: 'food' },
+      };
+
+      const overlappingRemote: BudgetStorage = {
+        getCategories: vi.fn().mockResolvedValue([{ id: foodCategory.id, title: 'Food', icon: 'food' }]),
+        getTransactionsByRange: vi.fn().mockResolvedValue([duplicateTx]),
+        createTransaction: vi.fn(),
+        updateTransaction: vi.fn(),
+        removeTransaction: vi.fn(),
+      };
+
+      const target = createLocalStorage({
+        storageKey: 'migrate-dedupe-test',
+        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
+      });
+
+      const result = await migrateFromSupabase(target, overlappingRemote, {
+        startYear: 2024,
+        endYear: 2025,
+      });
+
+      expect(result).toEqual({
+        categoriesCount: 1,
+        transactionsCount: 1,
+      });
+
+      const snapshot = await target.getSnapshot();
+      expect(snapshot.transactions).toHaveLength(1);
+      expect(snapshot.transactions[0].id).toBe('tx-overlap');
+    });
   });
 
   describe('createAutoMigratingLocalStorage', () => {
@@ -541,6 +691,76 @@ describe('backup and snapshot merge utilities', () => {
       const categories = await storage.getCategories();
       expect(categories).toHaveLength(1);
       expect(window.localStorage.getItem('auto-migrate-flag-offline')).toBeNull();
+    });
+
+    it('waits for in-flight auto-migration inside replaceSnapshot so explicit restore is not overwritten', async () => {
+      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key');
+
+      let resolveRemoteCategories!: (categories: Category[]) => void;
+      const deferredRemote: BudgetStorage = {
+        getCategories: vi.fn(
+          () =>
+            new Promise<Category[]>((resolve) => {
+              resolveRemoteCategories = resolve;
+            }),
+        ),
+        getTransactionsByRange: vi.fn().mockResolvedValue([
+          {
+            id: 'tx-stale-remote',
+            name: 'Stale Remote Item',
+            value: 100,
+            createdAt: '2026-10-01T10:00:00.000Z',
+            categoryId: foodCategory.id,
+            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
+          },
+        ]),
+        createTransaction: vi.fn(),
+        updateTransaction: vi.fn(),
+        removeTransaction: vi.fn(),
+      };
+
+      const storage = createAutoMigratingLocalStorage({
+        storageKey: 'auto-migrate-concurrent-replace',
+        migrationFlagKey: 'auto-migrate-flag-concurrent-replace',
+        remoteStorage: deferredRemote,
+        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
+        startYear: 2026,
+        endYear: 2026,
+      });
+
+      // Start initial read (triggers auto-migration and waits on remote getCategories)
+      const initialReadPromise = storage.getCategories();
+      await vi.waitFor(() => {
+        expect(deferredRemote.getCategories).toHaveBeenCalledTimes(1);
+      });
+
+      // Call replaceSnapshot while auto-migration is still in flight
+      const explicitSnapshot: LocalStorageSnapshot = {
+        version: 1,
+        updatedAt: '2026-10-20T12:00:00.000Z',
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-explicit-restore',
+            name: 'Explicitly Restored',
+            value: 999,
+            createdAt: '2026-10-15T10:00:00.000Z',
+            updatedAt: '2026-10-15T10:00:00.000Z',
+            deletedAt: null,
+            categoryId: foodCategory.id,
+          },
+        ],
+      };
+      const replacePromise = storage.replaceSnapshot(explicitSnapshot);
+
+      // Finish remote auto-migration
+      resolveRemoteCategories([{ id: foodCategory.id, title: 'Food', icon: 'food' }]);
+
+      await Promise.all([initialReadPromise, replacePromise]);
+
+      const finalSnapshot = await storage.getSnapshot();
+      expect(finalSnapshot.transactions.map((t) => t.id)).toEqual(['tx-explicit-restore']);
     });
   });
 });

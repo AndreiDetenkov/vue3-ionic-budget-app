@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { shallowRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import {
   IonButton,
@@ -15,6 +15,7 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { cloudUploadOutline } from 'ionicons/icons';
+import { useCategoryStore } from '@/modules/categories';
 import { useTransactionStore } from '@/modules/transactions';
 import BackupModal from '@/core/components/BackupModal.vue';
 import BaseRefresher from '@/core/components/BaseRefresher.vue';
@@ -22,16 +23,29 @@ import BaseHeader from '@/core/components/BaseHeader.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 
+const categoryStore = useCategoryStore();
 const transactionStore = useTransactionStore();
 const { loading, transactions } = storeToRefs(transactionStore);
 const { getTransactionsByRange } = transactionStore;
-const isBackupModalOpen = ref(false);
+const isBackupModalOpen = shallowRef(false);
 
 onIonViewWillEnter(() => {
   if (!transactions.value.length) getTransactionsByRange('month');
 });
 
 const refreshContent = () => getTransactionsByRange('month');
+
+const handleBackupRestored = async () => {
+  await categoryStore.getCategoryList(true);
+  await getTransactionsByRange(transactionStore.transactionsUnit);
+
+  if (categoryStore.error) {
+    throw categoryStore.error;
+  }
+  if (transactionStore.error) {
+    throw transactionStore.error;
+  }
+};
 </script>
 
 <template>
@@ -63,7 +77,7 @@ const refreshContent = () => getTransactionsByRange('month');
       </ion-grid>
     </ion-content>
 
-    <BackupModal v-model="isBackupModalOpen" />
+    <BackupModal v-model="isBackupModalOpen" :on-restored="handleBackupRestored" />
   </ion-page>
 </template>
 
