@@ -1,4 +1,4 @@
-import { createLocalStorage } from './localStorage';
+import { createDevAutoSeedingLocalStorage } from './backup';
 import type { BudgetStorage, LocalBudgetStorage } from './types';
 
 function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
@@ -8,7 +8,7 @@ function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetSto
   );
 }
 
-const defaultLocalStorage: LocalBudgetStorage = createLocalStorage();
+const defaultLocalStorage: LocalBudgetStorage = createDevAutoSeedingLocalStorage();
 let activeStorage: BudgetStorage = defaultLocalStorage;
 
 function resolveLocalStorage(): LocalBudgetStorage {
@@ -54,6 +54,7 @@ export { DEFAULT_CATEGORIES } from './defaultCategories';
 export { createInMemoryStorage, type InMemoryStorageSeed } from './inMemoryStorage';
 export { createLocalStorage } from './localStorage';
 export {
+  createDevAutoSeedingLocalStorage,
   exportBackupJson,
   importBackupJson,
   importTransactionsCsv,
@@ -61,5 +62,6 @@ export {
   parseBackupSnapshot,
   parseTransactionsCsv,
   serializeBackupSnapshot,
+  type DevAutoSeedOptions,
   type MigrationResult,
 } from './backup';

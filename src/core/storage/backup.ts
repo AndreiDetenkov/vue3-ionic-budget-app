@@ -1,10 +1,25 @@
-import type { LocalBudgetStorage, LocalStorageSnapshot, StoredCategory, StoredTransaction } from './types';
+import { createLocalStorage } from './localStorage';
+import type {
+  LocalBudgetStorage,
+  LocalStorageOptions,
+  LocalStorageSnapshot,
+  StoredCategory,
+  StoredTransaction,
+} from './types';
 
 export interface MigrationResult {
   categoriesCount: number;
   transactionsCount: number;
 }
 
+export interface DevAutoSeedOptions extends LocalStorageOptions {
+  csvUrl?: string;
+  enabled?: boolean;
+  localStorage?: LocalBudgetStorage;
+  fetchFn?: typeof fetch;
+}
+
+const DEFAULT_DEV_SEED_CSV_URL = '/transactions_rows.csv';
 const EXPECTED_CSV_HEADERS = ['id', 'created_at', 'name', 'value', 'category_id'] as const;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -353,5 +368,92 @@ export async function importTransactionsCsv(storage: LocalBudgetStorage, rawCsv:
   return {
     categoriesCount: merged.categories.filter((c) => !c.deletedAt).length,
     transactionsCount: incomingTransactions.length,
+  };
+}
+
+export function createDevAutoSeedingLocalStorage(options: DevAutoSeedOptions = {}): LocalBudgetStorage {
+  const local = options.localStorage ?? createLocalStorage(options);
+  const csvUrl = options.csvUrl ?? DEFAULT_DEV_SEED_CSV_URL;
+  const enabled = options.enabled ?? Boolean(import.meta.env.DEV && !import.meta.env.VITEST);
+  let seedPromise: Promise<void> | null = null;
+  let checkedInSession = false;
+
+  async function ensureSeededOnce(): Promise<void> {
+    if (checkedInSession || !enabled) {
+      checkedInSession = true;
+      return;
+    }
+
+    if (!seedPromise) {
+      seedPromise = (async () => {
+        try {
+          const snapshot = await local.getSnapshot();
+          if (snapshot.transactions.length > 0) {
+            return;
+          }
+
+          const fetcher = options.fetchFn ?? (typeof fetch === 'function' ? fetch : null);
+          if (!fetcher) {
+            return;
+          }
+
+          const response = await fetcher(csvUrl);
+          if (!response.ok) {
+            return;
+          }
+
+          const rawCsv = await response.text();
+          if (!rawCsv.trim()) {
+            return;
+          }
+
+          await importTransactionsCsv(local, rawCsv);
+        } catch {
+          // Missing or invalid dev CSV seed file must never block local storage
+        } finally {
+          checkedInSession = true;
+          seedPromise = null;
+        }
+      })();
+    }
+
+    await seedPromise;
+  }
+
+  return {
+    async getTransactionsByRange(range) {
+      await ensureSeededOnce();
+      return local.getTransactionsByRange(range);
+    },
+
+    async createTransaction(input) {
+      await ensureSeededOnce();
+      return local.createTransaction(input);
+    },
+
+    async updateTransaction(input) {
+      await ensureSeededOnce();
+      return local.updateTransaction(input);
+    },
+
+    async removeTransaction(id) {
+      await ensureSeededOnce();
+      return local.removeTransaction(id);
+    },
+
+    async getCategories() {
+      await ensureSeededOnce();
+      return local.getCategories();
+    },
+
+    async getSnapshot() {
+      await ensureSeededOnce();
+      return local.getSnapshot();
+    },
+
+    async replaceSnapshot(snapshot) {
+      await ensureSeededOnce();
+      return local.replaceSnapshot(snapshot);
+    },
   };
 }

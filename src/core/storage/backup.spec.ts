@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLocalStorage, type LocalStorageSnapshot } from '@/core/storage';
 import {
+  createDevAutoSeedingLocalStorage,
   exportBackupJson,
   importBackupJson,
   importTransactionsCsv,
@@ -552,6 +553,95 @@ describe('backup and snapshot merge utilities', () => {
       expect(() =>
         parseTransactionsCsv('id,created_at,name,value,category_id\ntx-1,2025-06-21 10:00:00+06,"Unclosed,100,cat-1'),
       ).toThrow('Invalid CSV row at line 2');
+    });
+  });
+
+  describe('createDevAutoSeedingLocalStorage', () => {
+    const sampleCsv = [
+      'id,created_at,name,value,category_id',
+      '0011b1aa-9c5e-479f-b9aa-39711036c177,2025-06-21 20:59:14.881024+06,Dentist,1600,5cb289ab-2f7b-43bf-be3e-a4b577688333',
+      '0028ee73-64e9-4326-87f4-3989fc6e48d0,2023-08-28 21:22:59.872722+06,Taxi,320,2fe6596b-6292-4d8c-826d-5f4d3d99f543',
+    ].join('\n');
+
+    it('auto-imports /transactions_rows.csv once in dev mode when local transactions are empty', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => sampleCsv,
+      } as Response);
+
+      const storage = createDevAutoSeedingLocalStorage({
+        storageKey: 'dev-auto-seed-empty',
+        enabled: true,
+        fetchFn: fetchMock as unknown as typeof fetch,
+      });
+
+      const transactions = await storage.getTransactionsByRange({
+        from: '2023-01-01T00:00:00.000Z',
+        to: '2026-01-01T00:00:00.000Z',
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith('/transactions_rows.csv');
+      expect(transactions).toHaveLength(2);
+      expect(transactions.map((t) => t.name)).toEqual(['Dentist', 'Taxi']);
+
+      // Subsequent calls do not fetch again
+      await storage.getCategories();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips fetching CSV when local storage already has transactions or when disabled', async () => {
+      const fetchMock = vi.fn();
+
+      const disabledStorage = createDevAutoSeedingLocalStorage({
+        storageKey: 'dev-auto-seed-disabled',
+        enabled: false,
+        fetchFn: fetchMock as unknown as typeof fetch,
+      });
+      await disabledStorage.getCategories();
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      const prePopulatedStorage = createDevAutoSeedingLocalStorage({
+        storageKey: 'dev-auto-seed-populated',
+        enabled: true,
+        fetchFn: fetchMock as unknown as typeof fetch,
+        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
+        transactions: [
+          {
+            id: 'tx-existing',
+            name: 'Existing Coffee',
+            value: 200,
+            createdAt: '2026-10-10T10:00:00.000Z',
+            categoryId: foodCategory.id,
+            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
+          },
+        ],
+      });
+
+      const txList = await prePopulatedStorage.getTransactionsByRange({
+        from: '2026-01-01T00:00:00.000Z',
+        to: '2026-12-31T23:59:59.999Z',
+      });
+      expect(txList).toHaveLength(1);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('falls back silently when /transactions_rows.csv is not found (404) or fetch throws', async () => {
+      const fetch404 = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: async () => 'Not Found',
+      } as Response);
+
+      const storage = createDevAutoSeedingLocalStorage({
+        storageKey: 'dev-auto-seed-404',
+        enabled: true,
+        fetchFn: fetch404 as unknown as typeof fetch,
+      });
+
+      const categories = await storage.getCategories();
+      expect(categories).toHaveLength(14);
+      expect(fetch404).toHaveBeenCalledTimes(1);
     });
   });
 });
