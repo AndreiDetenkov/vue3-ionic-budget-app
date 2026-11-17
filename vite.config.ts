@@ -35,10 +35,6 @@ export default defineConfig({
             return 'ionic-vendor';
           }
 
-          if (id.includes('node_modules/@supabase/supabase-js/')) {
-            return 'supabase-vendor';
-          }
-
           if (id.includes('node_modules/dayjs/')) {
             return 'utils';
           }
