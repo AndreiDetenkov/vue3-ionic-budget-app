@@ -2,22 +2,14 @@
 import { ref, useTemplateRef } from 'vue';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
-import { cloudDownloadOutline, cloudUploadOutline, syncOutline } from 'ionicons/icons';
+import { cloudDownloadOutline, cloudUploadOutline, documentTextOutline } from 'ionicons/icons';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import { useToast } from '@/core/composables/useToast';
-import {
-  exportBackupJson,
-  getLocalStorage,
-  importBackupJson,
-  migrateFromSupabase,
-  toError,
-  type BudgetStorage,
-} from '@/core/storage';
+import { exportBackupJson, getLocalStorage, importBackupJson, importTransactionsCsv, toError } from '@/core/storage';
 
-type BusyAction = 'export' | 'import' | 'supabase' | null;
+type BusyAction = 'export' | 'import' | 'csv' | null;
 
 const props = defineProps<{
-  remoteStorage?: BudgetStorage;
   onRestored?: () => Promise<void> | void;
 }>();
 
@@ -27,6 +19,7 @@ const { showSuccessToast, showErrorToast } = useToast();
 
 const busyAction = ref<BusyAction>(null);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
+const csvInputRef = useTemplateRef<HTMLInputElement>('csvInputRef');
 
 const closeModal = () => {
   if (busyAction.value === null) {
@@ -85,6 +78,29 @@ async function runAction(action: Exclude<BusyAction, null>, task: () => Promise<
   }
 }
 
+async function handleSelectedFile(
+  event: Event,
+  action: Exclude<BusyAction, null>,
+  importText: (rawText: string) => Promise<string>,
+): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    await runAction(action, async () => {
+      const rawText = await readFileAsText(file);
+      const successMessage = await importText(rawText);
+      await props.onRestored?.();
+      await showSuccessToast(successMessage);
+    });
+  } finally {
+    input.value = '';
+  }
+}
+
 const handleExport = () =>
   runAction('export', async () => {
     const json = await exportBackupJson(getLocalStorage());
@@ -97,30 +113,20 @@ const triggerImport = () => {
   fileInputRef.value?.click();
 };
 
-const handleFileSelected = async (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) {
-    return;
-  }
-
-  try {
-    await runAction('import', async () => {
-      const rawJson = await readFileAsText(file);
-      const result = await importBackupJson(getLocalStorage(), rawJson);
-      await props.onRestored?.();
-      await showSuccessToast(`Imported ${result.transactionsCount} transactions`);
-    });
-  } finally {
-    input.value = '';
-  }
+const triggerCsvImport = () => {
+  csvInputRef.value?.click();
 };
 
-const handleSupabaseImport = () =>
-  runAction('supabase', async () => {
-    const result = await migrateFromSupabase(getLocalStorage(), props.remoteStorage);
-    await props.onRestored?.();
-    await showSuccessToast(`Imported ${result.transactionsCount} transactions from Supabase`);
+const handleFileSelected = (event: Event) =>
+  handleSelectedFile(event, 'import', async (rawJson) => {
+    const result = await importBackupJson(getLocalStorage(), rawJson);
+    return `Imported ${result.transactionsCount} transactions`;
+  });
+
+const handleCsvFileSelected = (event: Event) =>
+  handleSelectedFile(event, 'csv', async (rawCsv) => {
+    const result = await importTransactionsCsv(getLocalStorage(), rawCsv);
+    return `Imported ${result.transactionsCount} transactions from CSV`;
   });
 </script>
 
@@ -138,8 +144,8 @@ const handleSupabaseImport = () =>
       <div class="backup-section">
         <ion-text color="medium">
           <p class="description">
-            Data is stored locally on your device. Export a JSON backup anytime or merge data from a saved file or
-            Supabase.
+            Data is stored locally on your device. Export a JSON backup anytime or merge data from a saved JSON backup
+            or transactions CSV file.
           </p>
         </ion-text>
 
@@ -183,16 +189,25 @@ const handleSupabaseImport = () =>
           expand="block"
           fill="outline"
           color="secondary"
-          data-testid="import-supabase-btn"
+          data-testid="import-csv-btn"
           :disabled="busyAction !== null"
-          @click="handleSupabaseImport"
+          @click="triggerCsvImport"
         >
-          <ion-spinner v-if="busyAction === 'supabase'" name="lines" />
+          <ion-spinner v-if="busyAction === 'csv'" name="lines" />
           <template v-else>
-            <ion-icon slot="start" :icon="syncOutline" />
-            Import from Supabase
+            <ion-icon slot="start" :icon="documentTextOutline" />
+            Import Transactions (.csv)
           </template>
         </ion-button>
+
+        <input
+          ref="csvInputRef"
+          data-testid="csv-file-input"
+          type="file"
+          accept="text/csv,.csv"
+          class="hidden-file-input"
+          @change="handleCsvFileSelected"
+        />
       </div>
     </ion-content>
   </ion-modal>

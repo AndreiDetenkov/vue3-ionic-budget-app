@@ -1,20 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createInMemoryStorage,
-  createLocalStorage,
-  createSupabaseStorage,
-  DEFAULT_CATEGORIES,
-  type Category,
-} from '@/core/storage';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createInMemoryStorage, createLocalStorage, DEFAULT_CATEGORIES, type Category } from '@/core/storage';
 
 const food: Category = { id: 'cat-food', title: 'Food', icon: 'food' };
 const clothes: Category = { id: 'cat-clothes', title: 'Clothes', icon: 'clothes' };
 
 describe('BudgetStorage adapters', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
   describe('createInMemoryStorage', () => {
     it('sorts Categories alphabetically by title ascending and filters Transactions inclusively by Date Range sorted by createdAt descending', async () => {
       const storage = createInMemoryStorage({
@@ -144,25 +134,6 @@ describe('BudgetStorage adapters', () => {
         to: '2100-01-01T00:00:00.000Z',
       });
       expect(afterRemove).toEqual([]);
-    });
-  });
-
-  describe('createSupabaseStorage', () => {
-    it('does not throw on creation when env variables are missing, and throws a descriptive Error on first operation', async () => {
-      vi.stubEnv('VITE_SUPABASE_URL', '');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', '');
-
-      const storage = createSupabaseStorage();
-
-      await expect(storage.getCategories()).rejects.toThrow('Env variable VITE_SUPABASE_URL is required');
-
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-      await expect(
-        storage.getTransactionsByRange({
-          from: '2026-10-01T00:00:00.000Z',
-          to: '2026-10-31T23:59:59.999Z',
-        }),
-      ).rejects.toThrow('Env variable VITE_SUPABASE_PUBLISHABLE_KEY is required');
     });
   });
 

@@ -1,4 +1,4 @@
-import { createAutoMigratingLocalStorage } from './backup';
+import { createLocalStorage } from './localStorage';
 import type { BudgetStorage, LocalBudgetStorage } from './types';
 
 function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
@@ -8,7 +8,7 @@ function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetSto
   );
 }
 
-const defaultLocalStorage: LocalBudgetStorage = createAutoMigratingLocalStorage();
+const defaultLocalStorage: LocalBudgetStorage = createLocalStorage();
 let activeStorage: BudgetStorage = defaultLocalStorage;
 
 function resolveLocalStorage(): LocalBudgetStorage {
@@ -53,16 +53,13 @@ export * from './types';
 export { DEFAULT_CATEGORIES } from './defaultCategories';
 export { createInMemoryStorage, type InMemoryStorageSeed } from './inMemoryStorage';
 export { createLocalStorage } from './localStorage';
-export { createSupabaseStorage } from './supabaseStorage';
 export {
-  createAutoMigratingLocalStorage,
   exportBackupJson,
   importBackupJson,
+  importTransactionsCsv,
   mergeSnapshots,
-  migrateFromSupabase,
   parseBackupSnapshot,
+  parseTransactionsCsv,
   serializeBackupSnapshot,
-  type AutoMigratingStorageOptions,
-  type MigrateFromSupabaseOptions,
   type MigrationResult,
 } from './backup';

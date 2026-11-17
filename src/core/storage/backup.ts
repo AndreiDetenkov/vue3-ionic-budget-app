@@ -1,33 +1,11 @@
-import { createLocalStorage } from './localStorage';
-import { createSupabaseStorage } from './supabaseStorage';
-import type {
-  BudgetStorage,
-  LocalBudgetStorage,
-  LocalStorageOptions,
-  LocalStorageSnapshot,
-  StoredCategory,
-  StoredTransaction,
-  Transaction,
-} from './types';
+import type { LocalBudgetStorage, LocalStorageSnapshot, StoredCategory, StoredTransaction } from './types';
 
 export interface MigrationResult {
   categoriesCount: number;
   transactionsCount: number;
 }
 
-export interface MigrateFromSupabaseOptions {
-  startYear?: number;
-  endYear?: number;
-}
-
-export interface AutoMigratingStorageOptions extends LocalStorageOptions, MigrateFromSupabaseOptions {
-  migrationFlagKey?: string;
-  remoteStorage?: BudgetStorage;
-  localStorage?: LocalBudgetStorage;
-}
-
-const DEFAULT_MIGRATION_FLAG_KEY = 'budget-app-supabase-migrated-v1';
-const DEFAULT_MIGRATION_START_YEAR = 2020;
+const EXPECTED_CSV_HEADERS = ['id', 'created_at', 'name', 'value', 'category_id'] as const;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -232,173 +210,148 @@ export async function importBackupJson(storage: LocalBudgetStorage, rawJson: str
   };
 }
 
-export async function migrateFromSupabase(
-  target: LocalBudgetStorage,
-  remote: BudgetStorage = createSupabaseStorage(),
-  options: MigrateFromSupabaseOptions = {},
-): Promise<MigrationResult> {
-  const startYear = options.startYear ?? DEFAULT_MIGRATION_START_YEAR;
-  const endYear = options.endYear ?? new Date().getUTCFullYear() + 1;
-  const years: number[] = [];
-  for (let year = startYear; year <= endYear; year += 1) {
-    years.push(year);
-  }
+function parseCsvRow(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
 
-  // Query year-by-year in parallel so multi-year histories stay fast and avoid PostgREST's 1000-row cap
-  const [remoteCategories, yearlyChunks] = await Promise.all([
-    remote.getCategories(),
-    Promise.all(
-      years.map((year) =>
-        remote.getTransactionsByRange({
-          from: `${year}-01-01T00:00:00.000Z`,
-          to: `${year}-12-31T23:59:59.999Z`,
-        }),
-      ),
-    ),
-  ]);
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
 
-  const transactionsById = new Map<string, Transaction>();
-  for (const chunk of yearlyChunks) {
-    for (const tx of chunk) {
-      transactionsById.set(tx.id, tx);
-    }
-  }
-
-  const now = new Date().toISOString();
-  const storedCategories: StoredCategory[] = remoteCategories.map((category) => ({
-    id: category.id,
-    title: category.title,
-    icon: category.icon,
-    updatedAt: now,
-    deletedAt: null,
-  }));
-
-  const storedTransactions: StoredTransaction[] = Array.from(transactionsById.values()).map((tx) => ({
-    id: tx.id,
-    name: tx.name,
-    value: tx.value,
-    createdAt: tx.createdAt,
-    updatedAt: tx.createdAt,
-    deletedAt: null,
-    categoryId: tx.categoryId,
-  }));
-
-  const incomingSnapshot: LocalStorageSnapshot = {
-    version: 1,
-    updatedAt: now,
-    categories: storedCategories,
-    transactions: storedTransactions,
-  };
-
-  const localSnapshot = await target.getSnapshot();
-  const merged = mergeSnapshots(localSnapshot, incomingSnapshot);
-  await target.replaceSnapshot(merged);
-
-  return {
-    categoriesCount: storedCategories.length,
-    transactionsCount: storedTransactions.length,
-  };
-}
-
-function hasSupabaseEnv(): boolean {
-  return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
-}
-
-function isMigrationCompleted(flagKey: string): boolean {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return false;
-  }
-  try {
-    return window.localStorage.getItem(flagKey) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-function markMigrationCompleted(flagKey: string): void {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return;
-  }
-  try {
-    window.localStorage.setItem(flagKey, 'true');
-  } catch {
-    // Ignore storage quota errors for flag persistence
-  }
-}
-
-export function createAutoMigratingLocalStorage(options: AutoMigratingStorageOptions = {}): LocalBudgetStorage {
-  const local = options.localStorage ?? createLocalStorage(options);
-  const migrationFlagKey = options.migrationFlagKey ?? DEFAULT_MIGRATION_FLAG_KEY;
-  let migrationPromise: Promise<void> | null = null;
-  let checkedInSession = false;
-
-  async function ensureMigratedOnce(): Promise<void> {
-    if (checkedInSession || isMigrationCompleted(migrationFlagKey) || !hasSupabaseEnv()) {
-      checkedInSession = true;
-      return;
-    }
-
-    if (!migrationPromise) {
-      migrationPromise = (async () => {
-        try {
-          const snapshot = await local.getSnapshot();
-          if (snapshot.transactions.length > 0) {
-            markMigrationCompleted(migrationFlagKey);
-            return;
-          }
-
-          const remote = options.remoteStorage ?? createSupabaseStorage();
-          await migrateFromSupabase(local, remote, {
-            startYear: options.startYear,
-            endYear: options.endYear,
-          });
-          markMigrationCompleted(migrationFlagKey);
-        } catch {
-          // Offline or remote error must not prevent local-first operation
-        } finally {
-          checkedInSession = true;
-          migrationPromise = null;
+    if (inQuotes) {
+      if (char === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          inQuotes = false;
         }
-      })();
+      } else {
+        current += char;
+      }
+      continue;
     }
 
-    await migrationPromise;
+    if (char === '"') {
+      if (current.length > 0) {
+        throw new Error('Unexpected quote inside unquoted CSV field');
+      }
+      inQuotes = true;
+    } else if (char === ',') {
+      fields.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
   }
 
+  if (inQuotes) {
+    throw new Error('Unterminated quoted CSV field');
+  }
+
+  fields.push(current);
+  return fields;
+}
+
+function normalizePostgresTimestamp(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  // Convert Postgres `YYYY-MM-DD HH:mm:ss.ffffff+HH` into strict ISO 8601 `...T...+HH:00`
+  const withT = trimmed.replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})/, '$1T$2');
+  const withFullOffset = withT.replace(/([+-]\d{2})$/, '$1:00').replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
+
+  const parsed = Date.parse(withFullOffset);
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return new Date(parsed).toISOString();
+}
+
+export function parseTransactionsCsv(rawCsv: string): StoredTransaction[] {
+  const lines = rawCsv.replace(/^\uFEFF/, '').split(/\r?\n/);
+
+  let headerParsed = false;
+  const transactions: StoredTransaction[] = [];
+
+  for (let idx = 0; idx < lines.length; idx += 1) {
+    const line = lines[idx];
+    if (line.trim().length === 0) {
+      continue;
+    }
+
+    const lineNumber = idx + 1;
+
+    if (!headerParsed) {
+      const headers = parseCsvRow(line).map((col) => col.trim().toLowerCase());
+      const matchesExpected =
+        headers.length === EXPECTED_CSV_HEADERS.length &&
+        EXPECTED_CSV_HEADERS.every((expected, i) => headers[i] === expected);
+
+      if (!matchesExpected) {
+        throw new Error('Invalid CSV header: expected id,created_at,name,value,category_id');
+      }
+      headerParsed = true;
+      continue;
+    }
+
+    let columns: string[];
+    try {
+      columns = parseCsvRow(line);
+    } catch {
+      throw new Error(`Invalid CSV row at line ${lineNumber}`);
+    }
+
+    if (columns.length !== EXPECTED_CSV_HEADERS.length) {
+      throw new Error(`Invalid CSV row at line ${lineNumber}`);
+    }
+
+    const [rawId, rawCreatedAt, rawName, rawValue, rawCategoryId] = columns;
+    const id = rawId.trim();
+    const categoryId = rawCategoryId.trim();
+    const numericText = rawValue.trim();
+    const value = numericText.length > 0 ? Number(numericText) : Number.NaN;
+    const isoCreatedAt = normalizePostgresTimestamp(rawCreatedAt);
+
+    if (!id || !categoryId || !Number.isFinite(value) || !isoCreatedAt) {
+      throw new Error(`Invalid CSV row at line ${lineNumber}`);
+    }
+
+    transactions.push({
+      id,
+      name: rawName.trim() || 'Transaction',
+      value,
+      createdAt: isoCreatedAt,
+      updatedAt: isoCreatedAt,
+      deletedAt: null,
+      categoryId,
+    });
+  }
+
+  if (!headerParsed) {
+    throw new Error('Invalid CSV header: expected id,created_at,name,value,category_id');
+  }
+
+  return transactions;
+}
+
+export async function importTransactionsCsv(storage: LocalBudgetStorage, rawCsv: string): Promise<MigrationResult> {
+  const incomingTransactions = parseTransactionsCsv(rawCsv);
+  const local = await storage.getSnapshot();
+  const merged = mergeSnapshots(local, {
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    categories: [],
+    transactions: incomingTransactions,
+  });
+
+  await storage.replaceSnapshot(merged);
+
   return {
-    async getTransactionsByRange(range) {
-      await ensureMigratedOnce();
-      return local.getTransactionsByRange(range);
-    },
-
-    async createTransaction(input) {
-      await ensureMigratedOnce();
-      return local.createTransaction(input);
-    },
-
-    async updateTransaction(input) {
-      await ensureMigratedOnce();
-      return local.updateTransaction(input);
-    },
-
-    async removeTransaction(id) {
-      await ensureMigratedOnce();
-      return local.removeTransaction(id);
-    },
-
-    async getCategories() {
-      await ensureMigratedOnce();
-      return local.getCategories();
-    },
-
-    async getSnapshot() {
-      await ensureMigratedOnce();
-      return local.getSnapshot();
-    },
-
-    async replaceSnapshot(snapshot) {
-      await ensureMigratedOnce();
-      return local.replaceSnapshot(snapshot);
-    },
+    categoriesCount: merged.categories.filter((c) => !c.deletedAt).length,
+    transactionsCount: incomingTransactions.length,
   };
 }

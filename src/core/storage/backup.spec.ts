@@ -1,18 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createLocalStorage, type LocalStorageSnapshot } from '@/core/storage';
 import {
-  createInMemoryStorage,
-  createLocalStorage,
-  type BudgetStorage,
-  type Category,
-  type LocalStorageSnapshot,
-} from '@/core/storage';
-import {
-  createAutoMigratingLocalStorage,
   exportBackupJson,
   importBackupJson,
+  importTransactionsCsv,
   mergeSnapshots,
-  migrateFromSupabase,
   parseBackupSnapshot,
+  parseTransactionsCsv,
   serializeBackupSnapshot,
 } from './backup';
 
@@ -35,10 +29,6 @@ describe('backup and snapshot merge utilities', () => {
 
   beforeEach(() => {
     window.localStorage.clear();
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
   });
 
   describe('mergeSnapshots', () => {
@@ -452,315 +442,116 @@ describe('backup and snapshot merge utilities', () => {
     });
   });
 
-  describe('migrateFromSupabase', () => {
-    it('fetches categories and multi-year transactions in yearly chunks, deduplicates by id, and merges without overwriting newer local edits', async () => {
-      const remoteStorage = createInMemoryStorage({
-        categories: [
-          { id: foodCategory.id, title: 'Food', icon: 'food' },
-          { id: clothesCategory.id, title: 'Clothes', icon: 'clothes' },
-        ],
-        transactions: [
-          {
-            id: 'tx-2022',
-            name: 'Old Train Ticket',
-            value: 500,
-            createdAt: '2022-05-10T10:00:00.000Z',
-            categoryId: foodCategory.id,
-            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-          },
-          {
-            id: 'tx-2025',
-            name: 'Winter Coat',
-            value: 12000,
-            createdAt: '2025-11-15T14:00:00.000Z',
-            categoryId: clothesCategory.id,
-            category: { id: clothesCategory.id, title: 'Clothes', icon: 'clothes' },
-          },
-          {
-            id: 'tx-edited-locally',
-            name: 'Remote Original Name',
-            value: 100,
-            createdAt: '2024-03-01T10:00:00.000Z',
-            categoryId: foodCategory.id,
-            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-          },
-        ],
+  describe('parseTransactionsCsv and importTransactionsCsv', () => {
+    it('parses Supabase transactions CSV rows, normalizes Postgres timestamps to ISO with T, and resolves DEFAULT_CATEGORIES', async () => {
+      const csv = [
+        '\uFEFFid,created_at,name,value,category_id',
+        '0011b1aa-9c5e-479f-b9aa-39711036c177,2025-06-21 20:59:14.881024+06,Dentist,1600,5cb289ab-2f7b-43bf-be3e-a4b577688333',
+        '0028ee73-64e9-4326-87f4-3989fc6e48d0,2023-08-28 21:22:59.872722+06,Taxi,320,2fe6596b-6292-4d8c-826d-5f4d3d99f543',
+      ].join('\n');
+
+      const parsed = parseTransactionsCsv(csv);
+      expect(parsed).toEqual([
+        {
+          id: '0011b1aa-9c5e-479f-b9aa-39711036c177',
+          name: 'Dentist',
+          value: 1600,
+          createdAt: '2025-06-21T14:59:14.881Z',
+          updatedAt: '2025-06-21T14:59:14.881Z',
+          deletedAt: null,
+          categoryId: '5cb289ab-2f7b-43bf-be3e-a4b577688333',
+        },
+        {
+          id: '0028ee73-64e9-4326-87f4-3989fc6e48d0',
+          name: 'Taxi',
+          value: 320,
+          createdAt: '2023-08-28T15:22:59.872Z',
+          updatedAt: '2023-08-28T15:22:59.872Z',
+          deletedAt: null,
+          categoryId: '2fe6596b-6292-4d8c-826d-5f4d3d99f543',
+        },
+      ]);
+
+      const storage = createLocalStorage({ storageKey: 'csv-import-defaults-test' });
+      const result = await importTransactionsCsv(storage, csv);
+      expect(result).toEqual({
+        categoriesCount: 14,
+        transactionsCount: 2,
       });
 
-      const getTransactionsSpy = vi.spyOn(remoteStorage, 'getTransactionsByRange');
-
-      const localStorageTarget = createLocalStorage({
-        storageKey: 'migrate-supabase-test',
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
+      const imported = await storage.getTransactionsByRange({
+        from: '2023-01-01T00:00:00.000Z',
+        to: '2026-01-01T00:00:00.000Z',
       });
+      expect(imported).toHaveLength(2);
+      expect(imported[0].category.title).toBe('Healthcare');
+      expect(imported[1].category.title).toBe('Transportation');
+    });
 
-      await localStorageTarget.replaceSnapshot({
+    it('handles RFC 4180 quoted fields with commas/escaped quotes and preserves newer local edits on merge', async () => {
+      const storage = createLocalStorage({ storageKey: 'csv-merge-test' });
+      await storage.replaceSnapshot({
         version: 1,
         updatedAt: '2026-01-01T00:00:00.000Z',
-        categories: [foodCategory],
-        transactions: [
+        categories: [
           {
-            id: 'tx-edited-locally',
-            name: 'Local Updated Name',
-            value: 199,
-            createdAt: '2024-03-01T10:00:00.000Z',
-            updatedAt: '2026-06-01T10:00:00.000Z',
+            id: '3c3d9f8c-af23-49ed-946c-0d72a2191008',
+            title: 'Food',
+            icon: 'food',
+            updatedAt: '2026-01-01T00:00:00.000Z',
             deletedAt: null,
-            categoryId: foodCategory.id,
           },
         ],
-      });
-
-      const result = await migrateFromSupabase(localStorageTarget, remoteStorage, {
-        startYear: 2022,
-        endYear: 2026,
-      });
-
-      expect(result).toEqual({
-        categoriesCount: 2,
-        transactionsCount: 3,
-      });
-      expect(getTransactionsSpy).toHaveBeenCalledTimes(5);
-      expect(getTransactionsSpy).toHaveBeenCalledWith({
-        from: '2022-01-01T00:00:00.000Z',
-        to: '2022-12-31T23:59:59.999Z',
-      });
-
-      const migrated = await localStorageTarget.getTransactionsByRange({
-        from: '2020-01-01T00:00:00.000Z',
-        to: '2027-01-01T00:00:00.000Z',
-      });
-      expect(migrated).toHaveLength(3);
-      expect(migrated.find((t) => t.id === 'tx-2022')?.value).toBe(500);
-      expect(migrated.find((t) => t.id === 'tx-2025')?.name).toBe('Winter Coat');
-      expect(migrated.find((t) => t.id === 'tx-edited-locally')?.name).toBe('Local Updated Name');
-    });
-
-    it('deduplicates transactions when the same transaction id is returned across multiple yearly chunks', async () => {
-      const duplicateTx = {
-        id: 'tx-overlap',
-        name: 'Year Boundary Coffee',
-        value: 420,
-        createdAt: '2024-12-31T23:59:59.999Z',
-        categoryId: foodCategory.id,
-        category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-      };
-
-      const overlappingRemote: BudgetStorage = {
-        getCategories: vi.fn().mockResolvedValue([{ id: foodCategory.id, title: 'Food', icon: 'food' }]),
-        getTransactionsByRange: vi.fn().mockResolvedValue([duplicateTx]),
-        createTransaction: vi.fn(),
-        updateTransaction: vi.fn(),
-        removeTransaction: vi.fn(),
-      };
-
-      const target = createLocalStorage({
-        storageKey: 'migrate-dedupe-test',
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
-      });
-
-      const result = await migrateFromSupabase(target, overlappingRemote, {
-        startYear: 2024,
-        endYear: 2025,
-      });
-
-      expect(result).toEqual({
-        categoriesCount: 1,
-        transactionsCount: 1,
-      });
-
-      const snapshot = await target.getSnapshot();
-      expect(snapshot.transactions).toHaveLength(1);
-      expect(snapshot.transactions[0].id).toBe('tx-overlap');
-    });
-  });
-
-  describe('createAutoMigratingLocalStorage', () => {
-    it('runs one-time auto-migration when local transactions are empty and Supabase env vars are configured', async () => {
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key');
-
-      const remoteStorage = createInMemoryStorage({
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
         transactions: [
           {
-            id: 'tx-remote-1',
-            name: 'Remote Coffee',
-            value: 350,
-            createdAt: '2026-10-10T10:00:00.000Z',
-            categoryId: foodCategory.id,
-            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-          },
-        ],
-      });
-      const getCategoriesSpy = vi.spyOn(remoteStorage, 'getCategories');
-
-      const storage = createAutoMigratingLocalStorage({
-        storageKey: 'auto-migrate-test',
-        migrationFlagKey: 'auto-migrate-flag-test',
-        remoteStorage,
-        startYear: 2026,
-        endYear: 2026,
-      });
-
-      const firstLoad = await storage.getTransactionsByRange({
-        from: '2026-10-01T00:00:00.000Z',
-        to: '2026-10-31T23:59:59.999Z',
-      });
-
-      expect(firstLoad).toHaveLength(1);
-      expect(firstLoad[0].name).toBe('Remote Coffee');
-      expect(window.localStorage.getItem('auto-migrate-flag-test')).toBe('true');
-      expect(getCategoriesSpy).toHaveBeenCalledTimes(1);
-
-      // Second read does not re-trigger remote migration
-      await storage.getCategories();
-      expect(getCategoriesSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('skips auto-migration when Supabase env vars are missing or local transactions already exist', async () => {
-      vi.stubEnv('VITE_SUPABASE_URL', '');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', '');
-
-      const remoteStorage = createInMemoryStorage({
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
-        transactions: [],
-      });
-      const getCategoriesSpy = vi.spyOn(remoteStorage, 'getCategories');
-
-      const storageNoEnv = createAutoMigratingLocalStorage({
-        storageKey: 'auto-migrate-no-env',
-        migrationFlagKey: 'auto-migrate-flag-no-env',
-        remoteStorage,
-        startYear: 2026,
-        endYear: 2026,
-      });
-
-      await storageNoEnv.getCategories();
-      expect(getCategoriesSpy).not.toHaveBeenCalled();
-
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key');
-
-      const storageWithData = createAutoMigratingLocalStorage({
-        storageKey: 'auto-migrate-has-data',
-        migrationFlagKey: 'auto-migrate-flag-has-data',
-        remoteStorage,
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
-        transactions: [
-          {
-            id: 'tx-local-existing',
-            name: 'Existing Local',
-            value: 100,
-            createdAt: '2026-10-12T10:00:00.000Z',
-            categoryId: foodCategory.id,
-            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-          },
-        ],
-        startYear: 2026,
-        endYear: 2026,
-      });
-
-      const localRows = await storageWithData.getTransactionsByRange({
-        from: '2026-10-01T00:00:00.000Z',
-        to: '2026-10-31T23:59:59.999Z',
-      });
-      expect(localRows).toHaveLength(1);
-      expect(getCategoriesSpy).not.toHaveBeenCalled();
-    });
-
-    it('continues operating offline without throwing when auto-migration fails due to network error', async () => {
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key');
-
-      const failingRemote: BudgetStorage = {
-        getCategories: vi.fn().mockRejectedValue(new Error('Network offline')),
-        getTransactionsByRange: vi.fn().mockRejectedValue(new Error('Network offline')),
-        createTransaction: vi.fn(),
-        updateTransaction: vi.fn(),
-        removeTransaction: vi.fn(),
-      };
-
-      const storage = createAutoMigratingLocalStorage({
-        storageKey: 'auto-migrate-offline',
-        migrationFlagKey: 'auto-migrate-flag-offline',
-        remoteStorage: failingRemote,
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
-      });
-
-      const categories = await storage.getCategories();
-      expect(categories).toHaveLength(1);
-      expect(window.localStorage.getItem('auto-migrate-flag-offline')).toBeNull();
-    });
-
-    it('waits for in-flight auto-migration inside replaceSnapshot so explicit restore is not overwritten', async () => {
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
-      vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key');
-
-      let resolveRemoteCategories!: (categories: Category[]) => void;
-      const deferredRemote: BudgetStorage = {
-        getCategories: vi.fn(
-          () =>
-            new Promise<Category[]>((resolve) => {
-              resolveRemoteCategories = resolve;
-            }),
-        ),
-        getTransactionsByRange: vi.fn().mockResolvedValue([
-          {
-            id: 'tx-stale-remote',
-            name: 'Stale Remote Item',
-            value: 100,
-            createdAt: '2026-10-01T10:00:00.000Z',
-            categoryId: foodCategory.id,
-            category: { id: foodCategory.id, title: 'Food', icon: 'food' },
-          },
-        ]),
-        createTransaction: vi.fn(),
-        updateTransaction: vi.fn(),
-        removeTransaction: vi.fn(),
-      };
-
-      const storage = createAutoMigratingLocalStorage({
-        storageKey: 'auto-migrate-concurrent-replace',
-        migrationFlagKey: 'auto-migrate-flag-concurrent-replace',
-        remoteStorage: deferredRemote,
-        categories: [{ id: foodCategory.id, title: 'Food', icon: 'food' }],
-        startYear: 2026,
-        endYear: 2026,
-      });
-
-      // Start initial read (triggers auto-migration and waits on remote getCategories)
-      const initialReadPromise = storage.getCategories();
-      await vi.waitFor(() => {
-        expect(deferredRemote.getCategories).toHaveBeenCalledTimes(1);
-      });
-
-      // Call replaceSnapshot while auto-migration is still in flight
-      const explicitSnapshot: LocalStorageSnapshot = {
-        version: 1,
-        updatedAt: '2026-10-20T12:00:00.000Z',
-        categories: [foodCategory],
-        transactions: [
-          {
-            id: 'tx-explicit-restore',
-            name: 'Explicitly Restored',
-            value: 999,
-            createdAt: '2026-10-15T10:00:00.000Z',
-            updatedAt: '2026-10-15T10:00:00.000Z',
+            id: 'tx-newer-local',
+            name: 'Locally Edited Bakery',
+            value: 450,
+            createdAt: '2025-05-01T10:00:00.000Z',
+            updatedAt: '2026-05-01T10:00:00.000Z',
             deletedAt: null,
-            categoryId: foodCategory.id,
+            categoryId: '3c3d9f8c-af23-49ed-946c-0d72a2191008',
           },
         ],
-      };
-      const replacePromise = storage.replaceSnapshot(explicitSnapshot);
+      });
 
-      // Finish remote auto-migration
-      resolveRemoteCategories([{ id: foodCategory.id, title: 'Food', icon: 'food' }]);
+      const csv = [
+        'id,created_at,name,value,category_id',
+        'tx-quoted,2025-06-01 12:00:00+06,"Coffee, ""Espresso"" & croissant",390,3c3d9f8c-af23-49ed-946c-0d72a2191008',
+        'tx-newer-local,2025-05-01 10:00:00+00,Old CSV Name,200,3c3d9f8c-af23-49ed-946c-0d72a2191008',
+        'tx-empty-name,2025-05-02 10:00:00+00,,120,3c3d9f8c-af23-49ed-946c-0d72a2191008',
+      ].join('\r\n');
 
-      await Promise.all([initialReadPromise, replacePromise]);
+      await importTransactionsCsv(storage, csv);
 
-      const finalSnapshot = await storage.getSnapshot();
-      expect(finalSnapshot.transactions.map((t) => t.id)).toEqual(['tx-explicit-restore']);
+      const transactions = await storage.getTransactionsByRange({
+        from: '2025-01-01T00:00:00.000Z',
+        to: '2026-12-31T23:59:59.999Z',
+      });
+      expect(transactions.find((t) => t.id === 'tx-quoted')?.name).toBe('Coffee, "Espresso" & croissant');
+      expect(transactions.find((t) => t.id === 'tx-newer-local')?.name).toBe('Locally Edited Bakery');
+      expect(transactions.find((t) => t.id === 'tx-empty-name')?.name).toBe('Transaction');
+    });
+
+    it('rejects invalid CSV headers, wrong column counts, invalid numbers, and invalid timestamps', () => {
+      expect(() => parseTransactionsCsv('')).toThrow(
+        'Invalid CSV header: expected id,created_at,name,value,category_id',
+      );
+      expect(() => parseTransactionsCsv('id,name,value')).toThrow(
+        'Invalid CSV header: expected id,created_at,name,value,category_id',
+      );
+      expect(() => parseTransactionsCsv('id,created_at,name,value,category_id\nonly-two,cols')).toThrow(
+        'Invalid CSV row at line 2',
+      );
+      expect(() =>
+        parseTransactionsCsv('id,created_at,name,value,category_id\ntx-1,2025-06-21 10:00:00+06,Food,not-num,cat-1'),
+      ).toThrow('Invalid CSV row at line 2');
+      expect(() =>
+        parseTransactionsCsv('id,created_at,name,value,category_id\ntx-1,not-a-date,Food,100,cat-1'),
+      ).toThrow('Invalid CSV row at line 2');
+      expect(() =>
+        parseTransactionsCsv('id,created_at,name,value,category_id\ntx-1,2025-06-21 10:00:00+06,"Unclosed,100,cat-1'),
+      ).toThrow('Invalid CSV row at line 2');
     });
   });
 });
