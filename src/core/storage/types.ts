@@ -38,3 +38,36 @@ export interface BudgetStorage {
   removeTransaction(id: string): Promise<void>;
   getCategories(): Promise<Category[]>;
 }
+
+export interface StoredCategory extends Category {
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export interface StoredTransaction {
+  id: string;
+  name: string;
+  value: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  categoryId: string;
+}
+
+export interface LocalStorageSnapshot {
+  version: 1;
+  updatedAt: string;
+  categories: StoredCategory[];
+  transactions: StoredTransaction[];
+}
+
+export interface LocalStorageOptions {
+  storageKey?: string;
+  categories?: Category[];
+  transactions?: Transaction[];
+}
+
+export interface LocalBudgetStorage extends BudgetStorage {
+  getSnapshot(): Promise<LocalStorageSnapshot>;
+  replaceSnapshot(snapshot: LocalStorageSnapshot): Promise<void>;
+}

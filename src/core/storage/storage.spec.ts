@@ -1,5 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createInMemoryStorage, createSupabaseStorage, type Category } from '@/core/storage';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  createInMemoryStorage,
+  createLocalStorage,
+  createSupabaseStorage,
+  DEFAULT_CATEGORIES,
+  type Category,
+} from '@/core/storage';
 
 const food: Category = { id: 'cat-food', title: 'Food', icon: 'food' };
 const clothes: Category = { id: 'cat-clothes', title: 'Clothes', icon: 'clothes' };
@@ -157,6 +163,155 @@ describe('BudgetStorage adapters', () => {
           to: '2026-10-31T23:59:59.999Z',
         }),
       ).rejects.toThrow('Env variable VITE_SUPABASE_PUBLISHABLE_KEY is required');
+    });
+  });
+
+  describe('createLocalStorage', () => {
+    const testKey = 'budget-local-storage-test';
+
+    beforeEach(() => {
+      window.localStorage.clear();
+    });
+
+    it('seeds DEFAULT_CATEGORIES with original Supabase UUIDs and English titles when storage is empty', async () => {
+      const storage = createLocalStorage({ storageKey: testKey });
+      const categories = await storage.getCategories();
+
+      expect(categories).toHaveLength(14);
+      expect(categories).toEqual([...DEFAULT_CATEGORIES].sort((a, b) => a.title.localeCompare(b.title)));
+      expect(categories.find((c) => c.title === 'Food')).toEqual({
+        id: '3c3d9f8c-af23-49ed-946c-0d72a2191008',
+        title: 'Food',
+        icon: 'food',
+      });
+    });
+
+    it('creates transactions with UUID, persists across instances, updates updatedAt, and soft-deletes via deletedAt in snapshot', async () => {
+      const firstInstance = createLocalStorage({
+        storageKey: testKey,
+        categories: [food, clothes],
+      });
+
+      await expect(
+        firstInstance.createTransaction({
+          name: 'Invalid Category Tx',
+          value: 25,
+          categoryId: 'missing-category',
+        }),
+      ).rejects.toThrow('Category not found: missing-category');
+
+      await firstInstance.createTransaction({
+        name: 'Groceries',
+        value: 150,
+        categoryId: food.id,
+      });
+
+      const secondInstance = createLocalStorage({ storageKey: testKey });
+      const listed = await secondInstance.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+
+      expect(listed).toHaveLength(1);
+      const created = listed[0];
+      expect(created.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+      expect(created.name).toBe('Groceries');
+      expect(created.value).toBe(150);
+      expect(created.category).toEqual(food);
+
+      const snapshotBeforeUpdate = await secondInstance.getSnapshot();
+      const storedBeforeUpdate = snapshotBeforeUpdate.transactions.find((t) => t.id === created.id)!;
+      expect(storedBeforeUpdate.deletedAt).toBeNull();
+
+      await secondInstance.updateTransaction({
+        id: created.id,
+        name: 'Jacket',
+        value: 320,
+        categoryId: clothes.id,
+      });
+
+      const afterUpdate = await secondInstance.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+      expect(afterUpdate[0]).toMatchObject({
+        id: created.id,
+        name: 'Jacket',
+        value: 320,
+        categoryId: clothes.id,
+        category: clothes,
+      });
+
+      const snapshotAfterUpdate = await secondInstance.getSnapshot();
+      const storedAfterUpdate = snapshotAfterUpdate.transactions.find((t) => t.id === created.id)!;
+      expect(Date.parse(storedAfterUpdate.updatedAt)).toBeGreaterThanOrEqual(Date.parse(storedBeforeUpdate.updatedAt));
+
+      // Soft-delete hides transaction from getTransactionsByRange and blocks updates, but keeps tombstone in snapshot
+      await secondInstance.removeTransaction(created.id);
+      await expect(secondInstance.removeTransaction(created.id)).resolves.toBeUndefined();
+      await expect(secondInstance.removeTransaction('non-existent')).resolves.toBeUndefined();
+
+      const afterRemove = await secondInstance.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+      expect(afterRemove).toEqual([]);
+
+      await expect(
+        secondInstance.updateTransaction({
+          id: created.id,
+          name: 'Should Fail',
+          value: 10,
+          categoryId: food.id,
+        }),
+      ).rejects.toThrow(`Transaction not found: ${created.id}`);
+
+      const snapshotAfterRemove = await secondInstance.getSnapshot();
+      const tombstone = snapshotAfterRemove.transactions.find((t) => t.id === created.id)!;
+      expect(tombstone.deletedAt).toBeTruthy();
+    });
+
+    it('replaces snapshot via replaceSnapshot and filters out soft-deleted categories and transactions', async () => {
+      const storage = createLocalStorage({ storageKey: testKey });
+
+      await storage.replaceSnapshot({
+        version: 1,
+        updatedAt: '2026-10-15T12:00:00.000Z',
+        categories: [
+          { ...food, updatedAt: '2026-10-01T00:00:00.000Z', deletedAt: null },
+          { ...clothes, updatedAt: '2026-10-02T00:00:00.000Z', deletedAt: '2026-10-03T00:00:00.000Z' },
+        ],
+        transactions: [
+          {
+            id: 'tx-active',
+            name: 'Lunch',
+            value: 45,
+            createdAt: '2026-10-10T10:00:00.000Z',
+            updatedAt: '2026-10-10T10:00:00.000Z',
+            deletedAt: null,
+            categoryId: food.id,
+          },
+          {
+            id: 'tx-deleted',
+            name: 'Deleted Dinner',
+            value: 90,
+            createdAt: '2026-10-11T10:00:00.000Z',
+            updatedAt: '2026-10-12T10:00:00.000Z',
+            deletedAt: '2026-10-12T10:00:00.000Z',
+            categoryId: food.id,
+          },
+        ],
+      });
+
+      const categories = await storage.getCategories();
+      expect(categories).toEqual([food]);
+
+      const transactions = await storage.getTransactionsByRange({
+        from: '2026-10-01T00:00:00.000Z',
+        to: '2026-10-31T23:59:59.999Z',
+      });
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0].id).toBe('tx-active');
     });
   });
 });

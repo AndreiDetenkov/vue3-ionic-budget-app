@@ -24,5 +24,7 @@ export function toError(err: unknown): Error {
 }
 
 export * from './types';
+export { DEFAULT_CATEGORIES } from './defaultCategories';
 export { createInMemoryStorage, type InMemoryStorageSeed } from './inMemoryStorage';
+export { createLocalStorage } from './localStorage';
 export { createSupabaseStorage } from './supabaseStorage';
