@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createInMemoryStorage, setStorage, type Category } from '@/core/storage';
 import { formatDate } from '@/core/utils/dates';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
+import BackupModal from '@/core/components/BackupModal.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 import TransactionsPage from './TransactionsPage.vue';
@@ -151,5 +152,38 @@ describe('TransactionsPage.vue', () => {
     await flushPromises();
 
     expect(modal.props('modelValue')).toBe(false);
+  });
+
+  it('opens BackupModal when clicking the header backup button', async () => {
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+        transactions: [],
+      }),
+    );
+
+    const wrapper = mount(TransactionsPage, {
+      global: {
+        stubs: {
+          IonModal: IonModalStub,
+        },
+      },
+    });
+
+    ionViewWillEnterCallback?.();
+    await flushPromises();
+
+    const backupModal = wrapper.findComponent(BackupModal);
+    expect(backupModal.exists()).toBe(true);
+    expect(backupModal.props('modelValue')).toBe(false);
+
+    const backupButton = wrapper.find('[aria-label="Backup and sync"]');
+    expect(backupButton.exists()).toBe(true);
+
+    await backupButton.trigger('click');
+    await flushPromises();
+
+    expect(backupModal.props('modelValue')).toBe(true);
+    expect(backupModal.text()).toContain('Backup & Sync');
   });
 });

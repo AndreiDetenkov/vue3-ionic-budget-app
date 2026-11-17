@@ -1,7 +1,22 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { IonCol, IonContent, IonGrid, IonLabel, IonPage, IonProgressBar, IonRow, onIonViewWillEnter } from '@ionic/vue';
+import {
+  IonButton,
+  IonButtons,
+  IonCol,
+  IonContent,
+  IonGrid,
+  IonIcon,
+  IonLabel,
+  IonPage,
+  IonProgressBar,
+  IonRow,
+  onIonViewWillEnter,
+} from '@ionic/vue';
+import { cloudUploadOutline } from 'ionicons/icons';
 import { useTransactionStore } from '@/modules/transactions';
+import BackupModal from '@/core/components/BackupModal.vue';
 import BaseRefresher from '@/core/components/BaseRefresher.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
@@ -10,6 +25,7 @@ import TransactionList from '@/modules/transactions/components/TransactionList.v
 const transactionStore = useTransactionStore();
 const { loading, transactions } = storeToRefs(transactionStore);
 const { getTransactionsByRange } = transactionStore;
+const isBackupModalOpen = ref(false);
 
 onIonViewWillEnter(() => {
   if (!transactions.value.length) getTransactionsByRange('month');
@@ -21,6 +37,13 @@ const refreshContent = () => getTransactionsByRange('month');
 <template>
   <ion-page>
     <BaseHeader title="Transactions">
+      <template #buttons>
+        <ion-buttons slot="end">
+          <ion-button aria-label="Backup and sync" @click="isBackupModalOpen = true">
+            <ion-icon slot="icon-only" :icon="cloudUploadOutline" />
+          </ion-button>
+        </ion-buttons>
+      </template>
       <ion-progress-bar v-if="loading" type="indeterminate" color="secondary" />
     </BaseHeader>
 
@@ -39,6 +62,8 @@ const refreshContent = () => getTransactionsByRange('month');
         </ion-row>
       </ion-grid>
     </ion-content>
+
+    <BackupModal v-model="isBackupModalOpen" />
   </ion-page>
 </template>
 
