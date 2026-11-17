@@ -9,8 +9,8 @@ export const useCategoryStore = defineStore('categoryStore', () => {
   const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
 
-  async function getCategoryList(): Promise<void> {
-    if (categories.value.length > 0) {
+  async function getCategoryList(force = false): Promise<void> {
+    if (!force && categories.value.length > 0) {
       return;
     }
 

@@ -4,8 +4,11 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createInMemoryStorage, setStorage, type Category } from '@/core/storage';
 import { formatDate } from '@/core/utils/dates';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
+import BackupModal from '@/core/components/BackupModal.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
+import { useCategoryStore } from '@/modules/categories';
+import { useTransactionStore } from '@/modules/transactions';
 import TransactionsPage from './TransactionsPage.vue';
 
 let ionViewWillEnterCallback: (() => void) | undefined;
@@ -151,5 +154,64 @@ describe('TransactionsPage.vue', () => {
     await flushPromises();
 
     expect(modal.props('modelValue')).toBe(false);
+  });
+
+  it('opens BackupModal when clicking the header backup button', async () => {
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+        transactions: [],
+      }),
+    );
+
+    const wrapper = mount(TransactionsPage, {
+      global: {
+        stubs: {
+          IonModal: IonModalStub,
+        },
+      },
+    });
+
+    ionViewWillEnterCallback?.();
+    await flushPromises();
+
+    const backupModal = wrapper.findComponent(BackupModal);
+    expect(backupModal.exists()).toBe(true);
+    expect(backupModal.props('modelValue')).toBe(false);
+
+    const backupButton = wrapper.find('[aria-label="Backup and sync"]');
+    expect(backupButton.exists()).toBe(true);
+
+    await backupButton.trigger('click');
+    await flushPromises();
+
+    expect(backupModal.props('modelValue')).toBe(true);
+    expect(backupModal.text()).toContain('Backup & Sync');
+
+    const clothesCategory: Category = { id: 'cat-clothes', title: 'Clothes', icon: 'clothes' };
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory, clothesCategory],
+        transactions: [
+          {
+            id: 'tx-restored',
+            name: 'Restored Jacket',
+            value: 3200,
+            createdAt: '2026-10-15T10:00:00.000Z',
+            categoryId: clothesCategory.id,
+            category: clothesCategory,
+          },
+        ],
+      }),
+    );
+
+    const onRestored = backupModal.props('onRestored') as (() => Promise<void>) | undefined;
+    await onRestored?.();
+    await flushPromises();
+
+    const categoryStore = useCategoryStore();
+    const transactionStore = useTransactionStore();
+    expect(categoryStore.categories).toHaveLength(2);
+    expect(transactionStore.transactions.map((t) => t.name)).toEqual(['Restored Jacket']);
   });
 });

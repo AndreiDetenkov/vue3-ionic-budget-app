@@ -1,7 +1,19 @@
-import { createSupabaseStorage } from './supabaseStorage';
-import type { BudgetStorage } from './types';
+import { createDevAutoSeedingLocalStorage } from './backup';
+import type { BudgetStorage, LocalBudgetStorage } from './types';
 
-let activeStorage: BudgetStorage = createSupabaseStorage();
+function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
+  return (
+    typeof (storage as Partial<LocalBudgetStorage>).getSnapshot === 'function' &&
+    typeof (storage as Partial<LocalBudgetStorage>).replaceSnapshot === 'function'
+  );
+}
+
+const defaultLocalStorage: LocalBudgetStorage = createDevAutoSeedingLocalStorage();
+let activeStorage: BudgetStorage = defaultLocalStorage;
+
+function resolveLocalStorage(): LocalBudgetStorage {
+  return isLocalBudgetStorage(activeStorage) ? activeStorage : defaultLocalStorage;
+}
 
 const storageProxy: BudgetStorage = {
   getTransactionsByRange: (range) => activeStorage.getTransactionsByRange(range),
@@ -11,8 +23,22 @@ const storageProxy: BudgetStorage = {
   getCategories: () => activeStorage.getCategories(),
 };
 
+const localStorageProxy: LocalBudgetStorage = {
+  getTransactionsByRange: (range) => resolveLocalStorage().getTransactionsByRange(range),
+  createTransaction: (input) => resolveLocalStorage().createTransaction(input),
+  updateTransaction: (input) => resolveLocalStorage().updateTransaction(input),
+  removeTransaction: (id) => resolveLocalStorage().removeTransaction(id),
+  getCategories: () => resolveLocalStorage().getCategories(),
+  getSnapshot: () => resolveLocalStorage().getSnapshot(),
+  replaceSnapshot: (snapshot) => resolveLocalStorage().replaceSnapshot(snapshot),
+};
+
 export function useStorage(): BudgetStorage {
   return storageProxy;
+}
+
+export function getLocalStorage(): LocalBudgetStorage {
+  return localStorageProxy;
 }
 
 export function setStorage(storage: BudgetStorage): void {
@@ -27,4 +53,15 @@ export * from './types';
 export { DEFAULT_CATEGORIES } from './defaultCategories';
 export { createInMemoryStorage, type InMemoryStorageSeed } from './inMemoryStorage';
 export { createLocalStorage } from './localStorage';
-export { createSupabaseStorage } from './supabaseStorage';
+export {
+  createDevAutoSeedingLocalStorage,
+  exportBackupJson,
+  importBackupJson,
+  importTransactionsCsv,
+  mergeSnapshots,
+  parseBackupSnapshot,
+  parseTransactionsCsv,
+  serializeBackupSnapshot,
+  type DevAutoSeedOptions,
+  type MigrationResult,
+} from './backup';
