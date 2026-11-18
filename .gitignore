@@ -33,6 +33,9 @@ npm-debug.log*
 /www
 
 .env
+.env.local
+.firebaserc
+firestore.rules
 budget-app-keystore
 /public/transactions_rows.csv
 
