@@ -1,4 +1,6 @@
 import { createDevAutoSeedingLocalStorage } from './backup';
+import { createFirebaseCloudController, type FirebaseCloudController } from './firebaseClient';
+import { createSyncedLocalStorage } from './firebaseSync';
 import type { BudgetStorage, LocalBudgetStorage } from './types';
 
 function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
@@ -8,7 +10,30 @@ function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetSto
   );
 }
 
-const defaultLocalStorage: LocalBudgetStorage = createDevAutoSeedingLocalStorage();
+const baseLocalStorage: LocalBudgetStorage = createDevAutoSeedingLocalStorage();
+let activeCloud: FirebaseCloudController | null = null;
+
+function getOrCreateDefaultCloud(): FirebaseCloudController {
+  if (!activeCloud) {
+    activeCloud = createFirebaseCloudController(baseLocalStorage);
+  }
+  return activeCloud;
+}
+
+const cloudProxy: FirebaseCloudController = {
+  getCurrentUser: () => (activeCloud ? activeCloud.getCurrentUser() : null),
+  subscribeAuthState: (listener) => getOrCreateDefaultCloud().subscribeAuthState(listener),
+  signInWithGoogle: () => getOrCreateDefaultCloud().signInWithGoogle(),
+  signOut: () => getOrCreateDefaultCloud().signOut(),
+  syncNow: () => getOrCreateDefaultCloud().syncNow(),
+  isSyncEnabled: () => (activeCloud ? activeCloud.isSyncEnabled() : false),
+  resetCursors: () => getOrCreateDefaultCloud().resetCursors(),
+  isSyncInFlight: () => (activeCloud ? (activeCloud.isSyncInFlight?.() ?? false) : false),
+};
+
+const defaultLocalStorage: LocalBudgetStorage = createSyncedLocalStorage(baseLocalStorage, cloudProxy, () =>
+  cloudProxy.isSyncEnabled(),
+);
 let activeStorage: BudgetStorage = defaultLocalStorage;
 
 function resolveLocalStorage(): LocalBudgetStorage {
@@ -45,6 +70,14 @@ export function setStorage(storage: BudgetStorage): void {
   activeStorage = storage;
 }
 
+export function useFirebaseCloud(): FirebaseCloudController {
+  return cloudProxy;
+}
+
+export function setFirebaseCloud(cloud: FirebaseCloudController | null): void {
+  activeCloud = cloud;
+}
+
 export function toError(err: unknown): Error {
   return err instanceof Error ? err : new Error(String(err));
 }
@@ -65,3 +98,25 @@ export {
   type DevAutoSeedOptions,
   type MigrationResult,
 } from './backup';
+export {
+  createFirebaseSyncService,
+  createSyncedLocalStorage,
+  DEFAULT_SYNC_CURSOR_KEY,
+  MAX_FIRESTORE_BATCH_SIZE,
+  type FirebaseRemoteAdapter,
+  type FirebaseSyncService,
+  type FirebaseSyncServiceOptions,
+  type FirebaseSyncSummary,
+  type SyncCursorState,
+} from './firebaseSync';
+export {
+  createFirebaseCloudController,
+  createFirestoreRemoteAdapter,
+  getApp,
+  getDb,
+  getFirebaseAuth,
+  parseAllowedEmails,
+  type FirebaseAuthUser,
+  type FirebaseCloudController,
+  type FirebaseCloudControllerOptions,
+} from './firebaseClient';
