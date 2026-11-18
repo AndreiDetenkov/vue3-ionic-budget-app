@@ -8,7 +8,6 @@ import type {
   LocalStorageSnapshot,
   StoredCategory,
   StoredTransaction,
-  Transaction,
   UpdateTransactionInput,
 } from './types';
 
@@ -142,6 +141,8 @@ async function writePersistedSnapshot(storageKey: string, snapshot: LocalStorage
   }
 }
 
+const DEFAULT_SEED_EPOCH = '1970-01-01T00:00:00.000Z';
+
 function buildInitialSnapshot(options: LocalStorageOptions): LocalStorageSnapshot {
   const now = new Date().toISOString();
   const seedCategories = options.categories ?? DEFAULT_CATEGORIES;
@@ -154,7 +155,7 @@ function buildInitialSnapshot(options: LocalStorageOptions): LocalStorageSnapsho
       id: cat.id,
       title: cat.title,
       icon: cat.icon,
-      updatedAt: now,
+      updatedAt: DEFAULT_SEED_EPOCH,
       deletedAt: null,
     })),
     transactions: seedTransactions.map((tx) => ({
@@ -172,6 +173,15 @@ function buildInitialSnapshot(options: LocalStorageOptions): LocalStorageSnapsho
 export function createLocalStorage(options: LocalStorageOptions = {}): LocalBudgetStorage {
   const storageKey = options.storageKey ?? DEFAULT_STORAGE_KEY;
   let cachedSnapshot: LocalStorageSnapshot | null = null;
+  let operationChain: Promise<unknown> = Promise.resolve();
+
+  function runExclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const next = operationChain.then(fn, fn);
+    operationChain = next.catch(() => {
+      // Keep the serialization chain alive even if an individual operation fails
+    });
+    return next;
+  }
 
   async function ensureSnapshot(): Promise<LocalStorageSnapshot> {
     if (cachedSnapshot) {
@@ -204,124 +214,131 @@ export function createLocalStorage(options: LocalStorageOptions = {}): LocalBudg
   }
 
   return {
-    async getCategories(): Promise<Category[]> {
-      const snapshot = await ensureSnapshot();
-      return snapshot.categories
-        .filter((cat) => !cat.deletedAt)
-        .map(cloneCategory)
-        .sort((a, b) => a.title.localeCompare(b.title));
-    },
+    getCategories: () =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        return snapshot.categories
+          .filter((cat) => !cat.deletedAt)
+          .map(cloneCategory)
+          .sort((a, b) => a.title.localeCompare(b.title));
+      }),
 
-    async getTransactionsByRange({ from, to }: DateRange): Promise<Transaction[]> {
-      const snapshot = await ensureSnapshot();
-      const fromTime = new Date(from).getTime();
-      const toTime = new Date(to).getTime();
+    getTransactionsByRange: ({ from, to }: DateRange) =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        const fromTime = new Date(from).getTime();
+        const toTime = new Date(to).getTime();
 
-      return snapshot.transactions
-        .filter((tx) => {
-          if (tx.deletedAt) {
-            return false;
-          }
-          const itemTime = new Date(tx.createdAt).getTime();
-          if (!Number.isNaN(fromTime) && !Number.isNaN(toTime) && !Number.isNaN(itemTime)) {
-            return itemTime >= fromTime && itemTime <= toTime;
-          }
-          return tx.createdAt >= from && tx.createdAt <= to;
-        })
-        .sort((a, b) => {
-          const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          if (!Number.isNaN(timeDiff) && timeDiff !== 0) {
-            return timeDiff;
-          }
-          return b.createdAt.localeCompare(a.createdAt);
-        })
-        .map((tx) => {
-          const category = snapshot.categories.find((cat) => cat.id === tx.categoryId) ?? {
-            id: tx.categoryId,
-            title: 'Other',
-            icon: 'other',
-          };
-          return {
-            id: tx.id,
-            name: tx.name,
-            value: tx.value,
-            createdAt: tx.createdAt,
-            categoryId: tx.categoryId,
-            category: cloneCategory(category),
-          };
+        return snapshot.transactions
+          .filter((tx) => {
+            if (tx.deletedAt) {
+              return false;
+            }
+            const itemTime = new Date(tx.createdAt).getTime();
+            if (!Number.isNaN(fromTime) && !Number.isNaN(toTime) && !Number.isNaN(itemTime)) {
+              return itemTime >= fromTime && itemTime <= toTime;
+            }
+            return tx.createdAt >= from && tx.createdAt <= to;
+          })
+          .sort((a, b) => {
+            const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            if (!Number.isNaN(timeDiff) && timeDiff !== 0) {
+              return timeDiff;
+            }
+            return b.createdAt.localeCompare(a.createdAt);
+          })
+          .map((tx) => {
+            const category = snapshot.categories.find((cat) => cat.id === tx.categoryId) ?? {
+              id: tx.categoryId,
+              title: 'Other',
+              icon: 'other',
+            };
+            return {
+              id: tx.id,
+              name: tx.name,
+              value: tx.value,
+              createdAt: tx.createdAt,
+              categoryId: tx.categoryId,
+              category: cloneCategory(category),
+            };
+          });
+      }),
+
+    createTransaction: (input: CreateTransactionInput) =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        findActiveCategoryOrThrow(snapshot, input.categoryId);
+
+        const now = new Date().toISOString();
+        const id = crypto.randomUUID();
+
+        snapshot.transactions.push({
+          id,
+          name: input.name,
+          value: input.value,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+          categoryId: input.categoryId,
         });
-    },
+        snapshot.updatedAt = now;
 
-    async createTransaction(input: CreateTransactionInput): Promise<void> {
-      const snapshot = await ensureSnapshot();
-      findActiveCategoryOrThrow(snapshot, input.categoryId);
+        await saveSnapshot(snapshot);
+      }),
 
-      const now = new Date().toISOString();
-      const id = crypto.randomUUID();
+    updateTransaction: (input: UpdateTransactionInput) =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        const txIndex = snapshot.transactions.findIndex((tx) => tx.id === input.id && !tx.deletedAt);
+        if (txIndex === -1) {
+          throw new Error(`Transaction not found: ${input.id}`);
+        }
 
-      snapshot.transactions.push({
-        id,
-        name: input.name,
-        value: input.value,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
-        categoryId: input.categoryId,
-      });
-      snapshot.updatedAt = now;
+        findActiveCategoryOrThrow(snapshot, input.categoryId);
 
-      await saveSnapshot(snapshot);
-    },
+        const now = new Date().toISOString();
+        const existing = snapshot.transactions[txIndex];
 
-    async updateTransaction(input: UpdateTransactionInput): Promise<void> {
-      const snapshot = await ensureSnapshot();
-      const txIndex = snapshot.transactions.findIndex((tx) => tx.id === input.id && !tx.deletedAt);
-      if (txIndex === -1) {
-        throw new Error(`Transaction not found: ${input.id}`);
-      }
+        snapshot.transactions[txIndex] = {
+          ...existing,
+          name: input.name,
+          value: input.value,
+          categoryId: input.categoryId,
+          updatedAt: now,
+        };
+        snapshot.updatedAt = now;
 
-      findActiveCategoryOrThrow(snapshot, input.categoryId);
+        await saveSnapshot(snapshot);
+      }),
 
-      const now = new Date().toISOString();
-      const existing = snapshot.transactions[txIndex];
+    removeTransaction: (id: string) =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        const txIndex = snapshot.transactions.findIndex((tx) => tx.id === id && !tx.deletedAt);
+        if (txIndex === -1) {
+          return;
+        }
 
-      snapshot.transactions[txIndex] = {
-        ...existing,
-        name: input.name,
-        value: input.value,
-        categoryId: input.categoryId,
-        updatedAt: now,
-      };
-      snapshot.updatedAt = now;
+        const now = new Date().toISOString();
+        snapshot.transactions[txIndex] = {
+          ...snapshot.transactions[txIndex],
+          updatedAt: now,
+          deletedAt: now,
+        };
+        snapshot.updatedAt = now;
 
-      await saveSnapshot(snapshot);
-    },
+        await saveSnapshot(snapshot);
+      }),
 
-    async removeTransaction(id: string): Promise<void> {
-      const snapshot = await ensureSnapshot();
-      const txIndex = snapshot.transactions.findIndex((tx) => tx.id === id && !tx.deletedAt);
-      if (txIndex === -1) {
-        return;
-      }
+    getSnapshot: () =>
+      runExclusive(async () => {
+        const snapshot = await ensureSnapshot();
+        return cloneSnapshot(snapshot);
+      }),
 
-      const now = new Date().toISOString();
-      snapshot.transactions[txIndex] = {
-        ...snapshot.transactions[txIndex],
-        updatedAt: now,
-        deletedAt: now,
-      };
-      snapshot.updatedAt = now;
-
-      await saveSnapshot(snapshot);
-    },
-
-    async getSnapshot(): Promise<LocalStorageSnapshot> {
-      const snapshot = await ensureSnapshot();
-      return cloneSnapshot(snapshot);
-    },
-
-    async replaceSnapshot(snapshot: LocalStorageSnapshot): Promise<void> {
-      await saveSnapshot(snapshot);
-    },
+    replaceSnapshot: (snapshot: LocalStorageSnapshot) =>
+      runExclusive(async () => {
+        await saveSnapshot(snapshot);
+      }),
   };
 }
