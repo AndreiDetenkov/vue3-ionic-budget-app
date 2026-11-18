@@ -1,6 +1,30 @@
 # Changelog
 
 
+## v1.2.0
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.1.0...v1.2.0)
+
+### 🚀 Enhancements
+
+- **storage:** Add persistent local-first storage adapter ([#19](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/19))
+- **storage:** Add JSON backup, CSV import, remove Supabase, and switch to local-first storage ([#21](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/21))
+- **storage:** Add Firebase Firestore delta-sync and Google Sign-In ([#24](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/24))
+
+### 📖 Documentation
+
+- Remove agent guidance docs ([c8ca574](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c8ca574))
+- Remove triage labels guidance ([5ac49bf](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5ac49bf))
+
+### 🏡 Chore
+
+- Remove local env file ([f835a8b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f835a8b))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+- Andrei Detenkov ([@AndreiDetenkov](https://github.com/AndreiDetenkov))
+
 ## v1.1.0
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.0.0...v1.1.0)
