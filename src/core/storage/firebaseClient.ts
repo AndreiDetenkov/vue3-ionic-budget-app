@@ -278,7 +278,11 @@ export function createFirebaseCloudController(local: LocalBudgetStorage): Fireba
 
     subscribeAuthState(listener: (user: FirebaseAuthUser | null) => void): () => void {
       listeners.add(listener);
-      ensureAuthSubscription();
+      try {
+        ensureAuthSubscription();
+      } catch {
+        // Headless/jsdom test environments without Web Auth support remain signed out.
+      }
       listener(currentUser);
       return () => {
         listeners.delete(listener);

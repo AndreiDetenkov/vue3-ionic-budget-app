@@ -1,13 +1,28 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
-import { cloudDownloadOutline, cloudUploadOutline, documentTextOutline } from 'ionicons/icons';
+import {
+  cloudDownloadOutline,
+  cloudUploadOutline,
+  documentTextOutline,
+  logoGoogle,
+  logOutOutline,
+  syncOutline,
+} from 'ionicons/icons';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import { useToast } from '@/core/composables/useToast';
-import { exportBackupJson, getLocalStorage, importBackupJson, importTransactionsCsv, toError } from '@/core/storage';
+import {
+  exportBackupJson,
+  getLocalStorage,
+  importBackupJson,
+  importTransactionsCsv,
+  toError,
+  useFirebaseCloud,
+  type FirebaseAuthUser,
+} from '@/core/storage';
 
-type BusyAction = 'export' | 'import' | 'csv' | null;
+type BusyAction = 'signin' | 'sync' | 'signout' | 'export' | 'import' | 'csv' | null;
 
 const props = defineProps<{
   onRestored?: () => Promise<void> | void;
@@ -18,8 +33,22 @@ const model = defineModel<boolean>({ default: false });
 const { showSuccessToast, showErrorToast } = useToast();
 
 const busyAction = ref<BusyAction>(null);
+const currentUser = ref<FirebaseAuthUser | null>(null);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 const csvInputRef = useTemplateRef<HTMLInputElement>('csvInputRef');
+
+let unsubscribeAuth: (() => void) | null = null;
+
+onMounted(() => {
+  unsubscribeAuth = useFirebaseCloud().subscribeAuthState((user) => {
+    currentUser.value = user;
+  });
+});
+
+onUnmounted(() => {
+  unsubscribeAuth?.();
+  unsubscribeAuth = null;
+});
 
 const closeModal = () => {
   if (busyAction.value === null) {
@@ -128,6 +157,29 @@ const handleCsvFileSelected = (event: Event) =>
     const result = await importTransactionsCsv(getLocalStorage(), rawCsv);
     return `Imported ${result.transactionsCount} transactions from CSV`;
   });
+
+const handleGoogleSignIn = () =>
+  runAction('signin', async () => {
+    const user = await useFirebaseCloud().signInWithGoogle();
+    if (user) {
+      await showSuccessToast(`Signed in as ${user.email ?? user.displayName ?? 'Google user'}`);
+    }
+  });
+
+const handleFirebaseSync = () =>
+  runAction('sync', async () => {
+    const summary = await useFirebaseCloud().syncNow();
+    await props.onRestored?.();
+    const pushedCount = summary.pushedCategories + summary.pushedTransactions;
+    const pulledCount = summary.pulledCategories + summary.pulledTransactions;
+    await showSuccessToast(`Sync complete (↑${pushedCount} ↓${pulledCount})`);
+  });
+
+const handleSignOut = () =>
+  runAction('signout', async () => {
+    await useFirebaseCloud().signOut();
+    await showSuccessToast('Signed out');
+  });
 </script>
 
 <template>
@@ -141,73 +193,134 @@ const handleCsvFileSelected = (event: Event) =>
     </BaseHeader>
 
     <ion-content class="ion-padding">
-      <div class="backup-section">
-        <ion-text color="medium">
-          <p class="description">
-            Data is stored locally on your device. Export a JSON backup anytime or merge data from a saved JSON backup
-            or transactions CSV file.
-          </p>
-        </ion-text>
+      <div class="modal-sections">
+        <section class="backup-section">
+          <h2 class="section-title">Cloud Sync (Firebase)</h2>
+          <template v-if="!currentUser">
+            <ion-text color="medium">
+              <p class="description">Sign in with your family Google account to sync transactions across devices.</p>
+            </ion-text>
 
-        <ion-button
-          expand="block"
-          data-testid="export-backup-btn"
-          :disabled="busyAction !== null"
-          @click="handleExport"
-        >
-          <ion-spinner v-if="busyAction === 'export'" name="lines" />
-          <template v-else>
-            <ion-icon slot="start" :icon="cloudDownloadOutline" />
-            Export Backup (.json)
+            <ion-button
+              expand="block"
+              data-testid="google-signin-btn"
+              :disabled="busyAction !== null"
+              @click="handleGoogleSignIn"
+            >
+              <ion-spinner v-if="busyAction === 'signin'" name="lines" />
+              <template v-else>
+                <ion-icon slot="start" :icon="logoGoogle" />
+                Sign in with Google
+              </template>
+            </ion-button>
           </template>
-        </ion-button>
 
-        <ion-button
-          expand="block"
-          fill="outline"
-          data-testid="import-backup-btn"
-          :disabled="busyAction !== null"
-          @click="triggerImport"
-        >
-          <ion-spinner v-if="busyAction === 'import'" name="lines" />
           <template v-else>
-            <ion-icon slot="start" :icon="cloudUploadOutline" />
-            Import Backup (.json)
+            <ion-text color="dark">
+              <p class="description">
+                Signed in as <strong>{{ currentUser.email ?? currentUser.displayName ?? currentUser.uid }}</strong>
+              </p>
+            </ion-text>
+
+            <ion-button
+              expand="block"
+              data-testid="firebase-sync-btn"
+              :disabled="busyAction !== null"
+              @click="handleFirebaseSync"
+            >
+              <ion-spinner v-if="busyAction === 'sync'" name="lines" />
+              <template v-else>
+                <ion-icon slot="start" :icon="syncOutline" />
+                Sync Now
+              </template>
+            </ion-button>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="medium"
+              data-testid="firebase-signout-btn"
+              :disabled="busyAction !== null"
+              @click="handleSignOut"
+            >
+              <ion-spinner v-if="busyAction === 'signout'" name="lines" />
+              <template v-else>
+                <ion-icon slot="start" :icon="logOutOutline" />
+                Sign out
+              </template>
+            </ion-button>
           </template>
-        </ion-button>
+        </section>
 
-        <input
-          ref="fileInputRef"
-          data-testid="backup-file-input"
-          type="file"
-          accept="application/json,.json"
-          class="hidden-file-input"
-          @change="handleFileSelected"
-        />
+        <section class="backup-section">
+          <h2 class="section-title">Local Backup</h2>
+          <ion-text color="medium">
+            <p class="description">
+              Data is stored locally on your device. Export a JSON backup anytime or merge data from a saved JSON backup
+              or transactions CSV file.
+            </p>
+          </ion-text>
 
-        <ion-button
-          expand="block"
-          fill="outline"
-          color="secondary"
-          data-testid="import-csv-btn"
-          :disabled="busyAction !== null"
-          @click="triggerCsvImport"
-        >
-          <ion-spinner v-if="busyAction === 'csv'" name="lines" />
-          <template v-else>
-            <ion-icon slot="start" :icon="documentTextOutline" />
-            Import Transactions (.csv)
-          </template>
-        </ion-button>
+          <ion-button
+            expand="block"
+            data-testid="export-backup-btn"
+            :disabled="busyAction !== null"
+            @click="handleExport"
+          >
+            <ion-spinner v-if="busyAction === 'export'" name="lines" />
+            <template v-else>
+              <ion-icon slot="start" :icon="cloudDownloadOutline" />
+              Export Backup (.json)
+            </template>
+          </ion-button>
 
-        <input
-          ref="csvInputRef"
-          data-testid="csv-file-input"
-          type="file"
-          accept="text/csv,.csv"
-          class="hidden-file-input"
-          @change="handleCsvFileSelected"
-        />
+          <ion-button
+            expand="block"
+            fill="outline"
+            data-testid="import-backup-btn"
+            :disabled="busyAction !== null"
+            @click="triggerImport"
+          >
+            <ion-spinner v-if="busyAction === 'import'" name="lines" />
+            <template v-else>
+              <ion-icon slot="start" :icon="cloudUploadOutline" />
+              Import Backup (.json)
+            </template>
+          </ion-button>
+
+          <input
+            ref="fileInputRef"
+            data-testid="backup-file-input"
+            type="file"
+            accept="application/json,.json"
+            class="hidden-file-input"
+            @change="handleFileSelected"
+          />
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="secondary"
+            data-testid="import-csv-btn"
+            :disabled="busyAction !== null"
+            @click="triggerCsvImport"
+          >
+            <ion-spinner v-if="busyAction === 'csv'" name="lines" />
+            <template v-else>
+              <ion-icon slot="start" :icon="documentTextOutline" />
+              Import Transactions (.csv)
+            </template>
+          </ion-button>
+
+          <input
+            ref="csvInputRef"
+            data-testid="csv-file-input"
+            type="file"
+            accept="text/csv,.csv"
+            class="hidden-file-input"
+            @change="handleCsvFileSelected"
+          />
+        </section>
       </div>
     </ion-content>
   </ion-modal>
@@ -218,10 +331,22 @@ ion-content {
   --background: var(--ion-color-bg-light-grey);
 }
 
+.modal-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .backup-section {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .description {
