@@ -1,5 +1,4 @@
 allowBuilds:
-  supabase: true
   esbuild: false
   vue-demi: false
   bufferutil: false
@@ -7,3 +6,5 @@ allowBuilds:
   electron: false
   sharp: false
   utf-8-validate: false
+  '@firebase/util': false
+  protobufjs: false

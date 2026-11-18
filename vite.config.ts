@@ -39,6 +39,10 @@ export default defineConfig({
             return 'utils';
           }
 
+          if (id.includes('node_modules/firebase/') || id.includes('node_modules/@firebase/')) {
+            return 'firebase-vendor';
+          }
+
           return undefined;
         },
       },

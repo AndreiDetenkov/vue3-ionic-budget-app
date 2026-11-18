@@ -34,6 +34,7 @@
     "@ionic/vue": "^8.8.19",
     "@ionic/vue-router": "^8.8.19",
     "dayjs": "^1.11.23",
+    "firebase": "^13.4.0",
     "ionicons": "^8.1.0",
     "pinia": "4.0.3",
     "vue": "3.5.43",
