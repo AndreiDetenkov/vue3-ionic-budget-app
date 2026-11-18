@@ -1,0 +1,123 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Firebase Project: personal-budget-43e88 (Cloud Firestore Standard Edition)
+// Access Model: Shared household budget restricted strictly to email-verified
+// allowlisted family members. Physical deletes are disabled (`allow delete: if false;`)
+// in favor of Last-Write-Wins (LWW) soft-delete tombstones via `deletedAt` and
+// offline-first sync via client-generated ISO 8601 timestamp strings.
+//
+// Collection: categories
+// Document ID: {categoryId} (matches `id` field; e.g., UUID)
+// Fields:
+//   - id: string (required, immutable - must equal {categoryId})
+//   - title: string (required, 1..100 chars)
+//   - icon: string | null (required key, nullable, max 200 chars when string)
+//   - updatedAt: string (required, 1..64 chars, ISO 8601 timestamp)
+//   - deletedAt: string | null (required key, nullable, max 64 chars when string)
+//
+// Collection: transactions
+// Document ID: {transactionId} (matches `id` field; e.g., UUID)
+// Fields:
+//   - id: string (required, immutable - must equal {transactionId})
+//   - name: string (required, 1..250 chars)
+//   - value: number (required, int or float)
+//   - createdAt: string (required, 1..64 chars, ISO 8601 timestamp)
+//   - updatedAt: string (required, 1..64 chars, ISO 8601 timestamp)
+//   - deletedAt: string | null (required key, nullable, max 64 chars when string)
+//   - categoryId: string (required, 1..100 chars)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Restrict access strictly to verified, allowlisted family members
+    function isAuthorizedFamilyMember() {
+      return isAuthenticated() &&
+             'email_verified' in request.auth.token &&
+             request.auth.token.email_verified == true &&
+             'email' in request.auth.token &&
+             request.auth.token.email in [
+               'a.detenkov@gmail.com',
+               'a.tsventarnaya@gmail.com'
+             ];
+    }
+
+    // Validate that the document has exact required keys and no extraneous fields
+    function hasExactFields(data, fields) {
+      return data.keys().hasAll(fields) && data.keys().hasOnly(fields);
+    }
+
+    // Validate a required non-empty string with an explicit maximum length
+    function isValidRequiredString(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    // Validate a nullable string field with an explicit maximum length
+    function isValidNullableString(value, maxLen) {
+      return value == null || (value is string && value.size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidCategory(data, categoryId) {
+      return hasExactFields(data, ['id', 'title', 'icon', 'updatedAt', 'deletedAt']) &&
+             data.id is string &&
+             data.id == categoryId &&
+             isValidRequiredString(data.title, 100) &&
+             isValidNullableString(data.icon, 200) &&
+             isValidRequiredString(data.updatedAt, 64) &&
+             isValidNullableString(data.deletedAt, 64);
+    }
+
+    function isValidTransaction(data, transactionId) {
+      return hasExactFields(data, ['id', 'name', 'value', 'createdAt', 'updatedAt', 'deletedAt', 'categoryId']) &&
+             data.id is string &&
+             data.id == transactionId &&
+             isValidRequiredString(data.name, 250) &&
+             (data.value is int || data.value is float) &&
+             isValidRequiredString(data.createdAt, 64) &&
+             isValidRequiredString(data.updatedAt, 64) &&
+             isValidNullableString(data.deletedAt, 64) &&
+             isValidRequiredString(data.categoryId, 100);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /categories/{categoryId} {
+      allow read: if isAuthorizedFamilyMember();
+      allow create, update: if isAuthorizedFamilyMember() &&
+                               isValidCategory(request.resource.data, categoryId);
+      allow delete: if false;
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthorizedFamilyMember();
+      allow create, update: if isAuthorizedFamilyMember() &&
+                               isValidTransaction(request.resource.data, transactionId);
+      allow delete: if false;
+    }
+
+    // Default-deny catch-all rule for all other paths and subcollections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
