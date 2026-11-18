@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { createInMemoryStorage, setStorage, type Category } from '@/core/storage';
+import {
+  createInMemoryStorage,
+  setFirebaseCloud,
+  setStorage,
+  type Category,
+  type FirebaseCloudController,
+} from '@/core/storage';
 import { formatDate } from '@/core/utils/dates';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 import BackupModal from '@/core/components/BackupModal.vue';
@@ -32,15 +38,35 @@ const IonModalStub = {
   template: '<div class="ion-modal-stub" :data-is-open="String(Boolean(isOpen))"><slot v-if="isOpen" /></div>',
 };
 
+const createStubCloudController = (): FirebaseCloudController => ({
+  getCurrentUser: () => null,
+  subscribeAuthState: (listener) => {
+    listener(null);
+    return vi.fn();
+  },
+  signInWithGoogle: vi.fn().mockResolvedValue(null),
+  signOut: vi.fn().mockResolvedValue(undefined),
+  syncNow: vi.fn().mockResolvedValue({
+    pulledCategories: 0,
+    pulledTransactions: 0,
+    pushedCategories: 0,
+    pushedTransactions: 0,
+  }),
+  isSyncEnabled: () => false,
+  resetCursors: vi.fn(),
+});
+
 describe('TransactionsPage.vue', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-15T12:00:00.000Z'));
     setActivePinia(createPinia());
     ionViewWillEnterCallback = undefined;
+    setFirebaseCloud(createStubCloudController());
   });
 
   afterEach(() => {
+    setFirebaseCloud(null);
     vi.useRealTimers();
   });
 

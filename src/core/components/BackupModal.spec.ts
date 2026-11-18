@@ -503,4 +503,108 @@ describe('BackupModal.vue', () => {
     expect(showErrorToastMock).toHaveBeenCalledWith('Permission denied');
     expect(onRestored).not.toHaveBeenCalled();
   });
+
+  it('unsubscribes auth listener on unmount and ignores toast when Google Sign-In falls back to redirect', async () => {
+    const unsubscribeMock = vi.fn();
+    vi.mocked(fakeCloud.controller.subscribeAuthState).mockImplementationOnce((listener) => {
+      listener(null);
+      return unsubscribeMock;
+    });
+    vi.mocked(fakeCloud.controller.signInWithGoogle).mockResolvedValueOnce(null);
+
+    const wrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="google-signin-btn"]').trigger('click');
+    await flushPromises();
+
+    expect(showSuccessToastMock).not.toHaveBeenCalled();
+    expect(showErrorToastMock).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+    expect(unsubscribeMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables modal buttons and close chip while sync is busy, and awaits onRestored before showing toast', async () => {
+    fakeCloud.emitAuth({
+      uid: 'u1',
+      email: 'a.detenkov@gmail.com',
+      displayName: 'Andrei',
+    });
+
+    const events: string[] = [];
+    let releaseSync!: () => void;
+    vi.mocked(fakeCloud.controller.syncNow).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseSync = () => {
+            events.push('syncNow');
+            resolve({
+              pulledCategories: 0,
+              pulledTransactions: 1,
+              pushedCategories: 0,
+              pushedTransactions: 1,
+            });
+          };
+        }),
+    );
+
+    let releaseRestored!: () => void;
+    const onRestored = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseRestored = () => {
+            events.push('onRestored');
+            resolve();
+          };
+        }),
+    );
+    showSuccessToastMock.mockImplementationOnce(async () => {
+      events.push('toast');
+    });
+
+    const wrapper = mount(BackupModal, {
+      props: { modelValue: true, onRestored },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    const syncTrigger = wrapper.find('[data-testid="firebase-sync-btn"]').trigger('click');
+    await flushPromises();
+
+    const busyButtons = wrapper.findAllComponents({ name: 'IonButton' });
+    expect(busyButtons.length).toBeGreaterThanOrEqual(5);
+    expect(busyButtons.every((btn) => btn.props('disabled') === true)).toBe(true);
+    expect(wrapper.findComponent({ name: 'IonChip' }).props('disabled')).toBe(true);
+
+    releaseSync();
+    await flushPromises();
+    expect(showSuccessToastMock).not.toHaveBeenCalled();
+
+    releaseRestored();
+    await syncTrigger;
+    await flushPromises();
+
+    expect(events).toEqual(['syncNow', 'onRestored', 'toast']);
+    const idleButtons = wrapper.findAllComponents({ name: 'IonButton' });
+    expect(idleButtons.every((btn) => btn.props('disabled') === false)).toBe(true);
+    expect(wrapper.findComponent({ name: 'IonChip' }).props('disabled')).toBe(false);
+
+    // Error during onRestored triggers error toast instead of success toast
+    vi.mocked(fakeCloud.controller.syncNow).mockResolvedValueOnce({
+      pulledCategories: 0,
+      pulledTransactions: 0,
+      pushedCategories: 0,
+      pushedTransactions: 0,
+    });
+    onRestored.mockRejectedValueOnce(new Error('Store refresh failed'));
+    await wrapper.find('[data-testid="firebase-sync-btn"]').trigger('click');
+    await flushPromises();
+
+    expect(showErrorToastMock).toHaveBeenCalledWith('Store refresh failed');
+    expect(showSuccessToastMock).toHaveBeenCalledTimes(1);
+  });
 });

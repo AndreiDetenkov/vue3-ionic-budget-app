@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
 import {
@@ -32,8 +32,8 @@ const model = defineModel<boolean>({ default: false });
 
 const { showSuccessToast, showErrorToast } = useToast();
 
-const busyAction = ref<BusyAction>(null);
-const currentUser = ref<FirebaseAuthUser | null>(null);
+const busyAction = shallowRef<BusyAction>(null);
+const currentUser = shallowRef<FirebaseAuthUser | null>(null);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 const csvInputRef = useTemplateRef<HTMLInputElement>('csvInputRef');
 
@@ -183,7 +183,12 @@ const handleSignOut = () =>
 </script>
 
 <template>
-  <ion-modal :is-open="model" :backdrop-dismiss="busyAction === null" @didDismiss="closeModal">
+  <ion-modal
+    :is-open="model"
+    :backdrop-dismiss="busyAction === null"
+    :can-dismiss="busyAction === null"
+    @didDismiss="closeModal"
+  >
     <BaseHeader title="Backup & Sync">
       <template #buttons>
         <ion-buttons slot="end">

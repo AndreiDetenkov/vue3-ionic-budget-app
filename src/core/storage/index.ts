@@ -1,6 +1,6 @@
 import { createDevAutoSeedingLocalStorage } from './backup';
 import { createFirebaseCloudController, type FirebaseCloudController } from './firebaseClient';
-import { createSyncedLocalStorage, type FirebaseSyncService } from './firebaseSync';
+import { createSyncedLocalStorage } from './firebaseSync';
 import type { BudgetStorage, LocalBudgetStorage } from './types';
 
 function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
@@ -28,15 +28,10 @@ const cloudProxy: FirebaseCloudController = {
   syncNow: () => getOrCreateDefaultCloud().syncNow(),
   isSyncEnabled: () => (activeCloud ? activeCloud.isSyncEnabled() : false),
   resetCursors: () => getOrCreateDefaultCloud().resetCursors(),
+  isSyncInFlight: () => (activeCloud ? (activeCloud.isSyncInFlight?.() ?? false) : false),
 };
 
-const syncServiceProxy: FirebaseSyncService = {
-  syncNow: () => cloudProxy.syncNow(),
-  getCursors: () => ({ lastPulledAt: null, lastPushedAt: null }),
-  resetCursors: () => cloudProxy.resetCursors(),
-};
-
-const defaultLocalStorage: LocalBudgetStorage = createSyncedLocalStorage(baseLocalStorage, syncServiceProxy, () =>
+const defaultLocalStorage: LocalBudgetStorage = createSyncedLocalStorage(baseLocalStorage, cloudProxy, () =>
   cloudProxy.isSyncEnabled(),
 );
 let activeStorage: BudgetStorage = defaultLocalStorage;
@@ -115,6 +110,7 @@ export {
   type SyncCursorState,
 } from './firebaseSync';
 export {
+  ALLOWED_FAMILY_EMAILS,
   createFirebaseCloudController,
   createFirestoreRemoteAdapter,
   getApp,

@@ -37,6 +37,8 @@ const REDIRECT_FALLBACK_ERROR_CODES = new Set([
   'auth/operation-not-supported-in-this-environment',
 ]);
 
+export const ALLOWED_FAMILY_EMAILS = ['a.detenkov@gmail.com', 'a.tsventarnaya@gmail.com'] as const;
+
 const DEFAULT_FIREBASE_CONFIG: FirebaseOptions = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyAQo-O6JYcFvRq0j_dZcqNZOzfyDG6zHjw',
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'personal-budget-43e88.firebaseapp.com',
@@ -60,6 +62,7 @@ export interface FirebaseCloudController {
   syncNow(): Promise<FirebaseSyncSummary>;
   isSyncEnabled(): boolean;
   resetCursors(): void;
+  isSyncInFlight?(): boolean;
 }
 
 type FirestoreCategoryDoc = {
@@ -140,16 +143,13 @@ function toFirestoreCategory(category: StoredCategory): FirestoreCategoryDoc {
 }
 
 function toStoredCategory(data: DocumentData, docId: string): StoredCategory {
-  const category: StoredCategory = {
+  return {
     id: typeof data.id === 'string' && data.id.length > 0 ? data.id : docId,
     title: typeof data.title === 'string' ? data.title : '',
     icon: typeof data.icon === 'string' && data.icon.length > 0 ? data.icon : null,
     updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date(0).toISOString(),
+    deletedAt: typeof data.deletedAt === 'string' && data.deletedAt.length > 0 ? data.deletedAt : null,
   };
-  if (typeof data.deletedAt === 'string' && data.deletedAt.length > 0) {
-    category.deletedAt = data.deletedAt;
-  }
-  return category;
 }
 
 function toFirestoreTransaction(tx: StoredTransaction): FirestoreTransactionDoc {
@@ -165,18 +165,15 @@ function toFirestoreTransaction(tx: StoredTransaction): FirestoreTransactionDoc 
 }
 
 function toStoredTransaction(data: DocumentData, docId: string): StoredTransaction {
-  const tx: StoredTransaction = {
+  return {
     id: typeof data.id === 'string' && data.id.length > 0 ? data.id : docId,
     name: typeof data.name === 'string' ? data.name : '',
     value: typeof data.value === 'number' && Number.isFinite(data.value) ? data.value : 0,
     createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date(0).toISOString(),
     updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date(0).toISOString(),
+    deletedAt: typeof data.deletedAt === 'string' && data.deletedAt.length > 0 ? data.deletedAt : null,
     categoryId: typeof data.categoryId === 'string' ? data.categoryId : '',
   };
-  if (typeof data.deletedAt === 'string' && data.deletedAt.length > 0) {
-    tx.deletedAt = data.deletedAt;
-  }
-  return tx;
 }
 
 /**
@@ -232,6 +229,15 @@ function sameUser(a: FirebaseAuthUser | null, b: FirebaseAuthUser | null): boole
   return a.uid === b.uid && a.email === b.email && a.displayName === b.displayName;
 }
 
+function isAllowedFamilyUser(user: User | null): boolean {
+  return Boolean(
+    user &&
+    user.emailVerified !== false &&
+    user.email &&
+    ALLOWED_FAMILY_EMAILS.includes(user.email as (typeof ALLOWED_FAMILY_EMAILS)[number]),
+  );
+}
+
 /**
  * Creates the cloud auth + incremental delta-sync controller bound to the given local storage.
  */
@@ -255,6 +261,13 @@ export function createFirebaseCloudController(local: LocalBudgetStorage): Fireba
     const auth = getFirebaseAuth();
     if (!authUnsubscribe) {
       authUnsubscribe = onAuthStateChanged(auth, (fbUser) => {
+        if (fbUser && !isAllowedFamilyUser(fbUser)) {
+          void firebaseSignOut(auth).catch(() => {
+            // Best-effort sign-out of non-allowlisted Google account
+          });
+          updateCurrentUser(null);
+          return;
+        }
         updateCurrentUser(mapFirebaseUser(fbUser));
       });
     }
@@ -296,6 +309,11 @@ export function createFirebaseCloudController(local: LocalBudgetStorage): Fireba
 
       try {
         const credential = await signInWithPopup(auth, provider);
+        if (!isAllowedFamilyUser(credential.user)) {
+          await firebaseSignOut(auth);
+          updateCurrentUser(null);
+          throw new Error('Access denied: this Google account is not in the family allowlist.');
+        }
         const mapped = mapFirebaseUser(credential.user);
         updateCurrentUser(mapped);
         return mapped;
@@ -327,6 +345,10 @@ export function createFirebaseCloudController(local: LocalBudgetStorage): Fireba
 
     resetCursors(): void {
       ensureSyncService().resetCursors();
+    },
+
+    isSyncInFlight(): boolean {
+      return syncService?.isSyncInFlight() ?? false;
     },
   };
 }
