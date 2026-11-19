@@ -11,6 +11,7 @@ import {
 import { formatDate } from '@/core/utils/dates';
 import AllTransactionsModal from '@/modules/transactions/components/AllTransactionsModal.vue';
 import BackupModal from '@/core/components/BackupModal.vue';
+import BaseRefresher from '@/core/components/BaseRefresher.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 import { useCategoryStore } from '@/modules/categories';
@@ -239,5 +240,54 @@ describe('TransactionsPage.vue', () => {
     const transactionStore = useTransactionStore();
     expect(categoryStore.categories).toHaveLength(2);
     expect(transactionStore.transactions.map((t) => t.name)).toEqual(['Restored Jacket']);
+  });
+
+  it('syncs with Firebase on pull-to-refresh when signed in and reloads local data even if sync fails', async () => {
+    const cloud = createStubCloudController();
+    cloud.isSyncEnabled = () => true;
+    const syncNowMock = vi.mocked(cloud.syncNow);
+    setFirebaseCloud(cloud);
+
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-1',
+            name: 'Lunch',
+            value: 300,
+            createdAt: '2026-10-15T10:00:00.000Z',
+            categoryId: foodCategory.id,
+            category: foodCategory,
+          },
+        ],
+      }),
+    );
+
+    const wrapper = mount(TransactionsPage, {
+      global: {
+        stubs: {
+          IonModal: IonModalStub,
+        },
+      },
+    });
+
+    const refresher = wrapper.findComponent(BaseRefresher);
+    const completeMock = vi.fn();
+    await refresher.find('ion-refresher').trigger('ionRefresh', { detail: { complete: completeMock } });
+    await flushPromises();
+
+    expect(syncNowMock).toHaveBeenCalledTimes(1);
+    expect(completeMock).toHaveBeenCalledTimes(1);
+    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Lunch']);
+
+    // Offline error during pull-to-refresh still reloads local data and completes refresher
+    syncNowMock.mockRejectedValueOnce(new Error('network error'));
+    await refresher.find('ion-refresher').trigger('ionRefresh', { detail: { complete: completeMock } });
+    await flushPromises();
+
+    expect(syncNowMock).toHaveBeenCalledTimes(2);
+    expect(completeMock).toHaveBeenCalledTimes(2);
+    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Lunch']);
   });
 });

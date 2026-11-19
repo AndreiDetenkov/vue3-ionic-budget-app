@@ -16,7 +16,9 @@ import {
 } from '@ionic/vue';
 import { cloudUploadOutline } from 'ionicons/icons';
 import { useCategoryStore } from '@/modules/categories';
+import { useReportStore } from '@/modules/reports';
 import { useTransactionStore } from '@/modules/transactions';
+import { useFirebaseCloud } from '@/core/storage';
 import BackupModal from '@/core/components/BackupModal.vue';
 import BaseRefresher from '@/core/components/BaseRefresher.vue';
 import BaseHeader from '@/core/components/BaseHeader.vue';
@@ -24,6 +26,7 @@ import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 
 const categoryStore = useCategoryStore();
+const reportStore = useReportStore();
 const transactionStore = useTransactionStore();
 const { loading, transactions } = storeToRefs(transactionStore);
 const { getTransactionsByRange } = transactionStore;
@@ -33,11 +36,26 @@ onIonViewWillEnter(() => {
   if (!transactions.value.length) getTransactionsByRange('month');
 });
 
-const refreshContent = () => getTransactionsByRange('month');
+const refreshContent = async () => {
+  const cloud = useFirebaseCloud();
+  if (cloud.isSyncEnabled()) {
+    try {
+      await cloud.syncNow();
+    } catch {
+      // Offline or auth error: still reload local data below.
+    }
+  }
+  await Promise.all([
+    categoryStore.getCategoryList(true),
+    getTransactionsByRange(transactionStore.transactionsUnit),
+    reportStore.refreshReports(),
+  ]);
+};
 
 const handleBackupRestored = async () => {
   await categoryStore.getCategoryList(true);
   await getTransactionsByRange(transactionStore.transactionsUnit);
+  await reportStore.refreshReports();
 
   if (categoryStore.error) {
     throw categoryStore.error;
@@ -62,7 +80,7 @@ const handleBackupRestored = async () => {
     </BaseHeader>
 
     <ion-content fullscreen class="ion-padding">
-      <BaseRefresher @refresh="refreshContent" />
+      <BaseRefresher :on-refresh="refreshContent" />
 
       <template v-if="transactions.length">
         <TotalAmount />
