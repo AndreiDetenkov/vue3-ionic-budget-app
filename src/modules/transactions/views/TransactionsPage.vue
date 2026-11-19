@@ -36,6 +36,13 @@ onIonViewWillEnter(() => {
   if (!transactions.value.length) getTransactionsByRange('month');
 });
 
+const reloadStores = () =>
+  Promise.all([
+    categoryStore.getCategoryList(true),
+    getTransactionsByRange(transactionStore.transactionsUnit),
+    reportStore.refreshReports(),
+  ]);
+
 const refreshContent = async () => {
   const cloud = useFirebaseCloud();
   if (cloud.isSyncEnabled()) {
@@ -45,17 +52,11 @@ const refreshContent = async () => {
       // Offline or auth error: still reload local data below.
     }
   }
-  await Promise.all([
-    categoryStore.getCategoryList(true),
-    getTransactionsByRange(transactionStore.transactionsUnit),
-    reportStore.refreshReports(),
-  ]);
+  await reloadStores();
 };
 
 const handleBackupRestored = async () => {
-  await categoryStore.getCategoryList(true);
-  await getTransactionsByRange(transactionStore.transactionsUnit);
-  await reportStore.refreshReports();
+  await reloadStores();
 
   if (categoryStore.error) {
     throw categoryStore.error;

@@ -20,7 +20,7 @@ export function useCloudAutoSync(onPulled: () => void | Promise<void>): void {
       return Promise.resolve();
     }
 
-    inFlight = (async () => {
+    const run = async () => {
       try {
         const summary = await cloud.syncNow();
         if (unmounted) {
@@ -31,11 +31,12 @@ export function useCloudAutoSync(onPulled: () => void | Promise<void>): void {
         }
       } catch {
         // Offline or transient auth errors must not disrupt local-first usage.
-      } finally {
-        inFlight = null;
       }
-    })();
+    };
 
+    inFlight = run().finally(() => {
+      inFlight = null;
+    });
     return inFlight;
   }
 
@@ -69,10 +70,9 @@ export function useCloudAutoSync(onPulled: () => void | Promise<void>): void {
       })
         .then((handle) => {
           if (unmounted) {
-            void handle.remove();
-          } else {
-            appStateHandle = handle;
+            return handle.remove();
           }
+          appStateHandle = handle;
         })
         .catch(() => {
           // Ignore in environments where Capacitor App plugin is unavailable.
@@ -89,7 +89,7 @@ export function useCloudAutoSync(onPulled: () => void | Promise<void>): void {
     unsubscribeAuth?.();
     unsubscribeAuth = null;
     if (appStateHandle) {
-      void appStateHandle.remove();
+      void appStateHandle.remove().catch(() => {});
       appStateHandle = null;
     }
     document.removeEventListener('visibilitychange', handleVisibilityChange);

@@ -15,6 +15,7 @@ import BaseRefresher from '@/core/components/BaseRefresher.vue';
 import TotalAmount from '@/modules/transactions/components/TotalAmount.vue';
 import TransactionList from '@/modules/transactions/components/TransactionList.vue';
 import { useCategoryStore } from '@/modules/categories';
+import { useReportStore } from '@/modules/reports';
 import { useTransactionStore } from '@/modules/transactions';
 import TransactionsPage from './TransactionsPage.vue';
 
@@ -242,12 +243,13 @@ describe('TransactionsPage.vue', () => {
     expect(transactionStore.transactions.map((t) => t.name)).toEqual(['Restored Jacket']);
   });
 
-  it('syncs with Firebase on pull-to-refresh when signed in and reloads local data even if sync fails', async () => {
+  it('syncs with Firebase on pull-to-refresh when signed in, updates all stores, and reloads local data on sync failure', async () => {
     const cloud = createStubCloudController();
     cloud.isSyncEnabled = () => true;
     const syncNowMock = vi.mocked(cloud.syncNow);
     setFirebaseCloud(cloud);
 
+    const travelCategory: Category = { id: 'cat-travel', title: 'Travel', icon: 'travel' };
     setStorage(
       createInMemoryStorage({
         categories: [foodCategory],
@@ -272,6 +274,26 @@ describe('TransactionsPage.vue', () => {
       },
     });
 
+    // Mutate storage inside syncNowMock to prove sync runs before store reloads
+    syncNowMock.mockImplementationOnce(async () => {
+      setStorage(
+        createInMemoryStorage({
+          categories: [foodCategory, travelCategory],
+          transactions: [
+            {
+              id: 'tx-2',
+              name: 'Remote Taxi',
+              value: 600,
+              createdAt: '2026-10-15T11:00:00.000Z',
+              categoryId: travelCategory.id,
+              category: travelCategory,
+            },
+          ],
+        }),
+      );
+      return { pulledCategories: 1, pulledTransactions: 1, pushedCategories: 0, pushedTransactions: 0 };
+    });
+
     const refresher = wrapper.findComponent(BaseRefresher);
     const completeMock = vi.fn();
     await refresher.find('ion-refresher').trigger('ionRefresh', { detail: { complete: completeMock } });
@@ -279,15 +301,75 @@ describe('TransactionsPage.vue', () => {
 
     expect(syncNowMock).toHaveBeenCalledTimes(1);
     expect(completeMock).toHaveBeenCalledTimes(1);
-    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Lunch']);
+    expect(useCategoryStore().categories).toHaveLength(2);
+    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Remote Taxi']);
+    expect(useReportStore().reportList.map((r) => r.name)).toEqual(['Travel']);
 
-    // Offline error during pull-to-refresh still reloads local data and completes refresher
+    // Offline error during pull-to-refresh still reloads updated local data and completes refresher
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-3',
+            name: 'Dinner',
+            value: 850,
+            createdAt: '2026-10-15T18:00:00.000Z',
+            categoryId: foodCategory.id,
+            category: foodCategory,
+          },
+        ],
+      }),
+    );
     syncNowMock.mockRejectedValueOnce(new Error('network error'));
     await refresher.find('ion-refresher').trigger('ionRefresh', { detail: { complete: completeMock } });
     await flushPromises();
 
     expect(syncNowMock).toHaveBeenCalledTimes(2);
     expect(completeMock).toHaveBeenCalledTimes(2);
-    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Lunch']);
+    expect(useCategoryStore().categories).toHaveLength(1);
+    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Dinner']);
+    expect(useReportStore().reportList.map((r) => r.name)).toEqual(['Food']);
+  });
+
+  it('skips cloud sync on pull-to-refresh when signed out and still reloads local stores', async () => {
+    const cloud = createStubCloudController();
+    const syncNowMock = vi.mocked(cloud.syncNow);
+    setFirebaseCloud(cloud);
+
+    setStorage(
+      createInMemoryStorage({
+        categories: [foodCategory],
+        transactions: [
+          {
+            id: 'tx-local',
+            name: 'Local Bread',
+            value: 120,
+            createdAt: '2026-10-15T09:00:00.000Z',
+            categoryId: foodCategory.id,
+            category: foodCategory,
+          },
+        ],
+      }),
+    );
+
+    const wrapper = mount(TransactionsPage, {
+      global: {
+        stubs: {
+          IonModal: IonModalStub,
+        },
+      },
+    });
+
+    const refresher = wrapper.findComponent(BaseRefresher);
+    const completeMock = vi.fn();
+    await refresher.find('ion-refresher').trigger('ionRefresh', { detail: { complete: completeMock } });
+    await flushPromises();
+
+    expect(syncNowMock).not.toHaveBeenCalled();
+    expect(completeMock).toHaveBeenCalledTimes(1);
+    expect(useCategoryStore().categories).toHaveLength(1);
+    expect(useTransactionStore().transactions.map((t) => t.name)).toEqual(['Local Bread']);
+    expect(useReportStore().reportList.map((r) => r.name)).toEqual(['Food']);
   });
 });
