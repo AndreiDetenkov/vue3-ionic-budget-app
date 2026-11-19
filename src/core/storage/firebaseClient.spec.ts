@@ -22,9 +22,13 @@ const mocks = vi.hoisted(() => {
   const setCustomParametersMock = vi.fn();
   class GoogleAuthProviderMock {
     setCustomParameters = setCustomParametersMock;
+    static credential = vi.fn((idToken: string) => ({ idToken }));
   }
 
   return {
+    isNativePlatformMock: vi.fn(() => false),
+    nativeSignInWithGoogleMock: vi.fn(),
+    signInWithCredentialMock: vi.fn(),
     appInstance,
     dbInstance,
     authInstance,
@@ -66,9 +70,18 @@ vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: mocks.GoogleAuthProviderMock,
   onAuthStateChanged: mocks.onAuthStateChangedMock,
   setPersistence: mocks.setPersistenceMock,
+  signInWithCredential: mocks.signInWithCredentialMock,
   signInWithPopup: mocks.signInWithPopupMock,
   signInWithRedirect: mocks.signInWithRedirectMock,
   signOut: mocks.signOutMock,
+}));
+
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: mocks.isNativePlatformMock },
+}));
+
+vi.mock('@capacitor-firebase/authentication', () => ({
+  FirebaseAuthentication: { signInWithGoogle: mocks.nativeSignInWithGoogleMock },
 }));
 
 vi.mock('firebase/firestore', () => ({
@@ -319,6 +332,20 @@ describe('firebaseClient', () => {
       // Non-fallback error rethrows
       mocks.signInWithPopupMock.mockRejectedValueOnce(new Error('auth/popup-closed-by-user'));
       await expect(controller.signInWithGoogle()).rejects.toThrow('auth/popup-closed-by-user');
+    });
+
+    it('uses native Google Sign-In and signInWithCredential on native platforms', async () => {
+      const local = createLocalStorage({ storageKey: 'firebase-client-native-test' });
+      const controller = createFirebaseCloudController(local, { allowedEmails: TEST_ALLOWED_EMAILS });
+      mocks.isNativePlatformMock.mockReturnValueOnce(true);
+      mocks.nativeSignInWithGoogleMock.mockResolvedValueOnce({ credential: { idToken: 'id-token' } });
+      mocks.signInWithCredentialMock.mockResolvedValueOnce({
+        user: { uid: 'u1', email: TEST_ALLOWED_EMAILS[0], emailVerified: true, displayName: 'User One' },
+      });
+
+      await expect(controller.signInWithGoogle()).resolves.toMatchObject({ uid: 'u1' });
+      expect(mocks.signInWithCredentialMock).toHaveBeenCalledWith(mocks.authInstance, { idToken: 'id-token' });
+      expect(mocks.signInWithPopupMock).not.toHaveBeenCalled();
     });
 
     it('rejects syncNow when signed out, syncs when signed in, and clears user on signOut', async () => {

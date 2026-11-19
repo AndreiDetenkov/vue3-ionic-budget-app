@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
 import {
   browserLocalPersistence,
@@ -5,6 +7,7 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   setPersistence,
+  signInWithCredential,
   signInWithPopup,
   signInWithRedirect,
   signOut as firebaseSignOut,
@@ -330,7 +333,13 @@ export function createFirebaseCloudController(
       provider.setCustomParameters({ prompt: 'select_account' });
 
       try {
-        const credential = await signInWithPopup(auth, provider);
+        // Popup/redirect cannot return into the Capacitor WebView, so use native Google Sign-In there.
+        const credential = Capacitor.isNativePlatform()
+          ? await signInWithCredential(
+              auth,
+              GoogleAuthProvider.credential((await FirebaseAuthentication.signInWithGoogle()).credential?.idToken),
+            )
+          : await signInWithPopup(auth, provider);
         if (!isAllowedFamilyUser(credential.user, allowedEmails)) {
           await firebaseSignOut(auth);
           updateCurrentUser(null);
