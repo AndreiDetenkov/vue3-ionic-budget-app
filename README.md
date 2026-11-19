@@ -151,20 +151,24 @@ pnpm install
 
 ### 3. Configure environment variables
 
-Copy the example environment file and provide your Supabase project credentials:
+Copy the example environment file and fill it with the **web app** config from Firebase Console → Project settings → General → Your apps → Web app (`</>`) → SDK setup and configuration → Config:
 
 ```bash
-cp .env.dist .env
+cp .env.example .env
 ```
-
-Edit `.env`:
 
 ```ini
-VITE_SUPABASE_URL=https://your-supabase-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-or-publishable-key
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+# Comma-separated Google accounts allowed to sign in and sync
+VITE_FIREBASE_ALLOWED_EMAILS=
 ```
 
-> **Note**: In development or test environments without Supabase credentials, unit tests run seamlessly using `InMemoryStorage`.
+> **Note**: `.env` is gitignored. Vite bakes these values into the build, so set them before `pnpm build`.
 
 ### 4. Run the development server
 
@@ -198,6 +202,25 @@ The mobile workflow uses [Capacitor](https://capacitorjs.com/) to package the Vi
    ```bash
    pnpm run:android
    ```
+
+### Google Sign-In on Android (new machine checklist)
+
+Inside the Capacitor WebView, Firebase web `signInWithPopup` / `signInWithRedirect` cannot work (error: _"Unable to process request due to missing initial state"_). On native platforms the app uses `@capacitor-firebase/authentication` to get a Google ID token natively, then signs in to the Firebase JS SDK with `signInWithCredential` (see `src/core/storage/firebaseClient.ts`). This requires:
+
+1. **`android/app/google-services.json`** — gitignored, must be restored manually. Download it from Firebase Console → Project settings → General → Your apps → Android app `com.budget.app`. Without it the build succeeds but native Google Sign-In fails.
+2. **Release keystore `budget-app-keystore`** (repo root, gitignored) plus its password and alias. Keep a backup. A new keystore means a new SHA-1 (see step 3), and Google Play will reject updates signed with a different key.
+3. **SHA-1 of the signing key registered** in the Firebase Android app (Project settings → Android app → Add fingerprint). Current release SHA-1:
+   ```
+   FF:65:73:C9:04:1B:12:60:0B:01:3C:09:04:C6:71:06:F9:27:94:91
+   ```
+   To read the SHA-1 of any signed APK (no keystore password needed):
+   ```bash
+   ~/Library/Android/sdk/build-tools/<version>/apksigner verify --print-certs android/app/release/app-release.apk
+   ```
+   For debug builds also add the debug key SHA-1 (`~/.android/debug.keystore`, password `android`), which is different on every machine.
+4. **Google provider enabled** in Firebase Console → Authentication → Sign-in method.
+
+If sign-in fails with `DEVELOPER_ERROR` / code 10, the SHA-1 of the APK's signing key is not registered in Firebase (or `google-services.json` is outdated).
 
 ---
 
