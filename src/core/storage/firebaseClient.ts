@@ -254,6 +254,18 @@ function isAllowedFamilyUser(user: User | null, allowedEmails: readonly string[]
   return Boolean(user.email && allowedEmails.includes(user.email.toLowerCase()));
 }
 
+async function signOutAll(auth: Auth): Promise<void> {
+  try {
+    await firebaseSignOut(auth);
+  } finally {
+    if (Capacitor.isNativePlatform()) {
+      await FirebaseAuthentication.signOut().catch(() => {
+        // Best-effort native credential state reset so next sign-in prompts account chooser
+      });
+    }
+  }
+}
+
 /**
  * Creates the cloud auth + incremental delta-sync controller bound to the given local storage.
  */
@@ -287,7 +299,7 @@ export function createFirebaseCloudController(
     if (!authUnsubscribe) {
       authUnsubscribe = onAuthStateChanged(auth, (fbUser) => {
         if (fbUser && !isAllowedFamilyUser(fbUser, allowedEmails)) {
-          void firebaseSignOut(auth).catch(() => {
+          void signOutAll(auth).catch(() => {
             // Best-effort sign-out of non-allowlisted Google account
           });
           updateCurrentUser(null);
@@ -341,7 +353,7 @@ export function createFirebaseCloudController(
             )
           : await signInWithPopup(auth, provider);
         if (!isAllowedFamilyUser(credential.user, allowedEmails)) {
-          await firebaseSignOut(auth);
+          await signOutAll(auth);
           updateCurrentUser(null);
           throw new Error('Access denied: this Google account is not in the family allowlist.');
         }
@@ -349,7 +361,7 @@ export function createFirebaseCloudController(
         updateCurrentUser(mapped);
         return mapped;
       } catch (err) {
-        if (REDIRECT_FALLBACK_ERROR_CODES.has(getFirebaseErrorCode(err))) {
+        if (!Capacitor.isNativePlatform() && REDIRECT_FALLBACK_ERROR_CODES.has(getFirebaseErrorCode(err))) {
           await signInWithRedirect(auth, provider);
           return null;
         }
@@ -359,7 +371,7 @@ export function createFirebaseCloudController(
 
     async signOut(): Promise<void> {
       const auth = ensureAuthSubscription();
-      await firebaseSignOut(auth);
+      await signOutAll(auth);
       updateCurrentUser(null);
     },
 
