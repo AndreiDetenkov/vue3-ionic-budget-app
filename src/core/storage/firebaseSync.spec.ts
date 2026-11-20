@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createLocalStorage,
   DEFAULT_CATEGORIES,
@@ -57,9 +57,110 @@ function createInMemoryRemoteAdapter(): {
   return { adapter, categories, transactions, batchSizes };
 }
 
+function createFakeIndexedDb(): {
+  factory: IDBFactory;
+  stores: Map<string, Map<string, unknown>>;
+} {
+  const stores = new Map<string, Map<string, unknown>>();
+  let currentVersion = 0;
+
+  const factory = {
+    open(_name: string, version?: number) {
+      const targetVersion = version ?? 1;
+      const req: Record<string, unknown> = {
+        result: null,
+        error: null,
+        onsuccess: null,
+        onerror: null,
+        onupgradeneeded: null,
+      };
+
+      const db = {
+        objectStoreNames: {
+          contains: (storeName: string) => stores.has(storeName),
+        },
+        createObjectStore: (storeName: string) => {
+          if (!stores.has(storeName)) {
+            stores.set(storeName, new Map());
+          }
+          return {};
+        },
+        transaction: (storeName: string) => {
+          const tx: Record<string, unknown> = {
+            error: null,
+            oncomplete: null,
+            onerror: null,
+            onabort: null,
+            objectStore: (name: string) => {
+              const map = stores.get(name);
+              if (!map) {
+                throw new Error(`Missing object store: ${name}`);
+              }
+              return {
+                get: (key: string) => {
+                  const getReq: Record<string, unknown> = {
+                    result: undefined,
+                    error: null,
+                    onsuccess: null,
+                    onerror: null,
+                  };
+                  queueMicrotask(() => {
+                    const val = map.get(key);
+                    getReq.result = val === undefined ? undefined : structuredClone(val);
+                    (getReq.onsuccess as (() => void) | null)?.();
+                    (tx.oncomplete as (() => void) | null)?.();
+                  });
+                  return getReq;
+                },
+                put: (value: unknown, key: string) => {
+                  map.set(key, structuredClone(value));
+                  queueMicrotask(() => {
+                    (tx.oncomplete as (() => void) | null)?.();
+                  });
+                  return {};
+                },
+                delete: (key: string) => {
+                  map.delete(key);
+                  queueMicrotask(() => {
+                    (tx.oncomplete as (() => void) | null)?.();
+                  });
+                  return {};
+                },
+              };
+            },
+          };
+          if (!stores.has(storeName)) {
+            throw new Error(`Missing object store: ${storeName}`);
+          }
+          return tx;
+        },
+        close: () => {},
+      };
+
+      req.result = db;
+      queueMicrotask(() => {
+        if (targetVersion > currentVersion) {
+          currentVersion = targetVersion;
+          (req.onupgradeneeded as (() => void) | null)?.();
+        }
+        (req.onsuccess as (() => void) | null)?.();
+      });
+
+      return req as unknown as IDBOpenDBRequest;
+    },
+  } as unknown as IDBFactory;
+
+  return { factory, stores };
+}
+
 describe('firebaseSync engine', () => {
   beforeEach(() => {
     window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('pushes all local categories and 1000+ transactions in batches of <= 450 and skips unchanged items on repeat sync', async () => {
@@ -88,6 +189,8 @@ describe('firebaseSync engine', () => {
     });
 
     const remote = createInMemoryRemoteAdapter();
+    const fetchCategoriesSpy = vi.spyOn(remote.adapter, 'fetchCategoriesSince');
+    const fetchTransactionsSpy = vi.spyOn(remote.adapter, 'fetchTransactionsSince');
     const upsertSpy = vi.spyOn(remote.adapter, 'upsertBatch');
     const cursorKey = 'sync-cursor-batch-test';
     const syncService = createFirebaseSyncService({
@@ -110,30 +213,28 @@ describe('firebaseSync engine', () => {
     expect(remote.batchSizes).toEqual([450, 450, 114]);
     expect(remote.batchSizes.every((size) => size <= MAX_FIRESTORE_BATCH_SIZE)).toBe(true);
 
+    // Initial push to empty Firestore sets lastPulledAt immediately to avoid a redundant full pull on Sync 2
+    expect(syncService.getCursors().lastPulledAt).toBe(now);
+    expect(syncService.getCursors().lastPushedAt).toBe(now);
     const savedCursors = JSON.parse(window.localStorage.getItem(cursorKey) || '{}');
     expect(savedCursors.lastPushedAt).toBe(now);
+    expect(savedCursors.lastPulledAt).toBe(now);
 
-    // Second sync establishes lastPulledAt from remote records with zero echo writes
+    // Second sync uses delta cursor directly and performs zero pulls and zero writes
+    fetchCategoriesSpy.mockClear();
+    fetchTransactionsSpy.mockClear();
     upsertSpy.mockClear();
     const secondSummary = await syncService.syncNow();
+    expect(fetchCategoriesSpy).toHaveBeenCalledWith(now);
+    expect(fetchTransactionsSpy).toHaveBeenCalledWith(now);
     expect(secondSummary).toEqual({
-      pulledCategories: 14,
-      pulledTransactions: 1000,
-      pushedCategories: 0,
-      pushedTransactions: 0,
-    });
-    expect(upsertSpy).not.toHaveBeenCalled();
-    expect(syncService.getCursors().lastPulledAt).toBe(now);
-
-    // Third sync with unchanged state performs zero pulls and zero writes
-    const thirdSummary = await syncService.syncNow();
-    expect(thirdSummary).toEqual({
       pulledCategories: 0,
       pulledTransactions: 0,
       pushedCategories: 0,
       pushedTransactions: 0,
     });
     expect(upsertSpy).not.toHaveBeenCalled();
+    expect(syncService.getCursors().lastPulledAt).toBe(now);
   });
 
   it('converges creations, updates (LWW), and soft-deletes across two independent device storages without echo-writing', async () => {
@@ -263,6 +364,7 @@ describe('firebaseSync engine', () => {
     const p2 = syncService.syncNow();
 
     expect(p1).toBe(p2);
+    await vi.waitFor(() => expect(releaseFetch).toBeTypeOf('function'));
     releaseFetch();
     await Promise.all([p1, p2]);
     expect(slowRemote.fetchTransactionsSince).toHaveBeenCalledTimes(1);
@@ -437,14 +539,16 @@ describe('firebaseSync engine', () => {
     });
 
     await expect(syncService.syncNow()).rejects.toThrow('Transient network failure on batch 2');
-    // Batch 1 (450 items: 14 cats + 436 txs) succeeded before failure
+    // Batch 1 (450 items: 14 cats + 436 txs) succeeded before failure, but lastPulledAt stays null until full push completes
     expect(remoteState.transactions.size).toBe(436);
+    expect(syncService.getCursors().lastPulledAt).toBeNull();
 
     failSecondBatch = false;
     const retrySummary = await syncService.syncNow();
     expect(retrySummary.pushedCategories).toBe(0);
     expect(retrySummary.pushedTransactions).toBe(164);
     expect(remoteState.transactions.size).toBe(600);
+    expect(syncService.getCursors().lastPulledAt).toBe(now);
   });
 
   it('schedules a trailing background sync when mutations occur while sync is already in flight', async () => {
@@ -495,5 +599,246 @@ describe('firebaseSync engine', () => {
     releaseFirstSync();
     await vi.waitFor(() => expect(fetchCount).toBe(2));
     await vi.waitFor(() => expect(remoteState.transactions.get(list[0].id)?.deletedAt).toBeTruthy());
+  });
+
+  it('stores full cursors in IndexedDB without writing to localStorage, migrates legacy cursors, and clears IDB on resetCursors()', async () => {
+    const fakeIdb = createFakeIndexedDb();
+    vi.stubGlobal('indexedDB', fakeIdb.factory);
+
+    const foodId = DEFAULT_CATEGORIES.find((c) => c.title === 'Food')!.id;
+    const legacyTs = '2026-11-18T09:00:00.000Z';
+    const newTs = '2026-11-18T10:00:00.000Z';
+    const cursorKey = 'idb-sync-cursor-test';
+
+    const local = createLocalStorage({ storageKey: 'idb-sync-local-test' });
+    await local.replaceSnapshot({
+      version: 1,
+      updatedAt: newTs,
+      categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, updatedAt: legacyTs, deletedAt: null })),
+      transactions: [
+        {
+          id: 'tx-legacy',
+          name: 'Legacy Coffee',
+          value: 200,
+          createdAt: legacyTs,
+          updatedAt: legacyTs,
+          deletedAt: null,
+          categoryId: foodId,
+        },
+        {
+          id: 'tx-new',
+          name: 'New Lunch',
+          value: 450,
+          createdAt: newTs,
+          updatedAt: newTs,
+          deletedAt: null,
+          categoryId: foodId,
+        },
+      ],
+    });
+
+    const remote = createInMemoryRemoteAdapter();
+    await remote.adapter.upsertBatch(
+      DEFAULT_CATEGORIES.map((c) => ({ ...c, updatedAt: legacyTs, deletedAt: null })),
+      [
+        {
+          id: 'tx-legacy',
+          name: 'Legacy Coffee',
+          value: 200,
+          createdAt: legacyTs,
+          updatedAt: legacyTs,
+          deletedAt: null,
+          categoryId: foodId,
+        },
+      ],
+    );
+
+    // Seed legacy localStorage cursor prior to IndexedDB migration
+    const syncedCategoryMap = Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.id, legacyTs]));
+    window.localStorage.setItem(
+      cursorKey,
+      JSON.stringify({
+        lastPulledAt: legacyTs,
+        lastPushedAt: legacyTs,
+        syncedCategories: syncedCategoryMap,
+        syncedTransactions: { 'tx-legacy': legacyTs },
+      }),
+    );
+
+    const fetchTxSpy = vi.spyOn(remote.adapter, 'fetchTransactionsSince');
+    const upsertSpy = vi.spyOn(remote.adapter, 'upsertBatch');
+
+    const service1 = createFirebaseSyncService({ local, remote: remote.adapter, cursorKey });
+    const summary1 = await service1.syncNow();
+
+    expect(fetchTxSpy).toHaveBeenCalledWith(legacyTs);
+    expect(summary1).toEqual({
+      pulledCategories: 0,
+      pulledTransactions: 0,
+      pushedCategories: 0,
+      pushedTransactions: 1,
+    });
+    // Cursor migrated to IndexedDB and legacy localStorage copy removed
+    expect(window.localStorage.getItem(cursorKey)).toBeNull();
+    const storedIdbCursor = fakeIdb.stores.get('sync_cursors')?.get(cursorKey) as
+      | { lastPulledAt: string | null; lastPushedAt: string | null; syncedTransactions: Record<string, string> }
+      | undefined;
+    expect(storedIdbCursor?.lastPulledAt).toBe(legacyTs);
+    expect(storedIdbCursor?.lastPushedAt).toBe(newTs);
+    expect(storedIdbCursor?.syncedTransactions['tx-new']).toBe(newTs);
+
+    // Fresh service instance reads migrated cursor from IndexedDB, advances lastPulledAt to newTs, and does not echo-push
+    fetchTxSpy.mockClear();
+    upsertSpy.mockClear();
+    const service2 = createFirebaseSyncService({ local, remote: remote.adapter, cursorKey });
+    const summary2 = await service2.syncNow();
+    expect(fetchTxSpy).toHaveBeenCalledWith(legacyTs);
+    expect(summary2).toEqual({
+      pulledCategories: 0,
+      pulledTransactions: 1,
+      pushedCategories: 0,
+      pushedTransactions: 0,
+    });
+    expect(upsertSpy).not.toHaveBeenCalled();
+
+    // Subsequent sync queries from newTs with zero pulls and zero pushes
+    fetchTxSpy.mockClear();
+    const summary3 = await service2.syncNow();
+    expect(fetchTxSpy).toHaveBeenCalledWith(newTs);
+    expect(summary3).toEqual({
+      pulledCategories: 0,
+      pulledTransactions: 0,
+      pushedCategories: 0,
+      pushedTransactions: 0,
+    });
+
+    // resetCursors clears IDB and an immediate syncNow on a fresh instance waits for deletion before reading
+    service2.resetCursors();
+    fetchTxSpy.mockClear();
+    const service3 = createFirebaseSyncService({ local, remote: remote.adapter, cursorKey });
+    await service3.syncNow();
+    expect(fetchTxSpy).toHaveBeenCalledWith(null);
+  });
+
+  it('falls back to compact localStorage cursors on QuotaExceededError without losing lastPulledAt or re-pushing synced items', async () => {
+    const foodId = DEFAULT_CATEGORIES.find((c) => c.title === 'Food')!.id;
+    const now = '2026-11-18T10:00:00.000Z';
+    const cursorKey = 'quota-fallback-cursor';
+
+    const local = createLocalStorage({ storageKey: 'quota-fallback-local' });
+    const txs: StoredTransaction[] = Array.from({ length: 50 }, (_, index) => ({
+      id: `tx-quota-${index + 1}`,
+      name: `Quota Item ${index + 1}`,
+      value: 100 + index,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      categoryId: foodId,
+    }));
+    await local.replaceSnapshot({
+      version: 1,
+      updatedAt: now,
+      categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, updatedAt: now, deletedAt: null })),
+      transactions: txs,
+    });
+
+    const originalSetItem = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
+      if (key === cursorKey && value.length > 256) {
+        throw new DOMException('Quota exceeded', 'QuotaExceededError');
+      }
+      return originalSetItem.call(this, key, value);
+    });
+
+    const remote = createInMemoryRemoteAdapter();
+    const fetchTxSpy = vi.spyOn(remote.adapter, 'fetchTransactionsSince');
+    const upsertSpy = vi.spyOn(remote.adapter, 'upsertBatch');
+
+    const service1 = createFirebaseSyncService({ local, remote: remote.adapter, cursorKey });
+    const firstSummary = await service1.syncNow();
+    expect(firstSummary.pushedTransactions).toBe(50);
+
+    const persistedRaw = window.localStorage.getItem(cursorKey);
+    expect(persistedRaw).not.toBeNull();
+    const parsedCompact = JSON.parse(persistedRaw!);
+    expect(parsedCompact).toEqual({
+      lastPulledAt: now,
+      lastPushedAt: now,
+    });
+
+    // Fresh service instance reads compact cursor, queries with lastPulledAt, and does not re-push existing 50 txs
+    fetchTxSpy.mockClear();
+    upsertSpy.mockClear();
+    const service2 = createFirebaseSyncService({ local, remote: remote.adapter, cursorKey });
+    const secondSummary = await service2.syncNow();
+    expect(fetchTxSpy).toHaveBeenCalledWith(now);
+    expect(secondSummary).toEqual({
+      pulledCategories: 0,
+      pulledTransactions: 0,
+      pushedCategories: 0,
+      pushedTransactions: 0,
+    });
+    expect(upsertSpy).not.toHaveBeenCalled();
+
+    // A newly created transaction newer than watermark is pushed alone
+    await local.createTransaction({ name: 'After Quota Tx', value: 750, categoryId: foodId });
+    const thirdSummary = await service2.syncNow();
+    expect(thirdSummary.pushedCategories).toBe(0);
+    expect(thirdSummary.pushedTransactions).toBe(1);
+  });
+
+  it('does not overwrite cleared cursors when resetCursors() is called during an in-flight syncNow()', async () => {
+    const fakeIdb = createFakeIndexedDb();
+    vi.stubGlobal('indexedDB', fakeIdb.factory);
+
+    const foodId = DEFAULT_CATEGORIES.find((c) => c.title === 'Food')!.id;
+    const remoteTs = '2026-11-18T10:00:00.000Z';
+    const cursorKey = 'inflight-reset-cursor';
+
+    let releaseFirstFetch!: () => void;
+    let fetchCalls = 0;
+    const fetchCategoriesSpy = vi.fn<FirebaseRemoteAdapter['fetchCategoriesSince']>(() => {
+      fetchCalls += 1;
+      if (fetchCalls === 1) {
+        return new Promise<StoredCategory[]>((resolve) => {
+          releaseFirstFetch = () =>
+            resolve([
+              {
+                id: foodId,
+                title: 'Food',
+                icon: 'food',
+                updatedAt: remoteTs,
+                deletedAt: null,
+              },
+            ]);
+        });
+      }
+      return Promise.resolve([]);
+    });
+
+    const remote: FirebaseRemoteAdapter = {
+      fetchCategoriesSince: fetchCategoriesSpy,
+      fetchTransactionsSince: vi.fn().mockResolvedValue([]),
+      upsertBatch: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const local = createLocalStorage({ storageKey: 'inflight-reset-local' });
+    const service = createFirebaseSyncService({ local, remote, cursorKey });
+
+    const syncPromise = service.syncNow();
+    await vi.waitFor(() => expect(releaseFirstFetch).toBeTypeOf('function'));
+
+    // Reset cursors while syncNow() is awaiting remote fetch
+    service.resetCursors();
+
+    releaseFirstFetch();
+    await syncPromise;
+
+    expect(service.getCursors().lastPulledAt).toBeNull();
+    expect(fakeIdb.stores.get('sync_cursors')?.get(cursorKey)).toBeUndefined();
+
+    // Next sync starts from null cursor instead of stale pre-reset timestamp
+    await service.syncNow();
+    expect(fetchCategoriesSpy).toHaveBeenLastCalledWith(null);
   });
 });
