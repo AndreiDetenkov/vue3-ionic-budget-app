@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => {
   return {
     isNativePlatformMock: vi.fn(() => false),
     nativeSignInWithGoogleMock: vi.fn(),
+    nativeSignOutMock: vi.fn().mockResolvedValue(undefined),
     signInWithCredentialMock: vi.fn(),
     appInstance,
     dbInstance,
@@ -81,7 +82,10 @@ vi.mock('@capacitor/core', () => ({
 }));
 
 vi.mock('@capacitor-firebase/authentication', () => ({
-  FirebaseAuthentication: { signInWithGoogle: mocks.nativeSignInWithGoogleMock },
+  FirebaseAuthentication: {
+    signInWithGoogle: mocks.nativeSignInWithGoogleMock,
+    signOut: mocks.nativeSignOutMock,
+  },
 }));
 
 vi.mock('firebase/firestore', () => ({
@@ -102,6 +106,8 @@ describe('firebaseClient', () => {
   beforeEach(() => {
     window.localStorage.clear();
     vi.clearAllMocks();
+    mocks.isNativePlatformMock.mockReturnValue(false);
+    mocks.nativeSignOutMock.mockResolvedValue(undefined);
     mocks.getAppsMock.mockReturnValue([mocks.appInstance]);
     mocks.getDocsMock.mockResolvedValue({ docs: [] });
     mocks.batchCommitMock.mockResolvedValue(undefined);
@@ -346,6 +352,66 @@ describe('firebaseClient', () => {
       await expect(controller.signInWithGoogle()).resolves.toMatchObject({ uid: 'u1' });
       expect(mocks.signInWithCredentialMock).toHaveBeenCalledWith(mocks.authInstance, { idToken: 'id-token' });
       expect(mocks.signInWithPopupMock).not.toHaveBeenCalled();
+    });
+
+    it('calls FirebaseAuthentication.signOut on native signOut and non-allowlisted sign-in, but not on web', async () => {
+      const webController = createFirebaseCloudController(
+        createLocalStorage({ storageKey: 'firebase-client-web-signout-test' }),
+        { allowedEmails: TEST_ALLOWED_EMAILS },
+      );
+      mocks.isNativePlatformMock.mockReturnValue(false);
+      await webController.signOut();
+      expect(mocks.signOutMock).toHaveBeenCalledTimes(1);
+      expect(mocks.nativeSignOutMock).not.toHaveBeenCalled();
+
+      vi.clearAllMocks();
+      const nativeController = createFirebaseCloudController(
+        createLocalStorage({ storageKey: 'firebase-client-native-signout-test' }),
+        { allowedEmails: TEST_ALLOWED_EMAILS },
+      );
+      mocks.isNativePlatformMock.mockReturnValue(true);
+
+      await nativeController.signOut();
+      expect(mocks.signOutMock).toHaveBeenCalledTimes(1);
+      expect(mocks.nativeSignOutMock).toHaveBeenCalledTimes(1);
+
+      // Non-allowlisted native sign-in clears native credentials too and preserves Access denied error even if native signOut fails
+      vi.clearAllMocks();
+      mocks.nativeSignInWithGoogleMock.mockResolvedValueOnce({ credential: { idToken: 'stranger-token' } });
+      mocks.signInWithCredentialMock.mockResolvedValueOnce({
+        user: { uid: 'u-stranger', email: 'stranger@example.com', emailVerified: true, displayName: 'Stranger' },
+      });
+      mocks.nativeSignOutMock.mockRejectedValueOnce(new Error('Native clear failed'));
+
+      await expect(nativeController.signInWithGoogle()).rejects.toThrow(
+        'Access denied: this Google account is not in the family allowlist.',
+      );
+      expect(mocks.signOutMock).toHaveBeenCalledTimes(1);
+      expect(mocks.nativeSignOutMock).toHaveBeenCalledTimes(1);
+      expect(nativeController.getCurrentUser()).toBeNull();
+
+      // Non-allowlisted user received via onAuthStateChanged on native triggers native signOut as well
+      vi.clearAllMocks();
+      nativeController.subscribeAuthState(vi.fn());
+      mocks.emitAuthChange({
+        uid: 'u-stranger-2',
+        email: 'stranger@example.com',
+        emailVerified: true,
+        displayName: 'Stranger Two',
+      });
+      await Promise.resolve();
+      expect(mocks.signOutMock).toHaveBeenCalledTimes(1);
+      expect(mocks.nativeSignOutMock).toHaveBeenCalledTimes(1);
+
+      // Native platform never falls back to signInWithRedirect
+      vi.clearAllMocks();
+      mocks.nativeSignInWithGoogleMock.mockRejectedValueOnce({
+        code: 'auth/operation-not-supported-in-this-environment',
+      });
+      await expect(nativeController.signInWithGoogle()).rejects.toMatchObject({
+        code: 'auth/operation-not-supported-in-this-environment',
+      });
+      expect(mocks.signInWithRedirectMock).not.toHaveBeenCalled();
     });
 
     it('rejects syncNow when signed out, syncs when signed in, and clears user on signOut', async () => {

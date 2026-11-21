@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createInMemoryStorage, createLocalStorage, DEFAULT_CATEGORIES, type Category } from '@/core/storage';
 
 const food: Category = { id: 'cat-food', title: 'Food', icon: 'food' };
@@ -140,8 +140,112 @@ describe('BudgetStorage adapters', () => {
   describe('createLocalStorage', () => {
     const testKey = 'budget-local-storage-test';
 
+    function createFakeIndexedDb(
+      options: {
+        failWrites?: boolean;
+        initialVersion?: number;
+        initialStores?: Record<string, Map<string, unknown>>;
+      } = {},
+    ) {
+      const stores = new Map<string, Map<string, unknown>>(
+        Object.entries(options.initialStores ?? {}).map(([name, entries]) => [name, new Map(entries)]),
+      );
+      let currentVersion = options.initialVersion ?? 0;
+
+      const factory = {
+        open(_name: string, version?: number) {
+          const targetVersion = version ?? 1;
+          const req: Record<string, unknown> = {
+            result: null,
+            error: null,
+            onsuccess: null,
+            onerror: null,
+            onupgradeneeded: null,
+          };
+
+          const db = {
+            objectStoreNames: {
+              contains: (storeName: string) => stores.has(storeName),
+            },
+            createObjectStore: (storeName: string) => {
+              if (!stores.has(storeName)) {
+                stores.set(storeName, new Map());
+              }
+              return {};
+            },
+            transaction: (storeName: string) => {
+              const tx: Record<string, unknown> = {
+                error: null,
+                oncomplete: null,
+                onerror: null,
+                onabort: null,
+                objectStore: (name: string) => {
+                  const map = stores.get(name);
+                  if (!map) {
+                    throw new Error(`Missing object store: ${name}`);
+                  }
+                  return {
+                    get: (key: string) => {
+                      const getReq: Record<string, unknown> = {
+                        result: undefined,
+                        error: null,
+                        onsuccess: null,
+                        onerror: null,
+                      };
+                      queueMicrotask(() => {
+                        const val = map.get(key);
+                        getReq.result = val === undefined ? undefined : structuredClone(val);
+                        (getReq.onsuccess as (() => void) | null)?.();
+                        (tx.oncomplete as (() => void) | null)?.();
+                      });
+                      return getReq;
+                    },
+                    put: (value: unknown, key: string) => {
+                      queueMicrotask(() => {
+                        if (options.failWrites) {
+                          tx.error = new DOMException('IDB write failed', 'AbortError');
+                          (tx.onerror as (() => void) | null)?.();
+                          return;
+                        }
+                        map.set(key, structuredClone(value));
+                        (tx.oncomplete as (() => void) | null)?.();
+                      });
+                      return {};
+                    },
+                  };
+                },
+              };
+              if (!stores.has(storeName)) {
+                throw new Error(`Missing object store: ${storeName}`);
+              }
+              return tx;
+            },
+            close: () => {},
+          };
+
+          req.result = db;
+          queueMicrotask(() => {
+            if (targetVersion > currentVersion) {
+              currentVersion = targetVersion;
+              (req.onupgradeneeded as (() => void) | null)?.();
+            }
+            (req.onsuccess as (() => void) | null)?.();
+          });
+
+          return req as unknown as IDBOpenDBRequest;
+        },
+      } as unknown as IDBFactory;
+
+      return { factory, stores };
+    }
+
     beforeEach(() => {
       window.localStorage.clear();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
     });
 
     it('seeds DEFAULT_CATEGORIES with original Supabase UUIDs and English titles when storage is empty', async () => {
@@ -283,6 +387,108 @@ describe('BudgetStorage adapters', () => {
       });
       expect(transactions).toHaveLength(1);
       expect(transactions[0].id).toBe('tx-active');
+    });
+
+    it('stores snapshots in IndexedDB without duplicating to localStorage and migrates legacy localStorage snapshots', async () => {
+      const fakeIdb = createFakeIndexedDb();
+      vi.stubGlobal('indexedDB', fakeIdb.factory);
+
+      const legacyKey = 'budget-idb-migration-test';
+      window.localStorage.setItem(
+        legacyKey,
+        JSON.stringify({
+          version: 1,
+          updatedAt: '2026-10-15T12:00:00.000Z',
+          categories: [{ ...food, updatedAt: '2026-10-01T00:00:00.000Z', deletedAt: null }],
+          transactions: [
+            {
+              id: 'tx-legacy-1',
+              name: 'Legacy Coffee',
+              value: 150,
+              createdAt: '2026-10-10T10:00:00.000Z',
+              updatedAt: '2026-10-10T10:00:00.000Z',
+              deletedAt: null,
+              categoryId: food.id,
+            },
+          ],
+        }),
+      );
+
+      const storage1 = createLocalStorage({ storageKey: legacyKey });
+      await storage1.createTransaction({ name: 'Fresh IDB Tx', value: 250, categoryId: food.id });
+
+      // Legacy localStorage copy is removed and not rewritten on IndexedDB success
+      expect(window.localStorage.getItem(legacyKey)).toBeNull();
+      const storedIdbSnapshot = fakeIdb.stores.get('snapshots')?.get(legacyKey) as
+        { transactions: Array<{ name: string }> } | undefined;
+      expect(storedIdbSnapshot?.transactions.map((t) => t.name)).toEqual(['Legacy Coffee', 'Fresh IDB Tx']);
+
+      // Fresh instance reads migrated + newly created data directly from IndexedDB
+      const storage2 = createLocalStorage({ storageKey: legacyKey });
+      const loaded = await storage2.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+      expect(loaded.map((t) => t.name)).toEqual(['Fresh IDB Tx', 'Legacy Coffee']);
+      expect(window.localStorage.getItem(legacyKey)).toBeNull();
+    });
+
+    it('falls back to window.localStorage when IndexedDB writes fail', async () => {
+      const fakeIdb = createFakeIndexedDb({ failWrites: true });
+      vi.stubGlobal('indexedDB', fakeIdb.factory);
+
+      const fallbackKey = 'budget-idb-fail-fallback';
+      const storage1 = createLocalStorage({ storageKey: fallbackKey, categories: [food] });
+      await storage1.createTransaction({ name: 'Fallback Tx', value: 420, categoryId: food.id });
+
+      expect(window.localStorage.getItem(fallbackKey)).not.toBeNull();
+      const storage2 = createLocalStorage({ storageKey: fallbackKey });
+      const loaded = await storage2.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+      expect(loaded.map((t) => t.name)).toEqual(['Fallback Tx']);
+    });
+
+    it('upgrades an existing v1 IndexedDB to v2 while preserving snapshots and creating sync_cursors', async () => {
+      const upgradeKey = 'budget-v1-upgrade-test';
+      const fakeIdb = createFakeIndexedDb({
+        initialVersion: 1,
+        initialStores: {
+          snapshots: new Map([
+            [
+              upgradeKey,
+              {
+                version: 1,
+                updatedAt: '2026-10-15T12:00:00.000Z',
+                categories: [{ ...food, updatedAt: '2026-10-01T00:00:00.000Z', deletedAt: null }],
+                transactions: [
+                  {
+                    id: 'tx-v1-1',
+                    name: 'Existing V1 Tx',
+                    value: 190,
+                    createdAt: '2026-10-10T10:00:00.000Z',
+                    updatedAt: '2026-10-10T10:00:00.000Z',
+                    deletedAt: null,
+                    categoryId: food.id,
+                  },
+                ],
+              },
+            ],
+          ]),
+        },
+      });
+      vi.stubGlobal('indexedDB', fakeIdb.factory);
+
+      const storage = createLocalStorage({ storageKey: upgradeKey });
+      const loaded = await storage.getTransactionsByRange({
+        from: '2000-01-01T00:00:00.000Z',
+        to: '2100-01-01T00:00:00.000Z',
+      });
+
+      expect(loaded.map((t) => t.name)).toEqual(['Existing V1 Tx']);
+      expect(fakeIdb.stores.has('snapshots')).toBe(true);
+      expect(fakeIdb.stores.has('sync_cursors')).toBe(true);
     });
   });
 });

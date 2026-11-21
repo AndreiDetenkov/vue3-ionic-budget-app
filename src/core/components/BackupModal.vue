@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue';
+import { Capacitor } from '@capacitor/core';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
 import {
@@ -36,6 +39,13 @@ const busyAction = shallowRef<BusyAction>(null);
 const currentUser = shallowRef<FirebaseAuthUser | null>(null);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 const csvInputRef = useTemplateRef<HTMLInputElement>('csvInputRef');
+
+const MAX_IMPORT_FILE_BYTES = 50 * 1024 * 1024;
+const isNativePlatform = Capacitor.isNativePlatform();
+const jsonFileAccept = isNativePlatform ? undefined : 'application/json,text/plain,application/octet-stream,.json';
+const csvFileAccept = isNativePlatform
+  ? undefined
+  : 'text/csv,text/comma-separated-values,text/plain,application/octet-stream,.csv';
 
 let unsubscribeAuth: (() => void) | null = null;
 
@@ -92,6 +102,44 @@ function downloadJsonFile(filename: string, content: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function isShareCanceledError(err: unknown): boolean {
+  if (err instanceof Error && err.name === 'AbortError') {
+    return true;
+  }
+  const message =
+    typeof err === 'object' && err !== null && 'message' in err
+      ? String((err as { message?: unknown }).message ?? '')
+      : String(err);
+  return message.toLowerCase().includes('cancel');
+}
+
+async function exportJsonFile(filename: string, content: string): Promise<boolean> {
+  if (Capacitor.isNativePlatform()) {
+    const { uri } = await Filesystem.writeFile({
+      path: filename,
+      data: content,
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8,
+    });
+    try {
+      await Share.share({
+        title: filename,
+        files: [uri],
+        dialogTitle: 'Export Backup',
+      });
+      return true;
+    } catch (err) {
+      if (isShareCanceledError(err)) {
+        return false;
+      }
+      throw err;
+    }
+  }
+
+  downloadJsonFile(filename, content);
+  return true;
+}
+
 async function runAction(action: Exclude<BusyAction, null>, task: () => Promise<void>): Promise<void> {
   if (busyAction.value) {
     return;
@@ -120,6 +168,9 @@ async function handleSelectedFile(
 
   try {
     await runAction(action, async () => {
+      if (file.size > MAX_IMPORT_FILE_BYTES) {
+        throw new Error('File is too large to import (max 50 MB)');
+      }
       const rawText = await readFileAsText(file);
       const successMessage = await importText(rawText);
       await props.onRestored?.();
@@ -134,8 +185,10 @@ const handleExport = () =>
   runAction('export', async () => {
     const json = await exportBackupJson(getLocalStorage());
     const filename = `budget-backup-${dayjs().format('YYYY-MM-DD')}.json`;
-    downloadJsonFile(filename, json);
-    await showSuccessToast('Backup exported');
+    const exported = await exportJsonFile(filename, json);
+    if (exported) {
+      await showSuccessToast('Backup exported');
+    }
   });
 
 const triggerImport = () => {
@@ -297,7 +350,7 @@ const handleSignOut = () =>
             ref="fileInputRef"
             data-testid="backup-file-input"
             type="file"
-            accept="application/json,.json"
+            :accept="jsonFileAccept"
             class="hidden-file-input"
             @change="handleFileSelected"
           />
@@ -321,7 +374,7 @@ const handleSignOut = () =>
             ref="csvInputRef"
             data-testid="csv-file-input"
             type="file"
-            accept="text/csv,.csv"
+            :accept="csvFileAccept"
             class="hidden-file-input"
             @change="handleCsvFileSelected"
           />

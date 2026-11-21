@@ -14,6 +14,26 @@ import {
 } from '@/core/storage';
 import BackupModal from './BackupModal.vue';
 
+const capacitorMocks = vi.hoisted(() => ({
+  isNativePlatformMock: vi.fn(() => false),
+  writeFileMock: vi.fn(),
+  shareMock: vi.fn(),
+}));
+
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: capacitorMocks.isNativePlatformMock },
+}));
+
+vi.mock('@capacitor/filesystem', () => ({
+  Directory: { Cache: 'CACHE' },
+  Encoding: { UTF8: 'utf8' },
+  Filesystem: { writeFile: capacitorMocks.writeFileMock },
+}));
+
+vi.mock('@capacitor/share', () => ({
+  Share: { share: capacitorMocks.shareMock },
+}));
+
 const showSuccessToastMock = vi.fn();
 const showErrorToastMock = vi.fn();
 
@@ -104,6 +124,9 @@ describe('BackupModal.vue', () => {
     window.localStorage.clear();
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    capacitorMocks.isNativePlatformMock.mockReturnValue(false);
+    capacitorMocks.writeFileMock.mockResolvedValue({ uri: 'file:///cache/budget-backup.json' });
+    capacitorMocks.shareMock.mockResolvedValue({});
 
     localStorageAdapter = createLocalStorage({
       storageKey: 'backup-modal-test',
@@ -193,6 +216,117 @@ describe('BackupModal.vue', () => {
     await flushPromises();
 
     expect(showErrorToastMock).toHaveBeenCalledWith('Disk read failed');
+    expect(showSuccessToastMock).not.toHaveBeenCalled();
+  });
+
+  it('exports JSON backup via Filesystem and Share on native platforms', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-20T10:00:00.000Z'));
+    capacitorMocks.isNativePlatformMock.mockReturnValue(true);
+    capacitorMocks.writeFileMock.mockResolvedValueOnce({ uri: 'file:///cache/budget-backup-2026-11-20.json' });
+
+    await localStorageAdapter.createTransaction({
+      name: 'Native Coffee',
+      value: 300,
+      categoryId: foodCategory.id,
+    });
+
+    const createObjectUrlMock = vi.fn();
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectUrlMock, configurable: true, writable: true });
+
+    const wrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="export-backup-btn"]').trigger('click');
+    await flushPromises();
+
+    expect(createObjectUrlMock).not.toHaveBeenCalled();
+    expect(capacitorMocks.writeFileMock).toHaveBeenCalledWith({
+      path: 'budget-backup-2026-11-20.json',
+      data: expect.stringContaining('"Native Coffee"'),
+      directory: 'CACHE',
+      encoding: 'utf8',
+    });
+    expect(capacitorMocks.shareMock).toHaveBeenCalledWith({
+      title: 'budget-backup-2026-11-20.json',
+      files: ['file:///cache/budget-backup-2026-11-20.json'],
+      dialogTitle: 'Export Backup',
+    });
+    expect(showSuccessToastMock).toHaveBeenCalledWith('Backup exported');
+    expect(showErrorToastMock).not.toHaveBeenCalled();
+  });
+
+  it('suppresses toasts when native share sheet is canceled and shows error toast on real export failure', async () => {
+    capacitorMocks.isNativePlatformMock.mockReturnValue(true);
+    capacitorMocks.shareMock.mockRejectedValueOnce(new Error('Share canceled'));
+
+    const wrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="export-backup-btn"]').trigger('click');
+    await flushPromises();
+
+    expect(showSuccessToastMock).not.toHaveBeenCalled();
+    expect(showErrorToastMock).not.toHaveBeenCalled();
+
+    capacitorMocks.writeFileMock.mockRejectedValueOnce(new Error('Cache directory unavailable'));
+    await wrapper.find('[data-testid="export-backup-btn"]').trigger('click');
+    await flushPromises();
+
+    expect(showErrorToastMock).toHaveBeenCalledWith('Cache directory unavailable');
+    expect(showSuccessToastMock).not.toHaveBeenCalled();
+  });
+
+  it('omits accept attribute on native file inputs and relaxes MIME filters on web', async () => {
+    const webWrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    const webJsonAccept = webWrapper.find('[data-testid="backup-file-input"]').attributes('accept');
+    const webCsvAccept = webWrapper.find('[data-testid="csv-file-input"]').attributes('accept');
+    expect(webJsonAccept).toContain('text/plain');
+    expect(webJsonAccept).toContain('application/octet-stream');
+    expect(webCsvAccept).toContain('text/plain');
+    expect(webCsvAccept).toContain('application/octet-stream');
+
+    capacitorMocks.isNativePlatformMock.mockReturnValue(true);
+    const nativeWrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    expect(nativeWrapper.find('[data-testid="backup-file-input"]').attributes('accept')).toBeUndefined();
+    expect(nativeWrapper.find('[data-testid="csv-file-input"]').attributes('accept')).toBeUndefined();
+  });
+
+  it('rejects oversized import files before reading them', async () => {
+    const wrapper = mount(BackupModal, {
+      props: { modelValue: true },
+      global: { stubs: { IonModal: IonModalStub } },
+    });
+    await flushPromises();
+
+    const fileInput = wrapper.find('[data-testid="backup-file-input"]');
+    const oversizedFile = new File(['{}'], 'huge.json', { type: 'application/json' });
+    const textMock = vi.fn();
+    Object.defineProperty(oversizedFile, 'text', { value: textMock, configurable: true });
+    Object.defineProperty(oversizedFile, 'size', { value: 50 * 1024 * 1024 + 1, configurable: true });
+    Object.defineProperty(fileInput.element, 'files', { value: [oversizedFile], configurable: true });
+
+    await fileInput.trigger('change');
+    await flushPromises();
+
+    expect(textMock).not.toHaveBeenCalled();
+    expect(showErrorToastMock).toHaveBeenCalledWith('File is too large to import (max 50 MB)');
     expect(showSuccessToastMock).not.toHaveBeenCalled();
   });
 

@@ -1,4 +1,5 @@
 import { DEFAULT_CATEGORIES } from './defaultCategories';
+import { hasIndexedDb, IDB_SNAPSHOTS_STORE, readIdbValue, writeIdbValue } from './idb';
 import type {
   Category,
   CreateTransactionInput,
@@ -12,8 +13,6 @@ import type {
 } from './types';
 
 const DEFAULT_STORAGE_KEY = 'budget-app-local-snapshot-v1';
-const IDB_DB_NAME = 'budget-app-db';
-const IDB_STORE_NAME = 'snapshots';
 
 function cloneCategory(category: Category): Category {
   return {
@@ -54,41 +53,12 @@ function cloneSnapshot(snapshot: LocalStorageSnapshot): LocalStorageSnapshot {
   };
 }
 
-function hasIndexedDb(): boolean {
-  return typeof indexedDB !== 'undefined' && indexedDB !== null;
-}
-
-function openSnapshotDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(IDB_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
-        db.createObjectStore(IDB_STORE_NAME);
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error('Failed to open IndexedDB'));
-  });
-}
-
 async function readPersistedSnapshot(storageKey: string): Promise<LocalStorageSnapshot | null> {
   if (hasIndexedDb()) {
     try {
-      const db = await openSnapshotDb();
-      try {
-        const result = await new Promise<LocalStorageSnapshot | null>((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE_NAME, 'readonly');
-          const store = tx.objectStore(IDB_STORE_NAME);
-          const req = store.get(storageKey);
-          req.onsuccess = () => resolve((req.result as LocalStorageSnapshot | undefined) ?? null);
-          req.onerror = () => reject(req.error ?? new Error('Failed to read from IndexedDB'));
-        });
-        if (result) {
-          return cloneSnapshot(result);
-        }
-      } finally {
-        db.close();
+      const result = await readIdbValue<LocalStorageSnapshot>(IDB_SNAPSHOTS_STORE, storageKey);
+      if (result) {
+        return cloneSnapshot(result);
       }
     } catch {
       // Fallback to window.localStorage if IndexedDB fails in restricted environments
@@ -111,32 +81,27 @@ async function readPersistedSnapshot(storageKey: string): Promise<LocalStorageSn
 }
 
 async function writePersistedSnapshot(storageKey: string, snapshot: LocalStorageSnapshot): Promise<void> {
-  const cloned = cloneSnapshot(snapshot);
-
-  if (typeof window !== 'undefined' && window.localStorage) {
+  if (hasIndexedDb()) {
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(cloned));
+      await writeIdbValue(IDB_SNAPSHOTS_STORE, storageKey, snapshot);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          window.localStorage.removeItem(storageKey);
+        } catch {
+          // Ignore legacy localStorage cleanup errors
+        }
+      }
+      return;
     } catch {
-      // Continue to IndexedDB persistence if localStorage quota is exceeded
+      // Fall back to window.localStorage if IndexedDB fails
     }
   }
 
-  if (hasIndexedDb()) {
+  if (typeof window !== 'undefined' && window.localStorage) {
     try {
-      const db = await openSnapshotDb();
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
-          const store = tx.objectStore(IDB_STORE_NAME);
-          store.put(cloned, storageKey);
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error ?? new Error('Failed to write to IndexedDB'));
-        });
-      } finally {
-        db.close();
-      }
+      window.localStorage.setItem(storageKey, JSON.stringify(snapshot));
     } catch {
-      // Already persisted to window.localStorage fallback
+      // Ignore storage quota errors in fallback environment
     }
   }
 }

@@ -1,4 +1,5 @@
 import { mergeSnapshots } from './backup';
+import { deleteIdbValue, hasIndexedDb, IDB_SYNC_CURSORS_STORE, readIdbValue, writeIdbValue } from './idb';
 import type { LocalBudgetStorage, LocalStorageSnapshot, StoredCategory, StoredTransaction } from './types';
 
 export const MAX_FIRESTORE_BATCH_SIZE = 450;
@@ -43,8 +44,32 @@ type SyncBatch = {
   transactions: StoredTransaction[];
 };
 
+const pendingCursorClears = new Map<string, Promise<void>>();
+
+function isPlainRecord(raw: unknown): raw is Record<string, unknown> {
+  return typeof raw === 'object' && raw !== null && !Array.isArray(raw);
+}
+
+function emptyCursorState(): SyncCursorState {
+  return {
+    lastPulledAt: null,
+    lastPushedAt: null,
+    syncedCategories: {},
+    syncedTransactions: {},
+  };
+}
+
+function cloneCursorState(state: SyncCursorState): SyncCursorState {
+  return {
+    lastPulledAt: state.lastPulledAt,
+    lastPushedAt: state.lastPushedAt,
+    syncedCategories: { ...(state.syncedCategories ?? {}) },
+    syncedTransactions: { ...(state.syncedTransactions ?? {}) },
+  };
+}
+
 function parseVersionMap(raw: unknown): Record<string, string> {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+  if (!isPlainRecord(raw)) {
     return {};
   }
 
@@ -57,56 +82,44 @@ function parseVersionMap(raw: unknown): Record<string, string> {
   return result;
 }
 
-function readCursorState(cursorKey: string): SyncCursorState {
+function parseCursorState(raw: unknown): { state: SyncCursorState; compactOnly: boolean } | null {
+  if (!isPlainRecord(raw)) {
+    return null;
+  }
+
+  const lastPulledAt = typeof raw.lastPulledAt === 'string' ? raw.lastPulledAt : null;
+  const lastPushedAt = typeof raw.lastPushedAt === 'string' ? raw.lastPushedAt : null;
+  const hasVersionMaps = isPlainRecord(raw.syncedCategories) && isPlainRecord(raw.syncedTransactions);
+  const compactOnly = !hasVersionMaps && (lastPulledAt !== null || lastPushedAt !== null);
+
+  return {
+    state: {
+      lastPulledAt,
+      lastPushedAt,
+      syncedCategories: parseVersionMap(raw.syncedCategories),
+      syncedTransactions: parseVersionMap(raw.syncedTransactions),
+    },
+    compactOnly,
+  };
+}
+
+function readLocalStorageCursorState(cursorKey: string): { state: SyncCursorState; compactOnly: boolean } | null {
   if (typeof window === 'undefined' || !window.localStorage) {
-    return {
-      lastPulledAt: null,
-      lastPushedAt: null,
-      syncedCategories: {},
-      syncedTransactions: {},
-    };
+    return null;
   }
 
   try {
     const raw = window.localStorage.getItem(cursorKey);
     if (!raw) {
-      return {
-        lastPulledAt: null,
-        lastPushedAt: null,
-        syncedCategories: {},
-        syncedTransactions: {},
-      };
+      return null;
     }
-    const parsed = JSON.parse(raw) as Partial<SyncCursorState>;
-    return {
-      lastPulledAt: typeof parsed.lastPulledAt === 'string' ? parsed.lastPulledAt : null,
-      lastPushedAt: typeof parsed.lastPushedAt === 'string' ? parsed.lastPushedAt : null,
-      syncedCategories: parseVersionMap(parsed.syncedCategories),
-      syncedTransactions: parseVersionMap(parsed.syncedTransactions),
-    };
+    return parseCursorState(JSON.parse(raw));
   } catch {
-    return {
-      lastPulledAt: null,
-      lastPushedAt: null,
-      syncedCategories: {},
-      syncedTransactions: {},
-    };
+    return null;
   }
 }
 
-function writeCursorState(cursorKey: string, state: SyncCursorState): void {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(cursorKey, JSON.stringify(state));
-  } catch {
-    // Ignore storage quota errors when saving sync cursors
-  }
-}
-
-function clearCursorState(cursorKey: string): void {
+function removeLocalStorageCursor(cursorKey: string): void {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
   }
@@ -114,7 +127,79 @@ function clearCursorState(cursorKey: string): void {
   try {
     window.localStorage.removeItem(cursorKey);
   } catch {
-    // Ignore storage errors when resetting sync cursors
+    // Ignore storage errors when resetting or cleaning up sync cursors
+  }
+}
+
+async function readCursorStateAsync(cursorKey: string): Promise<{ state: SyncCursorState; compactOnly: boolean }> {
+  while (pendingCursorClears.has(cursorKey)) {
+    await pendingCursorClears.get(cursorKey);
+  }
+
+  if (hasIndexedDb()) {
+    try {
+      const idbRaw = await readIdbValue<unknown>(IDB_SYNC_CURSORS_STORE, cursorKey);
+      const parsed = parseCursorState(idbRaw);
+      if (parsed) {
+        return parsed;
+      }
+    } catch {
+      // Fall back to window.localStorage if IndexedDB fails
+    }
+  }
+
+  return readLocalStorageCursorState(cursorKey) ?? { state: emptyCursorState(), compactOnly: false };
+}
+
+async function writeCursorStateAsync(
+  cursorKey: string,
+  state: SyncCursorState,
+  compactOnly = false,
+  compactLastPushedAt: string | null = state.lastPushedAt,
+): Promise<void> {
+  const cloned = cloneCursorState(state);
+  const compactPayload = { lastPulledAt: cloned.lastPulledAt, lastPushedAt: compactLastPushedAt };
+  const payload = compactOnly ? compactPayload : cloned;
+
+  if (hasIndexedDb()) {
+    try {
+      await writeIdbValue(IDB_SYNC_CURSORS_STORE, cursorKey, payload);
+      removeLocalStorageCursor(cursorKey);
+      return;
+    } catch {
+      // Fall back to window.localStorage if IndexedDB fails
+    }
+  }
+
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(cursorKey, JSON.stringify(payload));
+  } catch {
+    try {
+      window.localStorage.setItem(cursorKey, JSON.stringify(compactPayload));
+    } catch {
+      // Ignore storage quota errors even for compact fallback cursors
+    }
+  }
+}
+
+function clearCursorState(cursorKey: string): void {
+  removeLocalStorageCursor(cursorKey);
+
+  if (hasIndexedDb()) {
+    const clearPromise = deleteIdbValue(IDB_SYNC_CURSORS_STORE, cursorKey)
+      .catch(() => {
+        // Ignore IDB errors when resetting sync cursors
+      })
+      .finally(() => {
+        if (pendingCursorClears.get(cursorKey) === clearPromise) {
+          pendingCursorClears.delete(cursorKey);
+        }
+      });
+    pendingCursorClears.set(cursorKey, clearPromise);
   }
 }
 
@@ -138,8 +223,10 @@ function filterOutgoingItems<T extends { id: string; updatedAt: string }>(
   syncedVersions: Readonly<Record<string, string>>,
   pulledVersions: ReadonlyMap<string, string>,
   skipUneditedBaselineEpoch = false,
+  fallbackWatermarkIso: string | null = null,
 ): T[] {
   const baselineMs = Date.parse(BASELINE_SEED_EPOCH);
+  const watermarkMs = fallbackWatermarkIso ? Date.parse(fallbackWatermarkIso) : Number.NaN;
 
   return items.filter((item) => {
     const itemMs = Date.parse(item.updatedAt);
@@ -151,6 +238,11 @@ function filterOutgoingItems<T extends { id: string; updatedAt: string }>(
         return itemMs > knownMs;
       }
       return item.updatedAt !== knownRemoteUpdatedAt;
+    }
+
+    // shortcut: in no-IDB + localStorage quota fallback, items at or older than watermark are treated as synced; upgrade only if non-IDB environments need full version maps
+    if (!Number.isNaN(watermarkMs) && !Number.isNaN(itemMs) && itemMs <= watermarkMs) {
+      return false;
     }
 
     if (skipUneditedBaselineEpoch && !Number.isNaN(itemMs) && itemMs === baselineMs) {
@@ -214,9 +306,12 @@ function buildBatches(
 export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): FirebaseSyncService {
   const cursorKey = options.cursorKey ?? DEFAULT_SYNC_CURSOR_KEY;
   let activeSync: Promise<FirebaseSyncSummary> | null = null;
+  let cachedCursors: SyncCursorState | null = null;
+  let resetEpoch = 0;
 
   async function executeSync(): Promise<FirebaseSyncSummary> {
-    const cursors = readCursorState(cursorKey);
+    const startEpoch = resetEpoch;
+    const { state: cursors, compactOnly } = await readCursorStateAsync(cursorKey);
 
     // Pull phase: fetch remote deltas updated since lastPulledAt
     const [remoteCategories, remoteTransactions] = await Promise.all([
@@ -254,7 +349,13 @@ export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): 
       nextSyncedTransactions[id] = updatedAt;
     }
 
-    const remoteHadCategories = remoteCategories.length > 0 || Object.keys(cursors.syncedCategories ?? {}).length > 0;
+    const fallbackWatermarkIso = compactOnly
+      ? pickMaxTimestamp(cursors.lastPulledAt, cursors.lastPushedAt ? [cursors.lastPushedAt] : [])
+      : null;
+    const remoteHadCategories =
+      remoteCategories.length > 0 ||
+      Object.keys(cursors.syncedCategories ?? {}).length > 0 ||
+      fallbackWatermarkIso !== null;
 
     // Push phase: send only items missing on remote or strictly newer than synced version
     let outgoingCategories = filterOutgoingItems(
@@ -262,11 +363,14 @@ export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): 
       nextSyncedCategories,
       pulledCategoryVersions,
       remoteHadCategories,
+      fallbackWatermarkIso,
     );
     let outgoingTransactions = filterOutgoingItems(
       workingSnapshot.transactions,
       nextSyncedTransactions,
       pulledTransactionVersions,
+      false,
+      fallbackWatermarkIso,
     );
 
     const pulledCutoffMs = newLastPulledAt ? Date.parse(newLastPulledAt) : Number.NaN;
@@ -292,6 +396,7 @@ export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): 
     }
 
     let nextLastPushedAt = cursors.lastPushedAt;
+    let pushCompleted = false;
     const batches = buildBatches(outgoingCategories, outgoingTransactions, MAX_FIRESTORE_BATCH_SIZE);
 
     try {
@@ -308,13 +413,26 @@ export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): 
           ...batch.transactions.map((t) => t.updatedAt),
         ]);
       }
+      pushCompleted = true;
     } finally {
-      writeCursorState(cursorKey, {
-        lastPulledAt: newLastPulledAt,
-        lastPushedAt: nextLastPushedAt,
-        syncedCategories: nextSyncedCategories,
-        syncedTransactions: nextSyncedTransactions,
-      });
+      if (startEpoch === resetEpoch) {
+        const wasInitialPushToEmptyRemote =
+          pushCompleted &&
+          cursors.lastPulledAt === null &&
+          remoteCategories.length === 0 &&
+          remoteTransactions.length === 0 &&
+          nextLastPushedAt !== null;
+        const finalLastPulledAt = wasInitialPushToEmptyRemote ? nextLastPushedAt : newLastPulledAt;
+        const nextCursorState: SyncCursorState = {
+          lastPulledAt: finalLastPulledAt,
+          lastPushedAt: nextLastPushedAt,
+          syncedCategories: nextSyncedCategories,
+          syncedTransactions: nextSyncedTransactions,
+        };
+        const compactLastPushedAt = pushCompleted ? nextLastPushedAt : cursors.lastPushedAt;
+        cachedCursors = cloneCursorState(nextCursorState);
+        await writeCursorStateAsync(cursorKey, nextCursorState, compactOnly, compactLastPushedAt);
+      }
     }
 
     return {
@@ -336,10 +454,14 @@ export function createFirebaseSyncService(options: FirebaseSyncServiceOptions): 
     },
 
     getCursors(): SyncCursorState {
-      return readCursorState(cursorKey);
+      return cachedCursors
+        ? cloneCursorState(cachedCursors)
+        : (readLocalStorageCursorState(cursorKey)?.state ?? emptyCursorState());
     },
 
     resetCursors(): void {
+      resetEpoch += 1;
+      cachedCursors = emptyCursorState();
       clearCursorState(cursorKey);
     },
 
