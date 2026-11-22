@@ -114,14 +114,28 @@ describe('android e2e helpers', () => {
       expect(reports.lastYear.totalAmount).toBe('57 000');
       expect(reports.lastYear.reports).toHaveLength(2);
     });
+
+    it('uses explicit device timezone offset across UTC month/year boundaries', () => {
+      // 2026-11-30T20:00:00Z is 2026-12-01T02:00:00 in +06:00 (December, not November)
+      const instant = new Date('2026-11-30T20:00:00.000Z');
+      const fixture = buildValidBackupFixture({ now: instant, tzOffsetMinutes: 360 });
+      const reports = computeExpectedReports(fixture.transactions, instant, E2E_DEFAULT_CATEGORIES, 360);
+
+      expect(reports.currentMonth.totalAmount).toBe('3 500');
+      expect(reports.lastMonth.totalAmount).toBe('12 000');
+      expect(reports.currentYear.totalAmount).toBe('15 500');
+      expect(reports.lastYear.totalAmount).toBe('45 000');
+    });
   });
 
   describe('auditLogcat', () => {
-    it('passes on clean logcat and flags app crashes, FileProvider errors, and uncaught JS errors', () => {
+    it('passes on clean logcat and flags app crashes, FileProvider errors, and uncaught JS errors in both -v threadtime and -v time formats', () => {
       const cleanLog = `
 11-22 20:00:00.000  1000  1000 I Capacitor/Console: File: https://localhost/assets/index.js - Line 1 - Msg: ready
 11-22 20:00:01.000  9999  9999 E AndroidRuntime: FATAL EXCEPTION: main
 11-22 20:00:01.000  9999  9999 E AndroidRuntime: Process: com.other.unrelated, PID: 9999
+11-22 20:00:02.000 E/AndroidRuntime( 9999): FATAL EXCEPTION: main
+11-22 20:00:02.000 E/AndroidRuntime( 9999): Process: com.other.unrelated, PID: 9999
 `;
       expect(auditLogcat(cleanLog)).toEqual({
         fatalCrashes: [],
@@ -129,16 +143,26 @@ describe('android e2e helpers', () => {
         jsErrors: [],
       });
 
-      const dirtyLog = `
+      const threadtimeDirtyLog = `
 11-22 20:01:00.000  5000  5000 E AndroidRuntime: FATAL EXCEPTION: main
 11-22 20:01:00.000  5000  5000 E AndroidRuntime: Process: com.budget.app, PID: 5000
 11-22 20:01:01.000  5000  5000 E FileProvider: Failed to find configured root that contains /data/user/0/com.budget.app/cache/b.json
 11-22 20:01:02.000  5000  5000 I chromium: [INFO:CONSOLE(12)] "Uncaught TypeError: Cannot read properties of null"
+11-22 20:01:03.000  5000  5000 E Capacitor/Console: Unhandled rejection
 `;
-      const result = auditLogcat(dirtyLog);
-      expect(result.fatalCrashes).toHaveLength(1);
-      expect(result.fileProviderErrors).toHaveLength(1);
-      expect(result.jsErrors).toHaveLength(1);
+      const threadtimeResult = auditLogcat(threadtimeDirtyLog);
+      expect(threadtimeResult.fatalCrashes).toHaveLength(1);
+      expect(threadtimeResult.fileProviderErrors).toHaveLength(1);
+      expect(threadtimeResult.jsErrors).toHaveLength(2);
+
+      const timeFormatDirtyLog = `
+11-22 20:02:00.000 E/AndroidRuntime( 5000): FATAL EXCEPTION: main
+11-22 20:02:00.000 E/AndroidRuntime( 5000): Process: com.budget.app, PID: 5000
+11-22 20:02:01.000 E/Capacitor/Console( 5000): File: https://localhost/ - Line 1 - Msg: ReferenceError
+`;
+      const timeResult = auditLogcat(timeFormatDirtyLog);
+      expect(timeResult.fatalCrashes).toHaveLength(1);
+      expect(timeResult.jsErrors).toHaveLength(1);
     });
   });
 

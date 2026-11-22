@@ -122,6 +122,8 @@ function parseOnlineDevices(adbDevicesOutput) {
 
 function parseAndroidDate(rawDateOutput) {
   const trimmed = rawDateOutput.trim();
+  const tzMatch = /([+-])(\d{2})(\d{2})$/.exec(trimmed);
+  const tzOffsetMinutes = tzMatch ? (tzMatch[1] === '-' ? -1 : 1) * (Number(tzMatch[2]) * 60 + Number(tzMatch[3])) : 0;
   const normalized = trimmed.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
   const parsed = new Date(normalized);
   if (Number.isNaN(parsed.getTime())) {
@@ -130,7 +132,34 @@ function parseAndroidDate(rawDateOutput) {
   return {
     date: parsed,
     ymd: trimmed.slice(0, 10),
+    tzOffsetMinutes,
   };
+}
+
+const SAFE_FILENAME_RE = /^[A-Za-z0-9._-]+$/;
+const SAFE_RELATIVE_PATH_RE = /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/;
+const SAFE_KEYEVENT_RE = /^(?:KEYCODE_[A-Z0-9_]+|\d+)$/;
+
+function assertSafeFilename(filename) {
+  if (typeof filename !== 'string' || !SAFE_FILENAME_RE.test(filename) || filename === '.' || filename === '..') {
+    throw new Error(`Unsafe filename: "${filename}"`);
+  }
+  return filename;
+}
+
+function assertSafeRelativeCachePath(relativePath) {
+  if (
+    typeof relativePath !== 'string' ||
+    !SAFE_RELATIVE_PATH_RE.test(relativePath) ||
+    relativePath.split('/').some((seg) => seg === '.' || seg === '..')
+  ) {
+    throw new Error(`Unsafe relative cache path: "${relativePath}"`);
+  }
+  return relativePath;
+}
+
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, "'\\''")}'`;
 }
 
 export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd() } = {}) {
@@ -144,12 +173,28 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
     return runSync(adbBin, finalArgs, opts);
   }
 
+  function assertSafeMutationTarget() {
+    if (!serial) {
+      throw new Error('No target Android device serial selected.');
+    }
+    if (!serial.startsWith('emulator-') && process.env.ANDROID_E2E_ALLOW_DEVICE !== '1') {
+      throw new Error(
+        `Refusing destructive operation on non-emulator device "${serial}". Set ANDROID_E2E_ALLOW_DEVICE=1 to override.`,
+      );
+    }
+  }
+
   async function ensureEmulatorReady() {
     const existing = parseOnlineDevices(runSync(adbBin, ['devices']));
-    if (serial && existing.includes(serial)) {
-      // keep specified serial
+    if (serial) {
+      if (!existing.includes(serial)) {
+        throw new Error(
+          `Specified ANDROID_SERIAL "${serial}" is not online. Connected devices: ${existing.join(', ') || '(none)'}`,
+        );
+      }
+      assertSafeMutationTarget();
     } else {
-      const emuSerial = existing.find((id) => id.startsWith('emulator-')) ?? existing[0];
+      const emuSerial = existing.find((id) => id.startsWith('emulator-'));
       if (emuSerial) {
         serial = emuSerial;
       } else {
@@ -160,14 +205,21 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
         if (!avds.includes(avd)) {
           throw new Error(`AVD "${avd}" not found. Available AVDs: ${avds.join(', ') || '(none)'}`);
         }
+        let earlyExitMessage = '';
         const child = spawn(emulatorBin, ['-avd', avd, '-no-snapshot-load'], {
           detached: true,
           stdio: 'ignore',
+        });
+        child.once('exit', (code, signal) => {
+          earlyExitMessage = `Emulator process exited early (code=${code}, signal=${signal})`;
         });
         child.unref();
 
         serial = await poll(
           () => {
+            if (earlyExitMessage) {
+              throw new Error(earlyExitMessage);
+            }
             const devices = parseOnlineDevices(runSync(adbBin, ['devices']));
             return devices.find((id) => id.startsWith('emulator-')) ?? null;
           },
@@ -208,6 +260,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
     }
 
     if (!skipInstall) {
+      assertSafeMutationTarget();
       if (!fs.existsSync(apkPath)) {
         throw new Error(`Debug APK not found at ${apkPath}`);
       }
@@ -225,6 +278,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   }
 
   function scanMediaFile(remotePath) {
+    const quotedRemotePath = shellQuote(remotePath);
     try {
       const out = adb([
         'shell',
@@ -235,7 +289,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
         '--method',
         'scan_file',
         '--arg',
-        remotePath,
+        quotedRemotePath,
       ]);
       if (out.includes('Bundle')) {
         return;
@@ -251,7 +305,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
         '-a',
         'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
         '-d',
-        `file://${remotePath}`,
+        shellQuote(`file://${remotePath}`),
       ]);
     } catch {
       // Ignore if media scanner broadcast is restricted
@@ -259,9 +313,11 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   }
 
   function pushDownloadFile(content, filename) {
+    assertSafeMutationTarget();
+    const safeName = assertSafeFilename(filename);
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'budget-e2e-'));
-    const localFile = path.join(tmpDir, filename);
-    const remotePath = `/storage/emulated/0/Download/${filename}`;
+    const localFile = path.join(tmpDir, safeName);
+    const remotePath = `/storage/emulated/0/Download/${safeName}`;
     try {
       fs.writeFileSync(localFile, content, 'utf8');
       adb(['push', localFile, remotePath]);
@@ -272,23 +328,32 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   }
 
   function createOversizedDownloadFile(filename, sizeMb = 51) {
-    const remotePath = `/storage/emulated/0/Download/${filename}`;
-    adb(['shell', 'dd', 'if=/dev/zero', `of=${remotePath}`, 'bs=1048576', `count=${sizeMb}`]);
+    assertSafeMutationTarget();
+    const safeName = assertSafeFilename(filename);
+    if (!Number.isInteger(sizeMb) || sizeMb <= 0) {
+      throw new Error(`Invalid sizeMb "${sizeMb}": expected a positive integer.`);
+    }
+    const remotePath = `/storage/emulated/0/Download/${safeName}`;
+    adb(['shell', 'dd', 'if=/dev/zero', shellQuote(`of=${remotePath}`), 'bs=1048576', `count=${sizeMb}`]);
     scanMediaFile(remotePath);
   }
 
   function cleanupDownloads(filenames) {
+    if (!serial || (!serial.startsWith('emulator-') && process.env.ANDROID_E2E_ALLOW_DEVICE !== '1')) {
+      return;
+    }
     for (const filename of filenames) {
-      const remotePath = `/storage/emulated/0/Download/${filename}`;
+      const safeName = assertSafeFilename(filename);
+      const remotePath = `/storage/emulated/0/Download/${safeName}`;
       try {
-        adb(['shell', 'rm', '-f', remotePath]);
+        adb(['shell', 'rm', '-f', shellQuote(remotePath)]);
         scanMediaFile(remotePath);
       } catch {
         // Best-effort cleanup
       }
     }
     try {
-      adb(['shell', 'rm', '-f', UI_DUMP_REMOTE_PATH]);
+      adb(['shell', 'rm', '-f', shellQuote(UI_DUMP_REMOTE_PATH)]);
     } catch {
       // Best-effort cleanup
     }
@@ -349,10 +414,15 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   }
 
   function keyEvent(code) {
-    adb(['shell', 'input', 'keyevent', String(code)]);
+    const keyCode = String(code);
+    if (!SAFE_KEYEVENT_RE.test(keyCode)) {
+      throw new Error(`Invalid keyevent code: "${code}"`);
+    }
+    adb(['shell', 'input', 'keyevent', keyCode]);
   }
 
   async function selectFileInDocumentsUi(filename, timeoutMs = 20000) {
+    const safeName = assertSafeFilename(filename);
     await waitForWindow(/documentsui/i, timeoutMs);
 
     let tappedDownloads = false;
@@ -361,10 +431,10 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
 
     while (Date.now() < deadline) {
       const nodes = await dumpUiNodes();
-      const fileNode = findUiNode(
-        nodes,
-        (n) => (n.text === filename || n.contentDesc.includes(filename)) && n.bounds && n.bounds.height > 0,
-      );
+      const hasVisibleBounds = (n) => n.bounds && n.bounds.height > 0;
+      const fileNode =
+        findUiNode(nodes, (n) => n.text === safeName && hasVisibleBounds(n)) ??
+        findUiNode(nodes, (n) => n.contentDesc.includes(safeName) && hasVisibleBounds(n));
 
       if (fileNode) {
         if (!isNodeEffectivelyEnabled(nodes, fileNode)) {
@@ -418,16 +488,22 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
     adb,
     ensureEmulatorReady,
     buildAndInstallApk,
-    clearAppData: () => adb(['shell', 'pm', 'clear', PACKAGE_ID]),
+    clearAppData: () => {
+      assertSafeMutationTarget();
+      return adb(['shell', 'pm', 'clear', PACKAGE_ID]);
+    },
     startApp: () => adb(['shell', 'am', 'start', '-W', '-n', ACTIVITY]),
     stopApp: () => adb(['shell', 'am', 'force-stop', PACKAGE_ID]),
     getDeviceDate: () => parseAndroidDate(adb(['shell', 'date', '+%Y-%m-%dT%H:%M:%S%z'])),
     pushDownloadFile,
     createOversizedDownloadFile,
     cleanupDownloads,
-    readAppCacheFile: (relativePath) => adb(['shell', 'run-as', PACKAGE_ID, 'cat', `cache/${relativePath}`]),
+    readAppCacheFile: (relativePath) => {
+      const safeRel = assertSafeRelativeCachePath(relativePath);
+      return adb(['shell', 'run-as', PACKAGE_ID, 'cat', shellQuote(`cache/${safeRel}`)]);
+    },
     clearLogcat: () => adb(['logcat', '-c']),
-    dumpLogcat: () => adb(['logcat', '-d', '-v', 'time']),
+    dumpLogcat: () => adb(['logcat', '-d', '-v', 'threadtime']),
     getFocusedWindow,
     waitForWindow,
     dumpUiNodes,
@@ -469,6 +545,19 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
   const jsExceptions = [];
   const firestoreRequests = [];
 
+  function disconnect() {
+    try {
+      ws?.close();
+    } catch {
+      // Ignore close errors
+    }
+    try {
+      device.adb(['forward', '--remove', `tcp:${port}`]);
+    } catch {
+      // Ignore port teardown errors
+    }
+  }
+
   try {
     const target = await poll(
       async () => {
@@ -476,30 +565,34 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
         if (!res.ok) return null;
         const pages = await res.json();
         return (
-          pages.find((p) => p.type === 'page' && p.webSocketDebuggerUrl && String(p.url).includes('localhost')) ??
-          pages.find((p) => p.type === 'page' && p.webSocketDebuggerUrl) ??
-          null
+          pages.find((p) => p.type === 'page' && p.webSocketDebuggerUrl && String(p.url).includes('localhost')) ?? null
         );
       },
-      { timeoutMs, intervalMs: 250, label: 'WebView CDP page target' },
+      { timeoutMs, intervalMs: 250, label: 'WebView CDP localhost page target' },
     );
 
     ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => {
       const onOpen = () => {
-        cleanup();
+        cleanupListeners();
         resolve();
       };
       const onError = (err) => {
-        cleanup();
+        cleanupListeners();
         reject(err instanceof Error ? err : new Error('WebSocket connection error'));
       };
-      const cleanup = () => {
+      const onClose = () => {
+        cleanupListeners();
+        reject(new Error('WebSocket closed before handshake completed'));
+      };
+      const cleanupListeners = () => {
         ws.removeEventListener('open', onOpen);
         ws.removeEventListener('error', onError);
+        ws.removeEventListener('close', onClose);
       };
       ws.addEventListener('open', onOpen);
       ws.addEventListener('error', onError);
+      ws.addEventListener('close', onClose);
     });
 
     ws.addEventListener('message', (event) => {
@@ -523,7 +616,11 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
         jsExceptions.push(desc);
       } else if (msg.method === 'Network.requestWillBeSent') {
         const url = String(msg.params?.request?.url ?? '');
-        if (/firestore\.googleapis\.com|firebaseio\.com/i.test(url)) {
+        if (
+          /firestore\.googleapis\.com|firebaseio\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com/i.test(
+            url,
+          )
+        ) {
           firestoreRequests.push(url);
         }
       }
@@ -537,6 +634,9 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
     });
 
     function send(method, params = {}) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return Promise.reject(new Error(`CDP ${method}: WebSocket is not open`));
+      }
       const id = nextId;
       nextId += 1;
       return new Promise((resolve, reject) => {
@@ -563,14 +663,28 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
     await send('Runtime.enable');
     await send('Network.enable');
 
-    await poll(() => evalExpr('Boolean(document.body && document.readyState === "complete")'), {
-      timeoutMs,
-      intervalMs: 150,
-      label: 'WebView document ready',
-    });
+    await poll(
+      () =>
+        evalExpr(
+          'Boolean(document.body && document.readyState === "complete" && window.location.href.includes("localhost") && document.querySelector("ion-app"))',
+        ),
+      {
+        timeoutMs,
+        intervalMs: 150,
+        label: 'WebView localhost app ready',
+      },
+    );
+
+    const toastExtractFn = `
+      const extractToast = (el) => ({
+        message: String(el.message || el.getAttribute('message') || el.shadowRoot?.querySelector('.toast-message')?.textContent || '').trim(),
+        color: String(el.color || el.getAttribute('color') || '').trim(),
+      });
+    `;
 
     async function installToastObserver() {
       await evalExpr(`(() => {
+        ${toastExtractFn}
         if (!Array.isArray(window.__e2eToasts)) window.__e2eToasts = [];
         if (window.__e2eToastObserverInstalled) return true;
         window.__e2eToastObserverInstalled = true;
@@ -579,23 +693,23 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
           if (!el || seen.has(el)) return;
           seen.add(el);
           setTimeout(() => {
-            const shadowMsg = el.shadowRoot?.querySelector('.toast-message')?.textContent?.trim() ?? '';
-            const message = String(el.message || el.getAttribute('message') || shadowMsg || '').trim();
-            const color = String(el.color || el.getAttribute('color') || '').trim();
-            window.__e2eToasts.push({ message, color, ts: Date.now() });
+            window.__e2eToasts.push({ ...extractToast(el), ts: Date.now() });
           }, 60);
         };
         document.querySelectorAll('ion-toast').forEach(record);
         const observer = new MutationObserver((mutations) => {
           for (const mutation of mutations) {
             for (const node of mutation.addedNodes) {
-              if (node instanceof Element && node.tagName === 'ION-TOAST') {
-                record(node);
+              if (node instanceof Element) {
+                if (node.tagName === 'ION-TOAST') {
+                  record(node);
+                }
+                node.querySelectorAll?.('ion-toast').forEach(record);
               }
             }
           }
         });
-        observer.observe(document.body, { childList: true });
+        observer.observe(document.body, { childList: true, subtree: true });
         return true;
       })()`);
     }
@@ -634,12 +748,15 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       );
     }
 
-    async function clickText(selector, expectedText, opts = {}) {
-      const sel = JSON.stringify(selector);
-      const isRegex = expectedText instanceof RegExp;
-      const matcher = isRegex
+    function buildTextMatcherExpr(expectedText) {
+      return expectedText instanceof RegExp
         ? `new RegExp(${JSON.stringify(expectedText.source)}, ${JSON.stringify(expectedText.flags)}).test(txt)`
         : `txt === ${JSON.stringify(expectedText)}`;
+    }
+
+    async function clickText(selector, expectedText, opts = {}) {
+      const sel = JSON.stringify(selector);
+      const matcher = buildTextMatcherExpr(expectedText);
 
       await waitFor(
         `(() => {
@@ -660,10 +777,7 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
 
     async function waitForText(selector, expectedText, opts = {}) {
       const sel = JSON.stringify(selector);
-      const isRegex = expectedText instanceof RegExp;
-      const matcher = isRegex
-        ? `new RegExp(${JSON.stringify(expectedText.source)}, ${JSON.stringify(expectedText.flags)}).test(txt)`
-        : `txt === ${JSON.stringify(expectedText)}`;
+      const matcher = buildTextMatcherExpr(expectedText);
 
       return waitFor(
         `(() => {
@@ -754,11 +868,9 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
 
       return waitFor(
         `(() => {
+          ${toastExtractFn}
           const captured = Array.isArray(window.__e2eToasts) ? window.__e2eToasts : [];
-          const live = Array.from(document.querySelectorAll('ion-toast')).map((el) => ({
-            message: String(el.message || el.getAttribute('message') || el.shadowRoot?.querySelector('.toast-message')?.textContent || '').trim(),
-            color: String(el.color || el.getAttribute('color') || '').trim(),
-          }));
+          const live = Array.from(document.querySelectorAll('ion-toast')).map(extractToast);
           const all = [...captured, ...live];
           return all.find((t) => (${matcher}) ${colorCheck}) ?? null;
         })()`,
@@ -769,11 +881,9 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
     async function assertNoToast(waitMs = 1500) {
       await sleep(waitMs);
       const toasts = await evalExpr(`(() => {
+        ${toastExtractFn}
         const captured = Array.isArray(window.__e2eToasts) ? window.__e2eToasts : [];
-        const live = Array.from(document.querySelectorAll('ion-toast')).map((el) => ({
-          message: String(el.message || el.getAttribute('message') || '').trim(),
-          color: String(el.color || el.getAttribute('color') || '').trim(),
-        }));
+        const live = Array.from(document.querySelectorAll('ion-toast')).map(extractToast);
         return [...captured, ...live].filter((t) => t.message.length > 0);
       })()`);
       if (Array.isArray(toasts) && toasts.length > 0) {
@@ -816,24 +926,6 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       })()`);
     }
 
-    function disconnect() {
-      try {
-        ws?.close();
-      } catch {
-        // Ignore close errors
-      }
-      try {
-        device.adb(['forward', '--remove', `tcp:${port}`]);
-      } catch {
-        // Ignore port teardown errors
-      }
-    }
-
-    async function tapElement(selector, matcherText = null) {
-      const bounds = await getScreenBounds(selector, matcherText);
-      device.tap(bounds.cx, bounds.cy);
-    }
-
     return {
       jsExceptions,
       firestoreRequests,
@@ -844,7 +936,6 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       waitForText,
       fillIonInput,
       getScreenBounds,
-      tapElement,
       clearToasts,
       waitForToast,
       assertNoToast,
@@ -852,16 +943,7 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       disconnect,
     };
   } catch (err) {
-    try {
-      ws?.close();
-    } catch {
-      // Ignore
-    }
-    try {
-      device.adb(['forward', '--remove', `tcp:${port}`]);
-    } catch {
-      // Ignore
-    }
+    disconnect();
     throw err;
   }
 }

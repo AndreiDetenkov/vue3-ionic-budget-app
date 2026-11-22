@@ -56,7 +56,7 @@ export function parseUiHierarchy(xml) {
 
   const nodes = [];
   const stack = [];
-  const tagRegex = /<(\/?)node\b([^>]*?)(\/?)>/g;
+  const tagRegex = /<(\/?)node\b((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/g;
   let match;
 
   while ((match = tagRegex.exec(xml)) !== null) {
@@ -139,37 +139,51 @@ export function formatAmount(amount) {
   return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-function getPeriodRange(period, nowDate) {
-  const year = nowDate.getFullYear();
-  const month = nowDate.getMonth();
+export function resolveClockContext(now = new Date(), tzOffsetMinutes) {
+  const date = now instanceof Date ? now : now.date;
+  const offset = tzOffsetMinutes ?? (now instanceof Date ? -now.getTimezoneOffset() : now.tzOffsetMinutes);
+  const shifted = new Date(date.getTime() + offset * 60_000);
+  return {
+    date,
+    offsetMinutes: offset,
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth(),
+    day: shifted.getUTCDate(),
+    toUtcMs: (y, m, d, h = 0, min = 0, s = 0, ms = 0) => Date.UTC(y, m, d, h, min, s, ms) - offset * 60_000,
+  };
+}
+
+function getPeriodRange(period, clock) {
+  const { year, month, toUtcMs } = clock;
 
   switch (period) {
     case 'currentMonth':
       return {
-        from: new Date(year, month, 1, 0, 0, 0, 0).getTime(),
-        to: new Date(year, month + 1, 0, 23, 59, 59, 999).getTime(),
+        from: toUtcMs(year, month, 1, 0, 0, 0, 0),
+        to: toUtcMs(year, month + 1, 0, 23, 59, 59, 999),
       };
     case 'lastMonth':
       return {
-        from: new Date(year, month - 1, 1, 0, 0, 0, 0).getTime(),
-        to: new Date(year, month, 0, 23, 59, 59, 999).getTime(),
+        from: toUtcMs(year, month - 1, 1, 0, 0, 0, 0),
+        to: toUtcMs(year, month, 0, 23, 59, 59, 999),
       };
     case 'currentYear':
       return {
-        from: new Date(year, 0, 1, 0, 0, 0, 0).getTime(),
-        to: new Date(year, 11, 31, 23, 59, 59, 999).getTime(),
+        from: toUtcMs(year, 0, 1, 0, 0, 0, 0),
+        to: toUtcMs(year, 11, 31, 23, 59, 59, 999),
       };
     case 'lastYear':
       return {
-        from: new Date(year - 1, 0, 1, 0, 0, 0, 0).getTime(),
-        to: new Date(year - 1, 11, 31, 23, 59, 59, 999).getTime(),
+        from: toUtcMs(year - 1, 0, 1, 0, 0, 0, 0),
+        to: toUtcMs(year - 1, 11, 31, 23, 59, 59, 999),
       };
     default:
       throw new Error(`Unknown report period: ${period}`);
   }
 }
 
-export function computeExpectedReports(transactions, nowDate = new Date(), categories = []) {
+export function computeExpectedReports(transactions, nowDate = new Date(), categories = [], tzOffsetMinutes) {
+  const clock = resolveClockContext(nowDate, tzOffsetMinutes);
   const categoryById = new Map(categories.map((cat) => [cat.id, cat]));
   const active = transactions
     .filter((tx) => !tx.deletedAt)
@@ -180,7 +194,7 @@ export function computeExpectedReports(transactions, nowDate = new Date(), categ
   const result = {};
 
   for (const period of periods) {
-    const { from, to } = getPeriodRange(period, nowDate);
+    const { from, to } = getPeriodRange(period, clock);
     const matching = active.filter((tx) => {
       const ts = Date.parse(tx.createdAt);
       return !Number.isNaN(ts) && ts >= from && ts <= to;
@@ -231,10 +245,10 @@ export function auditLogcat(logcatText, packageName = 'com.budget.app') {
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
 
-    if (/AndroidRuntime:\s*FATAL EXCEPTION/i.test(line)) {
+    if (/AndroidRuntime(?:\(\s*\d+\))?:\s*FATAL EXCEPTION/i.test(line)) {
       const block = [line];
       let j = i + 1;
-      while (j < lines.length && /AndroidRuntime:/i.test(lines[j])) {
+      while (j < lines.length && /AndroidRuntime(?:\(\s*\d+\))?:/i.test(lines[j])) {
         block.push(lines[j]);
         j += 1;
       }
@@ -257,7 +271,7 @@ export function auditLogcat(logcatText, packageName = 'com.budget.app') {
 
     if (/(?:Capacitor\/Console|chromium)/i.test(line)) {
       const isUncaught = /\bUncaught\b|\bUnhandled\s+(?:Promise\s+)?rejection\b/i.test(line);
-      const isCapacitorError = /\bE\s+Capacitor\/Console\s*:/i.test(line);
+      const isCapacitorError = /(?:\bE\s+|E\/)Capacitor\/Console(?:\(\s*\d+\))?\s*:/i.test(line);
       if (isUncaught || isCapacitorError) {
         jsErrors.push(line);
       }

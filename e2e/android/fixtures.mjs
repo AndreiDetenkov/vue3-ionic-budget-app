@@ -1,3 +1,5 @@
+import { resolveClockContext } from './helpers.mjs';
+
 export const VALID_BACKUP_FILE = 'e2e-ok.json';
 export const INVALID_BACKUP_FILE = 'e2e-bad.json';
 export const OVERSIZED_BACKUP_FILE = 'e2e-big.json';
@@ -24,14 +26,20 @@ export const E2E_DEFAULT_CATEGORIES = [
 ];
 
 export const CATEGORY_ID_FOOD = '3c3d9f8c-af23-49ed-946c-0d72a2191008';
-export const CATEGORY_ID_HOUSING = 'f4ac3532-3870-4f85-a9d8-4dc1e24a4d97';
-export const CATEGORY_ID_TRANSPORTATION = '2fe6596b-6292-4d8c-826d-5f4d3d99f543';
+const CATEGORY_ID_HOUSING = 'f4ac3532-3870-4f85-a9d8-4dc1e24a4d97';
+const CATEGORY_ID_TRANSPORTATION = '2fe6596b-6292-4d8c-826d-5f4d3d99f543';
 
-export function buildValidBackupFixture({ now = new Date(), existingTxToOverwrite, existingTxToKeepOlder } = {}) {
-  const startOfTodayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 5, 0).getTime();
-  const todayTxDate = new Date(Math.max(startOfTodayMs, now.getTime() - 60_000));
-  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 15, 12, 0, 0);
-  const lastYearDate = new Date(now.getFullYear() - 1, 5, 15, 12, 0, 0);
+export function buildValidBackupFixture({
+  now = new Date(),
+  tzOffsetMinutes,
+  existingTxToOverwrite,
+  existingTxToKeepOlder,
+} = {}) {
+  const clock = resolveClockContext(now, tzOffsetMinutes);
+  const startOfTodayMs = clock.toUtcMs(clock.year, clock.month, clock.day, 0, 5, 0);
+  const todayTxDate = new Date(Math.max(startOfTodayMs, clock.date.getTime() - 60_000));
+  const lastMonthDate = new Date(clock.toUtcMs(clock.year, clock.month - 1, 15, 12, 0, 0));
+  const lastYearDate = new Date(clock.toUtcMs(clock.year - 1, 5, 15, 12, 0, 0));
 
   const transactions = [
     {

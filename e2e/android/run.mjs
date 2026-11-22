@@ -58,6 +58,7 @@ async function main() {
   const allJsExceptions = [];
   const allFirestoreRequests = [];
   let cdp = null;
+  let cleanedUp = false;
 
   const trackAndDisconnectCdp = () => {
     if (!cdp) return;
@@ -66,6 +67,25 @@ async function main() {
     cdp.disconnect();
     cdp = null;
   };
+
+  const cleanupAll = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    trackAndDisconnectCdp();
+    try {
+      device.cleanupDownloads([VALID_BACKUP_FILE, INVALID_BACKUP_FILE, OVERSIZED_BACKUP_FILE]);
+      device.clearAppData();
+    } catch {
+      // Ignore cleanup errors if emulator wasn't ready or target guard refused
+    }
+  };
+
+  const onSignal = (signal) => {
+    cleanupAll();
+    process.exit(signal === 'SIGINT' ? 130 : 143);
+  };
+  process.once('SIGINT', onSignal);
+  process.once('SIGTERM', onSignal);
 
   try {
     await runStep('0. Prepare emulator, APK, logcat, and fixtures', async () => {
@@ -190,8 +210,10 @@ async function main() {
       await waitForModalsClosed(cdp);
 
       // Pull-to-refresh (BaseRefresher)
-      await cdp.eval(`(() => {
+      await cdp.eval(`(async () => {
         window.__e2eRefreshed = false;
+        const content = document.querySelector('[data-testid="transactions-content"]');
+        await content?.scrollToTop?.(0);
         const refresher = document.querySelector('[data-testid="transactions-content"] ion-refresher');
         if (!refresher) throw new Error('Active ion-refresher not found');
         refresher.addEventListener('ionRefresh', () => { window.__e2eRefreshed = true; }, { once: true });
@@ -256,6 +278,7 @@ async function main() {
       const deviceClock = device.getDeviceDate();
       const validFixture = buildValidBackupFixture({
         now: deviceClock.date,
+        tzOffsetMinutes: deviceClock.tzOffsetMinutes,
         existingTxToOverwrite: persistTx,
         existingTxToKeepOlder: deletedDinnerTx,
       });
@@ -342,6 +365,7 @@ async function main() {
         storage.snapshot.transactions,
         deviceClock.date,
         storage.snapshot.categories,
+        deviceClock.tzOffsetMinutes,
       );
 
       await cdp.click('[data-testid="tab-reports"]');
@@ -382,7 +406,8 @@ async function main() {
 
         if (expectedPeriod.reports.length > 0) {
           const firstReport = expectedPeriod.reports[0];
-          const accordionSel = `[data-testid="report-accordion-${firstReport.name.toLowerCase()}"]`;
+          const escapedId = `report-accordion-${firstReport.name.toLowerCase()}`.replace(/(["\\])/g, '\\$1');
+          const accordionSel = `[data-testid="${escapedId}"]`;
           const isExpanded = await cdp.eval(
             `Boolean(document.querySelector(${JSON.stringify(accordionSel)})?.classList.contains('accordion-expanded'))`,
           );
@@ -413,6 +438,22 @@ async function main() {
       const finalStorage = await cdp.readStorageState();
       assert.equal(finalStorage.localStorageKeys.length, 0, 'localStorage must remain empty after full session');
 
+      const earlyFirebaseResources = await cdp.eval(`
+        performance
+          .getEntriesByType('resource')
+          .map((e) => e.name)
+          .filter((url) =>
+            /firestore\\.googleapis\\.com|firebaseio\\.com|identitytoolkit\\.googleapis\\.com|securetoken\\.googleapis\\.com/i.test(
+              url,
+            ),
+          )
+      `);
+      assert.deepEqual(
+        earlyFirebaseResources,
+        [],
+        `Unexpected early Firebase resource requests: ${earlyFirebaseResources.join(', ')}`,
+      );
+
       trackAndDisconnectCdp();
 
       assert.deepEqual(allJsExceptions, [], `Unexpected JS exceptions: ${allJsExceptions.join('; ')}`);
@@ -438,13 +479,9 @@ async function main() {
 
     console.log(`\nALL ${STEPS.length} ANDROID E2E SCENARIOS PASSED.`);
   } finally {
-    trackAndDisconnectCdp();
-    device.cleanupDownloads([VALID_BACKUP_FILE, INVALID_BACKUP_FILE, OVERSIZED_BACKUP_FILE]);
-    try {
-      device.clearAppData();
-    } catch {
-      // Ignore cleanup error if device failed before boot
-    }
+    process.removeListener('SIGINT', onSignal);
+    process.removeListener('SIGTERM', onSignal);
+    cleanupAll();
   }
 }
 
