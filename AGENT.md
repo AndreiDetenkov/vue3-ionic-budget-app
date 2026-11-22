@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal budget tracker: Vue 3 + Ionic 8 + Capacitor 8 (Android/iOS), Local-First storage (IndexedDB / `localStorage` with JSON backup, CSV import, and optional Firebase Firestore incremental delta-sync via Google Sign-In). Package manager is **pnpm** (Node 24, pnpm 11).
+Personal budget tracker: Vue 3 + Ionic 8 + Capacitor 8 (Android/iOS), Local-First storage (IndexedDB / `localStorage` with JSON backup and optional Firebase Firestore incremental delta-sync via Google Sign-In). Package manager is **pnpm** (Node 24, pnpm 11).
 
 ## Commands
 
@@ -35,18 +35,17 @@ The application runs autonomously in local-first mode with no required environme
 - **Routing** (`src/router.ts`): Ionic tab layout (`src/views/TabsPage.vue`) with three lazy-loaded tabs: `/tabs/transactions`, `/tabs/reports`, `/tabs/add`. Pages use Ionic lifecycle hooks (e.g. `onIonViewWillEnter`) to load data, not `onMounted`, because Ionic keeps tab pages alive.
 - **Feature modules** (`src/modules/<feature>/`): `transactions`, `categories`, `reports`. Each has `store/`, `components/`, `views/`, `types.ts` and an `index.ts` barrel that re-exports domain types and stores. Import from `@/modules/<feature>` (`@` maps to `src/`).
 - **Storage seam & data flow** (`src/core/storage/`): Pinia **setup stores** access persistence through the
-  `BudgetStorage` port via `useStorage()` (see `docs/adr/0001-domain-storage-seam.md` and `docs/CAPABILITY-MAP.md`).
-  Default `activeStorage` wraps `createDevAutoSeedingLocalStorage()` (around `createLocalStorage()`, IndexedDB with
+  `BudgetStorage` port via `useStorage()` (see `docs/adr/0001-domain-storage-seam.md`).
+  Default `activeStorage` wraps `createLocalStorage()` (IndexedDB with
   `window.localStorage` fallback, UUID generation, sync metadata `updatedAt`/`deletedAt`, snapshot access
   `getSnapshot`/`replaceSnapshot`, and `DEFAULT_CATEGORIES`) inside `createSyncedLocalStorage()`
   (`src/core/storage/firebaseSync.ts`), triggering non-blocking background delta-sync after mutations when signed in.
   `src/core/storage/firebaseClient.ts` lazily initializes Firebase Auth (`GoogleAuthProvider` popup + redirect fallback)
   and `createFirestoreRemoteAdapter()` behind `useFirebaseCloud()`. `src/core/storage/backup.ts` provides
-  Last-Write-Wins JSON backup export/import (`mergeSnapshots`, `exportBackupJson`, `importBackupJson`) and CSV
-  transactions import (`parseTransactionsCsv`, `importTransactionsCsv`).
+  Last-Write-Wins JSON backup export/import (`mergeSnapshots`, `exportBackupJson`, `importBackupJson`).
   Tests inject `createInMemoryStorage(seed)` (`src/core/storage/inMemoryStorage.ts`) or `createLocalStorage()` via
   `setStorage()`, and test doubles via `setFirebaseCloud()`.
-- **Shared code** (`src/core/`): `BaseHeader`/`BaseRefresher`/`BackupModal` (with Google Sign-In, Sync Now, Sign out, JSON backup, and CSV import) components, the `useToast` composable (programmatic `toastController` with `showErrorToast`/`showSuccessToast`, see `docs/features/toast-notifications.md`; use it instead of `<ion-toast>` in templates), and utils for dayjs date ranges and amount formatting.
+- **Shared code** (`src/core/`): `BaseHeader`/`BaseRefresher`/`BackupModal` (with Google Sign-In, Sync Now, Sign out, and JSON backup) components, the `useToast` composable (programmatic `toastController` with `showErrorToast`/`showSuccessToast`, see `docs/features/toast-notifications.md`; use it instead of `<ion-toast>` in templates), and utils for dayjs date ranges and amount formatting.
 - **Build**: `vite.config.ts` splits vendor chunks (`vue-vendor`, `ionic-vendor`, `utils`, `firebase-vendor`).
 
 ## Conventions
