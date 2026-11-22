@@ -37,7 +37,6 @@ npm-debug.log*
 .firebaserc
 firestore.rules
 budget-app-keystore
-/public/transactions_rows.csv
 
 android/**/*.orig
 
