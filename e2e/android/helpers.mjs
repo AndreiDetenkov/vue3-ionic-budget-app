@@ -236,14 +236,27 @@ export function computeExpectedReports(transactions, nowDate = new Date(), categ
   return result;
 }
 
+const EXPECTED_CAPACITOR_PLUGIN_ERRORS = [
+  /"pluginId":"Keyboard","methodName":"getResizeMode".*"code":"UNIMPLEMENTED"/,
+  /"pluginId":"Share","methodName":"share".*"message":"Share canceled"/,
+];
+
 export function auditLogcat(logcatText, packageName = 'com.budget.app') {
   const lines = String(logcatText ?? '').split(/\r?\n/);
   const fatalCrashes = [];
   const fileProviderErrors = [];
   const jsErrors = [];
+  let pendingExpectedBridgeErrors = 0;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
+
+    if (/Capacitor(?:\(\s*\d+\))?:\s*Sending plugin error:/.test(line)) {
+      if (EXPECTED_CAPACITOR_PLUGIN_ERRORS.some((re) => re.test(line))) {
+        pendingExpectedBridgeErrors += 1;
+      }
+      continue;
+    }
 
     if (/AndroidRuntime(?:\(\s*\d+\))?:\s*FATAL EXCEPTION/i.test(line)) {
       const block = [line];
@@ -272,6 +285,11 @@ export function auditLogcat(logcatText, packageName = 'com.budget.app') {
     if (/(?:Capacitor\/Console|chromium)/i.test(line)) {
       const isUncaught = /\bUncaught\b|\bUnhandled\s+(?:Promise\s+)?rejection\b/i.test(line);
       const isCapacitorError = /(?:\bE\s+|E\/)Capacitor\/Console(?:\(\s*\d+\))?\s*:/i.test(line);
+      const isBridgeObjectDump = /File:\s*-\s*Line\s+\d+\s*-\s*Msg:\s*\[object Object\]/.test(line);
+      if (!isUncaught && isCapacitorError && isBridgeObjectDump && pendingExpectedBridgeErrors > 0) {
+        pendingExpectedBridgeErrors -= 1;
+        continue;
+      }
       if (isUncaught || isCapacitorError) {
         jsErrors.push(line);
       }

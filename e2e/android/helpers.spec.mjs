@@ -164,6 +164,23 @@ describe('android e2e helpers', () => {
       expect(timeResult.fatalCrashes).toHaveLength(1);
       expect(timeResult.jsErrors).toHaveLength(1);
     });
+
+    it('ignores paired expected Capacitor bridge rejections while still flagging unpaired or unexpected plugin echoes', () => {
+      const expectedOnlyLog = `
+11-22 21:31:51.346 10536 10594 D Capacitor: Sending plugin error: {"save":false,"callbackId":"46134912","pluginId":"Keyboard","methodName":"getResizeMode","success":false,"error":{"message":"not implemented","code":"UNIMPLEMENTED"}}
+11-22 21:31:51.372 10536 10536 E Capacitor/Console: File:  - Line 330 - Msg: [object Object]
+11-22 21:32:09.071 10679 10679 D Capacitor: Sending plugin error: {"save":false,"callbackId":"38788733","pluginId":"Share","methodName":"share","success":false,"error":{"message":"Share canceled"}}
+11-22 21:32:09.082 10679 10679 E Capacitor/Console: File:  - Line 330 - Msg: [object Object]
+`;
+      expect(auditLogcat(expectedOnlyLog).jsErrors).toEqual([]);
+
+      const unexpectedLog = `
+11-22 21:32:10.000 10679 10679 D Capacitor: Sending plugin error: {"save":false,"callbackId":"999","pluginId":"Filesystem","methodName":"writeFile","success":false,"error":{"message":"Permission denied"}}
+11-22 21:32:10.010 10679 10679 E Capacitor/Console: File:  - Line 330 - Msg: [object Object]
+11-22 21:32:11.000 10679 10679 E Capacitor/Console: File:  - Line 330 - Msg: [object Object]
+`;
+      expect(auditLogcat(unexpectedLog).jsErrors).toHaveLength(2);
+    });
   });
 
   describe('fixtures', () => {
