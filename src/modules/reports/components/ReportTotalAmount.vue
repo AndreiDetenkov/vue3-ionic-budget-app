@@ -6,7 +6,7 @@ const reportStore = useReportStore();
 
 <template>
   <div class="total">
-    <span class="total__amount">{{ reportStore.totalAmount }}</span>
+    <span class="total__amount" data-testid="reports-total-amount">{{ reportStore.totalAmount }}</span>
     <span class="total__currency">&nbsp;KGS</span>
   </div>
 </template>

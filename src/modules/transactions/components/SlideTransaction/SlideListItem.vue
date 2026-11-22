@@ -69,9 +69,9 @@ async function openUpdateTransactionModal() {
 </script>
 
 <template>
-  <ion-item-sliding ref="item-sliding">
+  <ion-item-sliding ref="item-sliding" data-testid="transaction-slide-item">
     <ion-item-options side="start">
-      <ion-item-option @click.stop="openUpdateTransactionModal">
+      <ion-item-option data-testid="transaction-edit-option" @click.stop="openUpdateTransactionModal">
         <ion-icon slot="start" :icon="pencil"></ion-icon>
         <ion-label>Edit</ion-label>
       </ion-item-option>
@@ -80,7 +80,7 @@ async function openUpdateTransactionModal() {
     <transaction-list-item :transaction="transaction" />
 
     <ion-item-options side="end">
-      <ion-item-option @click.stop="alertHandler" color="danger">
+      <ion-item-option data-testid="transaction-remove-option" @click.stop="alertHandler" color="danger">
         <ion-icon slot="start" :icon="trash"></ion-icon>
         <ion-label>Remove</ion-label>
       </ion-item-option>

@@ -19,7 +19,12 @@ defineProps<{
   </IonList>
 
   <ion-accordion-group>
-    <ion-accordion v-for="report in reports" :key="report.name" :value="report.name">
+    <ion-accordion
+      v-for="report in reports"
+      :key="report.name"
+      :value="report.name"
+      :data-testid="`report-accordion-${report.name.toLowerCase()}`"
+    >
       <ReportListHeader :icon="report.icon" :name="report.name" :value="report.value" />
 
       <div slot="content">

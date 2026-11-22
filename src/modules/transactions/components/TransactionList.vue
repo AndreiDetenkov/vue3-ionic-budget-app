@@ -16,7 +16,7 @@ const isModalOpen = ref(false);
   <ion-list lines="none">
     <ion-list-header>
       <ion-title>Recent Expenses</ion-title>
-      <ion-chip outline @click="isModalOpen = true"> View All </ion-chip>
+      <ion-chip outline data-testid="view-all-transactions-btn" @click="isModalOpen = true"> View All </ion-chip>
     </ion-list-header>
 
     <template v-if="recentTransactions.today.length">

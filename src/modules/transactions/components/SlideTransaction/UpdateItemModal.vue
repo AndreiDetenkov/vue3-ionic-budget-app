@@ -87,6 +87,7 @@ const confirmHandler = async () => {
         autocapitalize="on"
         :autofocus="true"
         :clear-input="true"
+        data-testid="update-name-input"
         class="ion-margin-vertical"
       />
 
@@ -97,6 +98,7 @@ const confirmHandler = async () => {
         label="Amount"
         label-placement="floating"
         fill="outline"
+        data-testid="update-amount-input"
         class="ion-margin-bottom"
       />
 
@@ -107,6 +109,7 @@ const confirmHandler = async () => {
         label-placement="floating"
         fill="outline"
         interface="action-sheet"
+        data-testid="update-category-select"
         class="ion-margin-bottom"
       >
         <ion-select-option v-for="category in categoryStore.categories" :key="category.id" :value="category.id">
@@ -114,7 +117,12 @@ const confirmHandler = async () => {
         </ion-select-option>
       </ion-select>
 
-      <ion-button expand="block" type="submit" :disabled="transactionStore.loading || !isValid">
+      <ion-button
+        expand="block"
+        type="submit"
+        data-testid="update-submit-btn"
+        :disabled="transactionStore.loading || !isValid"
+      >
         <ion-spinner name="lines" v-if="transactionStore.loading" />
         <span v-else>Update transaction</span>
       </ion-button>
