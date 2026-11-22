@@ -5,27 +5,19 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import dayjs from 'dayjs';
 import { IonButton, IonButtons, IonChip, IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/vue';
-import {
-  cloudDownloadOutline,
-  cloudUploadOutline,
-  documentTextOutline,
-  logoGoogle,
-  logOutOutline,
-  syncOutline,
-} from 'ionicons/icons';
+import { cloudDownloadOutline, cloudUploadOutline, logoGoogle, logOutOutline, syncOutline } from 'ionicons/icons';
 import BaseHeader from '@/core/components/BaseHeader.vue';
 import { useToast } from '@/core/composables/useToast';
 import {
   exportBackupJson,
   getLocalStorage,
   importBackupJson,
-  importTransactionsCsv,
   toError,
   useFirebaseCloud,
   type FirebaseAuthUser,
 } from '@/core/storage';
 
-type BusyAction = 'signin' | 'sync' | 'signout' | 'export' | 'import' | 'csv' | null;
+type BusyAction = 'signin' | 'sync' | 'signout' | 'export' | 'import' | null;
 
 const props = defineProps<{
   onRestored?: () => Promise<void> | void;
@@ -38,14 +30,10 @@ const { showSuccessToast, showErrorToast } = useToast();
 const busyAction = shallowRef<BusyAction>(null);
 const currentUser = shallowRef<FirebaseAuthUser | null>(null);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
-const csvInputRef = useTemplateRef<HTMLInputElement>('csvInputRef');
 
 const MAX_IMPORT_FILE_BYTES = 50 * 1024 * 1024;
 const isNativePlatform = Capacitor.isNativePlatform();
 const jsonFileAccept = isNativePlatform ? undefined : 'application/json,text/plain,application/octet-stream,.json';
-const csvFileAccept = isNativePlatform
-  ? undefined
-  : 'text/csv,text/comma-separated-values,text/plain,application/octet-stream,.csv';
 
 let unsubscribeAuth: (() => void) | null = null;
 
@@ -155,11 +143,7 @@ async function runAction(action: Exclude<BusyAction, null>, task: () => Promise<
   }
 }
 
-async function handleSelectedFile(
-  event: Event,
-  action: Exclude<BusyAction, null>,
-  importText: (rawText: string) => Promise<string>,
-): Promise<void> {
+async function handleFileSelected(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) {
@@ -167,14 +151,14 @@ async function handleSelectedFile(
   }
 
   try {
-    await runAction(action, async () => {
+    await runAction('import', async () => {
       if (file.size > MAX_IMPORT_FILE_BYTES) {
         throw new Error('File is too large to import (max 50 MB)');
       }
-      const rawText = await readFileAsText(file);
-      const successMessage = await importText(rawText);
+      const rawJson = await readFileAsText(file);
+      const result = await importBackupJson(getLocalStorage(), rawJson);
       await props.onRestored?.();
-      await showSuccessToast(successMessage);
+      await showSuccessToast(`Imported ${result.transactionsCount} transactions`);
     });
   } finally {
     input.value = '';
@@ -194,22 +178,6 @@ const handleExport = () =>
 const triggerImport = () => {
   fileInputRef.value?.click();
 };
-
-const triggerCsvImport = () => {
-  csvInputRef.value?.click();
-};
-
-const handleFileSelected = (event: Event) =>
-  handleSelectedFile(event, 'import', async (rawJson) => {
-    const result = await importBackupJson(getLocalStorage(), rawJson);
-    return `Imported ${result.transactionsCount} transactions`;
-  });
-
-const handleCsvFileSelected = (event: Event) =>
-  handleSelectedFile(event, 'csv', async (rawCsv) => {
-    const result = await importTransactionsCsv(getLocalStorage(), rawCsv);
-    return `Imported ${result.transactionsCount} transactions from CSV`;
-  });
 
 const handleGoogleSignIn = () =>
   runAction('signin', async () => {
@@ -315,7 +283,7 @@ const handleSignOut = () =>
           <ion-text color="medium">
             <p class="description">
               Data is stored locally on your device. Export a JSON backup anytime or merge data from a saved JSON backup
-              or transactions CSV file.
+              file.
             </p>
           </ion-text>
 
@@ -353,30 +321,6 @@ const handleSignOut = () =>
             :accept="jsonFileAccept"
             class="hidden-file-input"
             @change="handleFileSelected"
-          />
-
-          <ion-button
-            expand="block"
-            fill="outline"
-            color="secondary"
-            data-testid="import-csv-btn"
-            :disabled="busyAction !== null"
-            @click="triggerCsvImport"
-          >
-            <ion-spinner v-if="busyAction === 'csv'" name="lines" />
-            <template v-else>
-              <ion-icon slot="start" :icon="documentTextOutline" />
-              Import Transactions (.csv)
-            </template>
-          </ion-button>
-
-          <input
-            ref="csvInputRef"
-            data-testid="csv-file-input"
-            type="file"
-            :accept="csvFileAccept"
-            class="hidden-file-input"
-            @change="handleCsvFileSelected"
           />
         </section>
       </div>

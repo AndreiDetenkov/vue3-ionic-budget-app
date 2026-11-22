@@ -291,11 +291,8 @@ describe('BackupModal.vue', () => {
     await flushPromises();
 
     const webJsonAccept = webWrapper.find('[data-testid="backup-file-input"]').attributes('accept');
-    const webCsvAccept = webWrapper.find('[data-testid="csv-file-input"]').attributes('accept');
     expect(webJsonAccept).toContain('text/plain');
     expect(webJsonAccept).toContain('application/octet-stream');
-    expect(webCsvAccept).toContain('text/plain');
-    expect(webCsvAccept).toContain('application/octet-stream');
 
     capacitorMocks.isNativePlatformMock.mockReturnValue(true);
     const nativeWrapper = mount(BackupModal, {
@@ -305,7 +302,6 @@ describe('BackupModal.vue', () => {
     await flushPromises();
 
     expect(nativeWrapper.find('[data-testid="backup-file-input"]').attributes('accept')).toBeUndefined();
-    expect(nativeWrapper.find('[data-testid="csv-file-input"]').attributes('accept')).toBeUndefined();
   });
 
   it('rejects oversized import files before reading them', async () => {
@@ -462,64 +458,6 @@ describe('BackupModal.vue', () => {
 
     expect(showErrorToastMock).toHaveBeenCalledWith('Invalid backup JSON');
     expect(showSuccessToastMock).not.toHaveBeenCalled();
-  });
-
-  it('imports transactions CSV file, awaits onRestored, and handles invalid CSV errors', async () => {
-    const defaultStorage = createLocalStorage({ storageKey: 'backup-modal-csv-test' });
-    setStorage(defaultStorage);
-
-    const onRestored = vi.fn().mockResolvedValue(undefined);
-    const wrapper = mount(BackupModal, {
-      props: {
-        modelValue: true,
-        onRestored,
-      },
-      global: { stubs: { IonModal: IonModalStub } },
-    });
-    await flushPromises();
-
-    const csvContent = [
-      'id,created_at,name,value,category_id',
-      '0011b1aa-9c5e-479f-b9aa-39711036c177,2025-06-21 20:59:14.881024+06,Dentist,1600,5cb289ab-2f7b-43bf-be3e-a4b577688333',
-      '0028ee73-64e9-4326-87f4-3989fc6e48d0,2023-08-28 21:22:59.872722+06,Taxi,320,2fe6596b-6292-4d8c-826d-5f4d3d99f543',
-    ].join('\n');
-
-    const csvInput = wrapper.find('[data-testid="csv-file-input"]');
-    const csvFile = new File([csvContent], 'transactions.csv', { type: 'text/csv' });
-    Object.defineProperty(csvFile, 'text', {
-      value: vi.fn().mockResolvedValue(csvContent),
-      configurable: true,
-    });
-    Object.defineProperty(csvInput.element, 'files', {
-      value: [csvFile],
-      configurable: true,
-    });
-
-    await csvInput.trigger('change');
-    await flushPromises();
-
-    expect(onRestored).toHaveBeenCalledTimes(1);
-    const snapshot = await defaultStorage.getSnapshot();
-    expect(snapshot.transactions).toHaveLength(2);
-    expect(snapshot.transactions.map((t) => t.name)).toEqual(['Dentist', 'Taxi']);
-    expect(showSuccessToastMock).toHaveBeenCalledWith('Imported 2 transactions from CSV');
-
-    const invalidCsvFile = new File(['bad,header'], 'bad.csv', { type: 'text/csv' });
-    Object.defineProperty(invalidCsvFile, 'text', {
-      value: vi.fn().mockResolvedValue('bad,header'),
-      configurable: true,
-    });
-    Object.defineProperty(csvInput.element, 'files', {
-      value: [invalidCsvFile],
-      configurable: true,
-    });
-
-    await csvInput.trigger('change');
-    await flushPromises();
-
-    expect(showErrorToastMock).toHaveBeenCalledWith(
-      'Invalid CSV header: expected id,created_at,name,value,category_id',
-    );
   });
 
   it('renders Sign in with Google button when signed out and calls signInWithGoogle on click', async () => {
@@ -710,7 +648,7 @@ describe('BackupModal.vue', () => {
     await flushPromises();
 
     const busyButtons = wrapper.findAllComponents({ name: 'IonButton' });
-    expect(busyButtons.length).toBeGreaterThanOrEqual(5);
+    expect(busyButtons).toHaveLength(4);
     expect(busyButtons.every((btn) => btn.props('disabled') === true)).toBe(true);
     expect(wrapper.findComponent({ name: 'IonChip' }).props('disabled')).toBe(true);
 

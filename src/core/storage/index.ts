@@ -1,6 +1,6 @@
-import { createDevAutoSeedingLocalStorage } from './backup';
 import { createFirebaseCloudController, type FirebaseCloudController } from './firebaseClient';
 import { createSyncedLocalStorage } from './firebaseSync';
+import { createLocalStorage } from './localStorage';
 import type { BudgetStorage, LocalBudgetStorage } from './types';
 
 function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetStorage {
@@ -10,7 +10,7 @@ function isLocalBudgetStorage(storage: BudgetStorage): storage is LocalBudgetSto
   );
 }
 
-const baseLocalStorage: LocalBudgetStorage = createDevAutoSeedingLocalStorage();
+const baseLocalStorage: LocalBudgetStorage = createLocalStorage();
 let activeCloud: FirebaseCloudController | null = null;
 
 function getOrCreateDefaultCloud(): FirebaseCloudController {
@@ -87,15 +87,11 @@ export { DEFAULT_CATEGORIES } from './defaultCategories';
 export { createInMemoryStorage, type InMemoryStorageSeed } from './inMemoryStorage';
 export { createLocalStorage } from './localStorage';
 export {
-  createDevAutoSeedingLocalStorage,
   exportBackupJson,
   importBackupJson,
-  importTransactionsCsv,
   mergeSnapshots,
   parseBackupSnapshot,
-  parseTransactionsCsv,
   serializeBackupSnapshot,
-  type DevAutoSeedOptions,
   type MigrationResult,
 } from './backup';
 export {

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createLocalStorage,
   DEFAULT_CATEGORIES,
-  importTransactionsCsv,
+  importBackupJson,
   type LocalBudgetStorage,
   type StoredCategory,
   type StoredTransaction,
@@ -467,30 +467,44 @@ describe('firebaseSync engine', () => {
     expect(offlineBOnA?.createdAt).toBe('2026-11-18T10:00:00.000Z');
   });
 
-  it('pushes historical 2023 CSV imports even after a 2026 sync while preserving 2023 createdAt', async () => {
+  it('pushes historical 2023 backup imports even after a 2026 sync while preserving 2023 createdAt', async () => {
     const sharedRemote = createInMemoryRemoteAdapter();
-    const local = createLocalStorage({ storageKey: 'historical-csv-sync-test' });
+    const local = createLocalStorage({ storageKey: 'historical-backup-sync-test' });
     const foodId = DEFAULT_CATEGORIES.find((c) => c.title === 'Food')!.id;
     const syncService = createFirebaseSyncService({
       local,
       remote: sharedRemote.adapter,
-      cursorKey: 'historical-csv-cursor',
+      cursorKey: 'historical-backup-cursor',
     });
 
     await local.createTransaction({ name: 'Recent 2026 Expense', value: 120, categoryId: foodId });
     await syncService.syncNow();
     expect(sharedRemote.transactions.size).toBe(1);
 
-    const csv = [
-      'id,created_at,name,value,category_id',
-      `tx-csv-2023,2023-08-28 21:22:59.872722+06,Old Taxi,320,${foodId}`,
-    ].join('\n');
-    await importTransactionsCsv(local, csv);
+    await importBackupJson(
+      local,
+      JSON.stringify({
+        version: 1,
+        updatedAt: '2023-08-28T15:22:59.872Z',
+        categories: [],
+        transactions: [
+          {
+            id: 'tx-backup-2023',
+            name: 'Old Taxi',
+            value: 320,
+            createdAt: '2023-08-28T15:22:59.872Z',
+            updatedAt: '2023-08-28T15:22:59.872Z',
+            deletedAt: null,
+            categoryId: foodId,
+          },
+        ],
+      }),
+    );
 
     const secondSync = await syncService.syncNow();
     expect(secondSync.pushedTransactions).toBe(1);
-    expect(sharedRemote.transactions.get('tx-csv-2023')).toMatchObject({
-      id: 'tx-csv-2023',
+    expect(sharedRemote.transactions.get('tx-backup-2023')).toMatchObject({
+      id: 'tx-backup-2023',
       name: 'Old Taxi',
       value: 320,
       createdAt: '2023-08-28T15:22:59.872Z',
