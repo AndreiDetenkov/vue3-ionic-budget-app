@@ -233,6 +233,7 @@ If sign-in fails with `DEVELOPER_ERROR` / code 10, the SHA-1 of the APK's signin
 | `pnpm preview`       | Locally previews production build                                      |
 | `pnpm test:unit`     | Starts Vitest in watch mode                                            |
 | `pnpm test:unit run` | Runs Vitest test suite once                                            |
+| `pnpm test:android`  | Runs isolated Android emulator E2E suite on `Pixel_9` (`adb` + CDP)    |
 | `pnpm typecheck`     | Type-checks code with `vue-tsc -b --noEmit`                            |
 | `pnpm lint`          | Runs ESLint with auto-fix on `src/`                                    |
 | `pnpm format`        | Formats source files using Prettier                                    |
@@ -258,6 +259,21 @@ pnpm test:unit src/modules/transactions/store/transactionStore.spec.ts
 
 # Filter tests by name
 pnpm test:unit -t "calculates total"
+```
+
+### Android Emulator E2E Tests
+
+End-to-end tests drive the real Capacitor Android WebView and native Android dialogs (`ChooserActivity`, `DocumentsUI`) on an Android emulator using Node 24 (`adb`, WebView CDP, and `uiautomator`), with zero external test runner dependencies.
+
+- **Prerequisites**: Android SDK (`adb`, `emulator`), an AVD (default `Pixel_9`, override via `ANDROID_AVD=<name>`), and a JDK (`JAVA_HOME` or Android Studio JBR) for building the debug APK.
+- **Isolation & Safety**: Each run clears app state (`pm clear com.budget.app`), uses generated JSON fixtures only (never signs in or touches production Firebase), audits `logcat` / JS exceptions / Firestore requests, and cleans up temporary downloads and app data afterward.
+
+```bash
+# Full run: boot Pixel_9 if needed, build + sync + assembleDebug, install, and run E2E suite
+pnpm test:android
+
+# Fast iteration when APK is already built and installed
+pnpm test:android -- --skip-build --skip-install
 ```
 
 ### Type Checking & Linting
