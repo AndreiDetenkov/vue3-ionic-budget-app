@@ -17,11 +17,11 @@ const closeModal = () => {
 </script>
 
 <template>
-  <ion-modal :is-open="model" @didDismiss="closeModal">
+  <ion-modal :is-open="model" data-testid="all-transactions-modal" @didDismiss="closeModal">
     <BaseHeader title="Transaction List">
       <template #buttons>
         <ion-buttons slot="end">
-          <ion-chip color="primary" @click="closeModal">Close</ion-chip>
+          <ion-chip color="primary" data-testid="close-all-transactions-btn" @click="closeModal">Close</ion-chip>
         </ion-buttons>
       </template>
     </BaseHeader>

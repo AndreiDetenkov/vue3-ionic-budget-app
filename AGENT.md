@@ -18,6 +18,7 @@ pnpm test:unit           # vitest (watch mode by default)
 pnpm test:unit run       # single run
 pnpm test:unit src/modules/transactions/store/transactionStore.spec.ts   # single file
 pnpm test:unit -t "returns 0"                                            # single test by name
+pnpm test:android        # Android emulator E2E suite on Pixel_9 (ADB + WebView CDP; pass -- --skip-build to reuse APK)
 
 pnpm sync                # ionic capacitor sync android (run after a web build)
 pnpm run:android         # run on Pixel_9 emulator with live reload

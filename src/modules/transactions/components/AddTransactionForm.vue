@@ -64,7 +64,14 @@ async function onSubmitFormHandler(): Promise<void> {
         <ion-col></ion-col>
         <ion-col size="6" class="ion-text-center">
           <ion-label class="amount-label">Enter Amount</ion-label>
-          <ion-input v-model="state.amount" type="number" inputmode="numeric" placeholder="0.00" class="amount-input" />
+          <ion-input
+            v-model="state.amount"
+            type="number"
+            inputmode="numeric"
+            placeholder="0.00"
+            class="amount-input"
+            data-testid="add-amount-input"
+          />
         </ion-col>
         <ion-col></ion-col>
       </ion-row>
@@ -80,10 +87,19 @@ async function onSubmitFormHandler(): Promise<void> {
         placeholder="e.g., Bazaar"
         :clear-input="true"
         class="transaction-name-input"
+        data-testid="add-name-input"
       />
     </div>
 
-    <ion-button expand="block" type="submit" shape="round" size="large" :disabled="creating" class="submit-btn">
+    <ion-button
+      expand="block"
+      type="submit"
+      shape="round"
+      size="large"
+      :disabled="creating"
+      class="submit-btn"
+      data-testid="add-submit-btn"
+    >
       <ion-spinner name="lines" v-if="creating" />
       <span v-else>Create transaction</span>
     </ion-button>

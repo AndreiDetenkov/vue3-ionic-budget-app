@@ -9,17 +9,17 @@ import { list, barChartSharp, addCircleOutline } from 'ionicons/icons';
       <ion-router-outlet></ion-router-outlet>
 
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="transactions" href="/tabs/transactions">
+        <ion-tab-button tab="transactions" href="/tabs/transactions" data-testid="tab-transactions">
           <ion-icon aria-hidden="true" :icon="list" />
           <ion-label>Transactions</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="add" href="/tabs/add">
+        <ion-tab-button tab="add" href="/tabs/add" data-testid="tab-add">
           <ion-icon aria-hidden="true" :icon="addCircleOutline" size="large" />
           <ion-label>Add</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="categories" href="/tabs/reports">
+        <ion-tab-button tab="categories" href="/tabs/reports" data-testid="tab-reports">
           <ion-icon aria-hidden="true" :icon="barChartSharp" />
           <ion-label>Reports</ion-label>
         </ion-tab-button>

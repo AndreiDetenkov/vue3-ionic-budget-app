@@ -12,6 +12,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
+    "test:android": "node e2e/android/run.mjs",
     "lint": "eslint --ext .ts,.vue src/ --fix",
     "typecheck": "vue-tsc -b --noEmit",
     "sync": "ionic capacitor sync android",

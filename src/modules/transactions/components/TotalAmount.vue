@@ -14,7 +14,7 @@ const formattedTotal = computed<string>(() => formatAmount(store.total));
     <ion-card-header>
       <ion-card-subtitle>monthly spending</ion-card-subtitle>
       <ion-card-title>
-        <span class="amount"> {{ formattedTotal }}</span>
+        <span class="amount" data-testid="transactions-total-amount"> {{ formattedTotal }}</span>
         <span class="currency">&nbsp;KGS</span>
       </ion-card-title>
     </ion-card-header>

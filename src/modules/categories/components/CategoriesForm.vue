@@ -26,6 +26,7 @@ function onTapHandler(id: string): void {
           @click.stop="onTapHandler(id)"
           class="ion-activatable ripple-parent card"
           :class="{ 'pressed-card': id === selectedCategoryId }"
+          :data-testid="`category-card-${title.toLowerCase()}`"
         >
           <ion-ripple-effect class="card-custom-ripple" />
           <div class="category-icon" :style="{ maskImage: `url(${getCategoryIconUrl(icon)})` }" />

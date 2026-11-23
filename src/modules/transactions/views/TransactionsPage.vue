@@ -72,7 +72,7 @@ const handleBackupRestored = async () => {
     <BaseHeader title="Transactions">
       <template #buttons>
         <ion-buttons slot="end">
-          <ion-button aria-label="Backup and sync" @click="isBackupModalOpen = true">
+          <ion-button aria-label="Backup and sync" data-testid="open-backup-btn" @click="isBackupModalOpen = true">
             <ion-icon slot="icon-only" :icon="cloudUploadOutline" />
           </ion-button>
         </ion-buttons>
@@ -80,7 +80,7 @@ const handleBackupRestored = async () => {
       <ion-progress-bar v-if="loading" type="indeterminate" color="secondary" />
     </BaseHeader>
 
-    <ion-content fullscreen class="ion-padding">
+    <ion-content fullscreen class="ion-padding" data-testid="transactions-content">
       <BaseRefresher :on-refresh="refreshContent" />
 
       <template v-if="transactions.length">
@@ -90,7 +90,7 @@ const handleBackupRestored = async () => {
       <ion-grid v-else class="ion-padding-top">
         <ion-row>
           <ion-col class="ion-text-center">
-            <ion-label> Oops!...No Transactions at this moment </ion-label>
+            <ion-label data-testid="transactions-empty"> Oops!...No Transactions at this moment </ion-label>
           </ion-col>
         </ion-row>
       </ion-grid>

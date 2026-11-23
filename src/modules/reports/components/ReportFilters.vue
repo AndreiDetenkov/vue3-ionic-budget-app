@@ -19,6 +19,7 @@ const filters: { value: ReportPeriod; label: string }[] = [
       :key="filter.value"
       :outline="reportStore.selectedPeriod !== filter.value"
       color="primary"
+      :data-testid="`report-filter-${filter.value}`"
       @click="reportStore.setPeriod(filter.value)"
     >
       {{ filter.label }}

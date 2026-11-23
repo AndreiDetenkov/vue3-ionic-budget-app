@@ -213,7 +213,9 @@ const handleSignOut = () =>
     <BaseHeader title="Backup & Sync">
       <template #buttons>
         <ion-buttons slot="end">
-          <ion-chip color="primary" :disabled="busyAction !== null" @click="closeModal">Close</ion-chip>
+          <ion-chip color="primary" data-testid="close-backup-btn" :disabled="busyAction !== null" @click="closeModal">
+            Close
+          </ion-chip>
         </ion-buttons>
       </template>
     </BaseHeader>
