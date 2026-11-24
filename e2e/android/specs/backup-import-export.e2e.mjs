@@ -56,11 +56,11 @@ export async function run(ctx) {
     existingTxToKeepOlder: deletedDinnerTx,
   });
 
-  device.pushDownloadFile(JSON.stringify(validFixture, null, 2), VALID_BACKUP_FILE);
-  device.pushDownloadFile(INVALID_BACKUP_CONTENT, INVALID_BACKUP_FILE);
-  device.createOversizedDownloadFile(OVERSIZED_BACKUP_FILE, 51);
-
   try {
+    device.pushDownloadFile(JSON.stringify(validFixture, null, 2), VALID_BACKUP_FILE);
+    device.pushDownloadFile(INVALID_BACKUP_CONTENT, INVALID_BACKUP_FILE);
+    device.createOversizedDownloadFile(OVERSIZED_BACKUP_FILE, 51);
+
     await cdp.click('[data-testid="open-backup-btn"]');
     await cdp.waitForModalOpen('Backup & Sync');
 

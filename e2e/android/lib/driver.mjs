@@ -896,6 +896,7 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
         const db = await new Promise((resolve, reject) => {
           const req = indexedDB.open('budget-app-db');
           req.onsuccess = () => resolve(req.result);
+          req.onblocked = () => reject(new Error('IndexedDB upgrade blocked'));
           req.onerror = () => reject(req.error || new Error('Failed to open budget-app-db'));
         });
         try {
@@ -937,6 +938,7 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
             if (!d.objectStoreNames.contains('sync_cursors')) d.createObjectStore('sync_cursors');
           };
           req.onsuccess = () => resolve(req.result);
+          req.onblocked = () => reject(new Error('IndexedDB upgrade blocked'));
           req.onerror = () => reject(req.error || new Error('Failed to open budget-app-db'));
         });
         try {

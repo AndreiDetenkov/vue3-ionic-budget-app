@@ -3,11 +3,33 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { INVALID_BACKUP_FILE, OVERSIZED_BACKUP_FILE, VALID_BACKUP_FILE } from './fixtures.mjs';
-import { connectWebViewCdp, createAndroidDevice } from './driver.mjs';
+import { connectWebViewCdp, createAndroidDevice, poll } from './driver.mjs';
 import { auditLogcat } from './helpers.mjs';
 
 const THIS_FILE = fileURLToPath(import.meta.url);
 const DEFAULT_SPECS_DIR = path.resolve(path.dirname(THIS_FILE), '../specs');
+const ALLOWED_FLAGS = new Set(['--skip-build', '--skip-install']);
+
+export function parseCliArgs(argv = []) {
+  const flags = new Set();
+  const filters = [];
+  for (const arg of argv) {
+    if (arg === '--') continue;
+    if (arg.startsWith('--')) {
+      if (!ALLOWED_FLAGS.has(arg)) {
+        throw new Error(`Unknown CLI flag "${arg}". Supported flags: ${Array.from(ALLOWED_FLAGS).join(', ')}`);
+      }
+      flags.add(arg);
+    } else {
+      filters.push(arg);
+    }
+  }
+  return {
+    skipBuild: flags.has('--skip-build'),
+    skipInstall: flags.has('--skip-install'),
+    filters,
+  };
+}
 
 export async function discoverSpecs(specsDir = DEFAULT_SPECS_DIR, filters = []) {
   const files = fs
@@ -42,14 +64,13 @@ export async function discoverSpecs(specsDir = DEFAULT_SPECS_DIR, filters = []) 
   return matched;
 }
 
-async function runStep(steps, name, fn) {
+async function runStep(name, fn) {
   const start = Date.now();
   process.stdout.write(`▶ ${name}... `);
   try {
     await fn();
     const duration = ((Date.now() - start) / 1000).toFixed(1);
     console.log(`PASS (${duration}s)`);
-    steps.push({ name, ok: true, duration });
   } catch (err) {
     const duration = ((Date.now() - start) / 1000).toFixed(1);
     console.log(`FAIL (${duration}s)`);
@@ -93,14 +114,10 @@ async function auditSpecRuntime({ device, cdp, disconnectCdp, jsExceptions, fire
 }
 
 export async function main(argv = process.argv.slice(2)) {
-  const flags = new Set(argv.filter((arg) => arg.startsWith('--')));
-  const filters = argv.filter((arg) => !arg.startsWith('--'));
-  const skipBuild = flags.has('--skip-build');
-  const skipInstall = flags.has('--skip-install');
+  const { skipBuild, skipInstall, filters } = parseCliArgs(argv);
 
   const specs = await discoverSpecs(DEFAULT_SPECS_DIR, filters);
   const device = createAndroidDevice();
-  const steps = [];
   let currentCdp = null;
   let cleanedUp = false;
 
@@ -130,14 +147,14 @@ export async function main(argv = process.argv.slice(2)) {
   process.once('SIGTERM', onSignal);
 
   try {
-    await runStep(steps, 'Prepare emulator and APK', async () => {
+    await runStep('Prepare emulator and APK', async () => {
       const serial = await device.ensureEmulatorReady();
       device.buildAndInstallApk({ skipBuild, skipInstall });
       process.stdout.write(`[${serial}] `);
     });
 
     for (const spec of specs) {
-      await runStep(steps, spec.name, async () => {
+      await runStep(spec.name, async () => {
         const jsExceptions = [];
         const firestoreRequests = [];
 
@@ -172,6 +189,12 @@ export async function main(argv = process.argv.slice(2)) {
           },
           restartApp,
           async seedSnapshot(snapshot) {
+            // Wait for app startup ensureSnapshot() to settle so it cannot overwrite the seeded fixture.
+            await poll(async () => Boolean((await ctx.cdp.readStorageState()).snapshot), {
+              timeoutMs: 10000,
+              intervalMs: 100,
+              label: 'initial IndexedDB snapshot before seeding',
+            });
             await ctx.cdp.writeSnapshot(snapshot);
             return restartApp();
           },
@@ -195,9 +218,8 @@ export async function main(argv = process.argv.slice(2)) {
           disconnectCdp();
           try {
             device.stopApp();
-            device.clearAppData();
           } catch {
-            // Best-effort per-spec reset
+            // Best-effort per-spec teardown
           }
         }
       });
