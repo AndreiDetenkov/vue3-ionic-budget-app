@@ -2,15 +2,15 @@
 
 [![Vue](https://img.shields.io/badge/Vue-3.5-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 [![Ionic](https://img.shields.io/badge/Ionic-8.8-3880ff?logo=ionic&logoColor=white)](https://ionicframework.com/)
-[![Capacitor](https://img.shields.io/badge/Capacitor-8.5-119eff?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![Capacitor](https://img.shields.io/badge/Capacitor-8.6-119eff?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com/)
-[![Pinia](https://img.shields.io/badge/Pinia-4.0-ffd35b?logo=vuedotjs&logoColor=black)](https://pinia.vuejs.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.0-646cff?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Vitest](https://img.shields.io/badge/Vitest-5.0-729b1a?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-13-ffca28?logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Pinia](https://img.shields.io/badge/Pinia-4.1-ffd35b?logo=vuedotjs&logoColor=black)](https://pinia.vuejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.3-646cff?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-5.1-729b1a?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![pnpm](https://img.shields.io/badge/pnpm-11-f69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
-A cross-platform personal expense and budget tracking mobile application built with **Vue 3**, **Ionic Framework 8**, **Capacitor 8**, and **Supabase**.
+A cross-platform personal expense and budget tracking mobile application built with **Vue 3**, **Ionic Framework 8**, **Capacitor 8**, **Local-First storage (IndexedDB)**, and optional **Firebase** cloud sync.
 
 Designed for mobile devices (Android & iOS) as well as the web, featuring clean hexagonal architecture, native gestures, customizable spending categories, and period-based reporting.
 
@@ -24,11 +24,10 @@ Designed for mobile devices (Android & iOS) as well as the web, featuring clean 
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
 - [Mobile Development (Capacitor)](#mobile-development-capacitor)
 - [Available Scripts](#available-scripts)
 - [Testing & Quality Assurance](#testing--quality-assurance)
-- [Database & Supabase Integration](#database--supabase-integration)
+- [Storage, Backup & Firebase Cloud Sync](#storage-backup--firebase-cloud-sync)
 - [Documentation & ADRs](#documentation--adrs)
 
 ---
@@ -38,6 +37,9 @@ Designed for mobile devices (Android & iOS) as well as the web, featuring clean 
 - 💳 **Transaction Tracking**: Log daily expenses with amount, title, date, and category. Quick overview of total expenses on the main dashboard.
 - 📂 **Expense Categories**: Group spending by pre-defined categories with intuitive iconography (Food, Housing, Transportation, Health, Shopping, Entertainment, Education, Pets, Utilities, etc.).
 - 📊 **Period Reports & Analytics**: Filter expenses across time horizons (Today, Week, Month, Year, Custom Range) with per-category totals and visual spending distributions.
+- 💾 **Local-First Offline Storage**: Persists locally in IndexedDB (with `localStorage` fallback) and works out of the box without any backend setup.
+- 📦 **JSON Backup & Restore**: Export/import snapshots via `BackupModal` with Last-Write-Wins merging (`updatedAt` / `deletedAt`) and native share/file access (`@capacitor/filesystem`, `@capacitor/share`).
+- ☁️ **Optional Firebase Cloud Sync**: Google Sign-In (`@capacitor-firebase/authentication` on native, popup/redirect on web) with incremental Cloud Firestore delta-sync and allowlisted accounts.
 - 📱 **Native Mobile Gestures**:
   - Pull-to-refresh on transaction feeds.
   - Swipe/slide gestures on list items to edit or delete transactions.
@@ -55,8 +57,8 @@ The application follows modular and decoupled design principles:
 
 Pinia setup stores (`transactionStore`, `categoryStore`, `reportStore`) interact with persistent storage solely through an abstract port interface: `BudgetStorage` (`src/core/storage/types.ts`).
 
-- **Production Adapter (`SupabaseStorage`)**: Uses `@supabase/supabase-js` to communicate with Supabase PostgREST endpoints. Encapsulates lazy environment variable validation, camelCase ↔ snake_case mapping, and error normalization.
-- **Testing / Mock Adapter (`InMemoryStorage`)**: Fast, in-memory implementation seeded with test fixtures. Enables 100% deterministic unit testing without network mocks or Supabase credentials.
+- **Local-First & Cloud Sync Adapters (`createLocalStorage`, `createSyncedLocalStorage`)**: IndexedDB (`budget-app-db` v2 with `window.localStorage` fallback), UUID generation, `updatedAt`/`deletedAt` sync metadata, and 14 `DEFAULT_CATEGORIES`, wrapped by `createSyncedLocalStorage()` for background incremental delta-sync via `createFirebaseSyncService()` and `createFirebaseCloudController()` (`useFirebaseCloud()`). JSON backup export/import and Last-Write-Wins `mergeSnapshots` live in `src/core/storage/backup.ts`.
+- **Testing Adapter (`createInMemoryStorage`)**: Fast, deterministic in-memory implementation injected via `setStorage()` (alongside `setFirebaseCloud()` for cloud test doubles) without network calls or Firebase credentials.
 
 For details, refer to [ADR 0001: Domain Storage Seam](./docs/adr/0001-domain-storage-seam.md).
 
@@ -68,24 +70,24 @@ Code is organized by vertical feature modules under `src/modules/<feature>/`:
 - `categories`: Category selection grid and category store.
 - `reports`: Spending breakdown by category, period filter bar, report headers, and report store.
 
-Shared utilities, components (`BaseHeader`, `BaseRefresher`), composables (`useToast`), and storage ports reside in `src/core/`.
+Shared utilities, components (`BaseHeader`, `BaseRefresher`, `BackupModal`), composables (`useToast`, `useCloudAutoSync`), and storage ports reside in `src/core/`.
 
 ---
 
 ## Tech Stack
 
-| Layer                      | Technologies                                                                                                                                                                                                                                                         |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Frontend Framework**     | [Vue 3](https://vuejs.org/) (Composition API, `<script setup>`)                                                                                                                                                                                                      |
-| **Mobile UI & Components** | [Ionic Framework 8](https://ionicframework.com/) (`@ionic/vue`, `@ionic/vue-router`, [Ionicons 8](https://ionic.io/ionicons))                                                                                                                                        |
-| **Mobile Runtime**         | [Capacitor 8](https://capacitorjs.com/) (Android & iOS runtime, `@capacitor/app`, `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/status-bar`)                                                                                                              |
-| **State Management**       | [Pinia 4](https://pinia.vuejs.org/)                                                                                                                                                                                                                                  |
-| **Backend & Database**     | [Supabase](https://supabase.com/) (PostgreSQL, PostgREST API)                                                                                                                                                                                                        |
-| **Date & Time**            | [Day.js](https://day.js.org/)                                                                                                                                                                                                                                        |
-| **Build Tool**             | [Vite 8](https://vitejs.dev/) with tree-shaking & vendor chunk splitting                                                                                                                                                                                             |
-| **Testing**                | [Vitest 5](https://vitest.dev/), [@vue/test-utils 2](https://test-utils.vuejs.org/), jsdom                                                                                                                                                                           |
-| **Code Quality**           | [TypeScript 5.9](https://www.typescriptlang.org/), [ESLint 9](https://eslint.org/) (Flat Config), [Prettier](https://prettier.io/) (`@ionic/prettier-config`), [Husky](https://typicode.github.io/husky/), [lint-staged](https://github.com/lint-staged/lint-staged) |
-| **Package Manager**        | [pnpm 11](https://pnpm.io/) (Node.js 24)                                                                                                                                                                                                                             |
+| Layer                      | Technologies                                                                                                                                                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend Framework**     | [Vue 3](https://vuejs.org/) (Composition API, `<script setup>`), [Vue Router 5](https://router.vuejs.org/)                                                                                                                                                            |
+| **Mobile UI & Components** | [Ionic Framework 8](https://ionicframework.com/) (`@ionic/vue`, `@ionic/vue-router`, [Ionicons 8](https://ionic.io/ionicons))                                                                                                                                         |
+| **Mobile Runtime**         | [Capacitor 8](https://capacitorjs.com/) (Android & iOS runtime, `@capacitor/app`, `@capacitor/filesystem`, `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/share`, `@capacitor/status-bar`, `@capacitor-firebase/authentication`)                            |
+| **State Management**       | [Pinia 4.1](https://pinia.vuejs.org/)                                                                                                                                                                                                                                 |
+| **Storage & Cloud Sync**   | IndexedDB / `localStorage` (local-first), JSON backup, optional [Firebase 13](https://firebase.google.com/) (Cloud Firestore & Google Auth)                                                                                                                           |
+| **Date & Time**            | [Day.js](https://day.js.org/)                                                                                                                                                                                                                                         |
+| **Build Tool**             | [Vite 8.3](https://vitejs.dev/) (Rolldown) with tree-shaking & vendor chunk splitting                                                                                                                                                                                 |
+| **Testing**                | [Vitest 5.1](https://vitest.dev/), [@vue/test-utils 2](https://test-utils.vuejs.org/), `jsdom` 31, and Node 24 Android Emulator E2E (`adb` + WebView CDP + `uiautomator`)                                                                                             |
+| **Code Quality**           | [TypeScript 5.9](https://www.typescriptlang.org/), [ESLint 10](https://eslint.org/) (Flat Config), [Prettier](https://prettier.io/) (`@ionic/prettier-config`), [Husky](https://typicode.github.io/husky/), [lint-staged](https://github.com/lint-staged/lint-staged) |
+| **Package Manager**        | [pnpm 11+](https://pnpm.io/) (Node.js 24)                                                                                                                                                                                                                             |
 
 ---
 
@@ -94,8 +96,11 @@ Shared utilities, components (`BaseHeader`, `BaseRefresher`), composables (`useT
 ```text
 ├── android/                   # Capacitor Android native project
 ├── ios/                       # Capacitor iOS native project
+├── e2e/
+│   └── android/               # Automated Android emulator E2E runner, driver, fixtures & helpers
 ├── docs/                      # Project documentation, design specs, and ADRs
 │   ├── adr/                   # Architecture Decision Records
+│   ├── agents/                # SDLC & agent skill bindings
 │   ├── design/                # Design templates and screen specifications
 │   ├── design-system.md       # Design system v2 token and component guidelines
 │   └── features/              # Feature-specific architectural docs
@@ -104,9 +109,9 @@ Shared utilities, components (`BaseHeader`, `BaseRefresher`), composables (`useT
 │   │   ├── icons/             # Category PNG icons
 │   │   └── theme/             # Design tokens (--ds-*) & Ionic variable mappings
 │   ├── core/                  # Shared core domain & infrastructure
-│   │   ├── components/        # BaseHeader, BaseRefresher
-│   │   ├── composables/       # useToast and programmatic controllers
-│   │   ├── storage/           # BudgetStorage port, Supabase & InMemory adapters
+│   │   ├── components/        # BaseHeader, BaseRefresher, BackupModal
+│   │   ├── composables/       # useToast, useCloudAutoSync
+│   │   ├── storage/           # IndexedDB/localStorage, Firebase delta-sync, JSON backup & InMemory adapters
 │   │   └── utils/             # Amount formatting, date intervals, category icons
 │   ├── modules/               # Feature-based domain modules
 │   │   ├── categories/        # Category components, types & store
@@ -116,7 +121,8 @@ Shared utilities, components (`BaseHeader`, `BaseRefresher`), composables (`useT
 │   ├── App.vue                # Root application component
 │   ├── main.ts                # App entrypoint (Ionic & Pinia bootstrapping)
 │   └── router.ts              # Route declarations & lazy-loaded tabs
-├── supabase/                  # Supabase local config & schema snippets
+├── firebase.json              # Firebase config (local .firebaserc and firestore.rules are gitignored)
+├── firestore.indexes.json     # Firestore composite index definitions
 ├── capacitor.config.ts        # Capacitor configuration
 ├── vite.config.ts             # Vite build & chunking configuration
 ├── AGENT.md                   # Agentic workflow & coding assistant guidelines
@@ -130,7 +136,7 @@ Shared utilities, components (`BaseHeader`, `BaseRefresher`), composables (`useT
 - **Node.js**: `^24.x` (managed via [.nvmrc](./.nvmrc))
 - **pnpm**: `^11.x`
 - **Android Studio** (optional, for Android native testing/building)
-- **Supabase Account / Project** (for backend database storage)
+- **Firebase Project** (optional — app runs autonomously in local-first mode; only needed for Cloud Firestore sync & Google Sign-In)
 
 ---
 
@@ -149,9 +155,9 @@ cd vue3-ionic-budget-app
 pnpm install
 ```
 
-### 3. Configure environment variables
+### 3. Configure environment variables (optional)
 
-Copy the example environment file and fill it with the **web app** config from Firebase Console → Project settings → General → Your apps → Web app (`</>`) → SDK setup and configuration → Config:
+Local-first mode works out of the box with no `.env` file. If you want Firebase Cloud Sync, copy the example environment file and fill it with the **web app** config from Firebase Console → Project settings → General → Your apps → Web app (`</>`) → SDK setup and configuration → Config:
 
 ```bash
 cp .env.example .env
@@ -293,26 +299,36 @@ Pre-commit hooks are configured via **Husky** and **lint-staged** to automatical
 
 ---
 
-## Database & Supabase Integration
+## Storage, Backup & Firebase Cloud Sync
 
-The PostgreSQL database contains two primary tables:
+### Local-First Storage
+
+The app stores all data locally in IndexedDB database `budget-app-db` (version 2) across `snapshots` and `sync_cursors` object stores (falling back to `window.localStorage` when IndexedDB is unavailable), seeded with 14 built-in categories (`DEFAULT_CATEGORIES`).
+
+### JSON Backup
+
+Users can export and import full JSON snapshots via `BackupModal` (`src/core/storage/backup.ts`). Imports merge records using Last-Write-Wins (`updatedAt`) and preserve soft-delete tombstones (`deletedAt`).
+
+### Cloud Firestore Collections (Optional Sync)
+
+When signed in with Google, `createFirebaseSyncService()` incrementally syncs deltas with Cloud Firestore across two collections:
 
 1. **`categories`**:
-   - `id` (uuid, primary key)
-   - `title` (text)
-   - `icon` (text, nullable)
+   - `id` (string, UUID)
+   - `title` (string)
+   - `icon` (string, nullable)
+   - `updatedAt` (string, ISO 8601 timestamp)
+   - `deletedAt` (string, nullable ISO 8601 timestamp)
 2. **`transactions`**:
-   - `id` (uuid, primary key)
-   - `name` (text, transaction description/title)
-   - `value` (numeric, expense amount)
-   - `category_id` (uuid, foreign key referencing `categories.id`)
-   - `created_at` (timestamptz)
+   - `id` (string, UUID)
+   - `name` (string, transaction description/title)
+   - `value` (number, expense amount)
+   - `categoryId` (string, references `categories.id`)
+   - `createdAt` (string, ISO 8601 timestamp)
+   - `updatedAt` (string, ISO 8601 timestamp)
+   - `deletedAt` (string, nullable ISO 8601 timestamp)
 
-TypeScript definitions for database tables are generated using the Supabase CLI in `src/core/storage/database.types.ts`:
-
-```bash
-npx supabase gen types typescript --project-id <your-project-id> > src/core/storage/database.types.ts
-```
+Physical deletes are disabled in favor of `deletedAt` tombstones, and backend access is restricted via local gitignored `firestore.rules` and `.firebaserc` alongside `VITE_FIREBASE_ALLOWED_EMAILS`.
 
 ---
 
@@ -320,6 +336,7 @@ npx supabase gen types typescript --project-id <your-project-id> > src/core/stor
 
 - [GLOSSARY.md](./GLOSSARY.md) — Ubiquitous domain language and terminology definitions.
 - [AGENT.md](./AGENT.md) — Development guidelines, conventions, and agent workflow specifications.
+- [docs/agents/sdlc.md](./docs/agents/sdlc.md) — SDLC workflow phases and agent skill bindings.
 - [docs/adr/0001-domain-storage-seam.md](./docs/adr/0001-domain-storage-seam.md) — Architecture Decision Record on domain-storage seam.
 - [docs/design-system.md](./docs/design-system.md) — Design system v2 tokens, layout rules, and component audit.
 - [docs/features/toast-notifications.md](./docs/features/toast-notifications.md) — Programmatic toast notification system architecture.
