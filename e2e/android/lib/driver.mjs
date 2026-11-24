@@ -250,7 +250,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   function buildAndInstallApk({ skipBuild = false, skipInstall = false } = {}) {
     if (!skipBuild) {
       const javaHome = resolveJavaHome();
-      runSync('pnpm', ['build'], { cwd: repoRoot, stdio: 'inherit' });
+      // `pnpm sync` runs `ionic capacitor sync android`, which executes `vite build` before syncing
       runSync('pnpm', ['sync'], { cwd: repoRoot, stdio: 'inherit' });
       runSync(path.join(repoRoot, 'android/gradlew'), ['assembleDebug'], {
         cwd: path.join(repoRoot, 'android'),
