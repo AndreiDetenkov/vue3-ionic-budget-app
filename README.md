@@ -97,7 +97,9 @@ Shared utilities, components (`BaseHeader`, `BaseRefresher`, `BackupModal`), com
 ├── android/                   # Capacitor Android native project
 ├── ios/                       # Capacitor iOS native project
 ├── e2e/
-│   └── android/               # Automated Android emulator E2E runner, driver, fixtures & helpers
+│   └── android/
+│       ├── specs/             # Android emulator E2E test scenarios (*.e2e.mjs)
+│       └── lib/               # E2E runner, ADB/CDP driver, fixtures & helpers
 ├── docs/                      # Project documentation, design specs, and ADRs
 │   ├── adr/                   # Architecture Decision Records
 │   ├── agents/                # SDLC & agent skill bindings
@@ -280,6 +282,10 @@ pnpm test:android
 
 # Fast iteration when APK is already built and installed
 pnpm test:android -- --skip-build --skip-install
+
+# Run one or more specific E2E specs by name
+pnpm test:android -- --skip-build --skip-install reports
+pnpm test:android -- --skip-build --skip-install reports backup
 ```
 
 ### Type Checking & Linting
