@@ -9,6 +9,7 @@ import {
   parseUiHierarchy,
 } from './helpers.mjs';
 import { buildValidBackupFixture, E2E_DEFAULT_CATEGORIES } from './fixtures.mjs';
+import { discoverSpecs, parseCliArgs } from './runner.mjs';
 
 describe('android e2e helpers', () => {
   describe('parseUiHierarchy and isNodeEffectivelyEnabled', () => {
@@ -212,6 +213,41 @@ describe('android e2e helpers', () => {
       const parsed = parseBackupSnapshot(JSON.stringify(snapshot));
       expect(parsed.transactions).toHaveLength(5);
       expect(parsed.categories).toHaveLength(14);
+    });
+  });
+
+  describe('discoverSpecs', () => {
+    it('loads all android E2E specs with valid exports and supports single/multi filtering', async () => {
+      const specs = await discoverSpecs();
+      expect(specs.map((s) => s.file)).toEqual([
+        'backup-import-export.e2e.mjs',
+        'persistence.e2e.mjs',
+        'reports.e2e.mjs',
+        'transactions-crud.e2e.mjs',
+      ]);
+      for (const spec of specs) {
+        expect(spec.name).toBeTruthy();
+        expect(typeof spec.run).toBe('function');
+      }
+
+      const single = await discoverSpecs(undefined, ['reports']);
+      expect(single.map((s) => s.file)).toEqual(['reports.e2e.mjs']);
+
+      const multi = await discoverSpecs(undefined, ['backup', 'persistence']);
+      expect(multi.map((s) => s.file)).toEqual(['backup-import-export.e2e.mjs', 'persistence.e2e.mjs']);
+
+      await expect(discoverSpecs(undefined, ['nonexistent'])).rejects.toThrow(/No Android E2E specs matched/);
+    });
+  });
+
+  describe('parseCliArgs', () => {
+    it('parses supported flags and filters and rejects unknown flags', () => {
+      expect(parseCliArgs(['--', '--skip-build', 'reports', '--skip-install', 'backup'])).toEqual({
+        skipBuild: true,
+        skipInstall: true,
+        filters: ['reports', 'backup'],
+      });
+      expect(() => parseCliArgs(['--skip-buid'])).toThrow(/Unknown CLI flag "--skip-buid"/);
     });
   });
 });

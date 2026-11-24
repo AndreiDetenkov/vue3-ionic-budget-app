@@ -92,7 +92,7 @@ function runSync(bin, args, opts = {}) {
     const stdout = err && typeof err === 'object' && 'stdout' in err ? String(err.stdout ?? '').trim() : '';
     const stderr = err && typeof err === 'object' && 'stderr' in err ? String(err.stderr ?? '').trim() : '';
     const detail = [stderr, stdout].filter(Boolean).join('\n');
-    throw new Error(`Command failed: ${bin} ${args.join(' ')}${detail ? `\n${detail}` : ''}`);
+    throw new Error(`Command failed: ${bin} ${args.join(' ')}${detail ? `\n${detail}` : ''}`, { cause: err });
   }
 }
 
@@ -250,7 +250,7 @@ export function createAndroidDevice({ avd = DEFAULT_AVD, repoRoot = process.cwd(
   function buildAndInstallApk({ skipBuild = false, skipInstall = false } = {}) {
     if (!skipBuild) {
       const javaHome = resolveJavaHome();
-      runSync('pnpm', ['build'], { cwd: repoRoot, stdio: 'inherit' });
+      // `pnpm sync` runs `ionic capacitor sync android`, which executes `vite build` before syncing
       runSync('pnpm', ['sync'], { cwd: repoRoot, stdio: 'inherit' });
       runSync(path.join(repoRoot, 'android/gradlew'), ['assembleDebug'], {
         cwd: path.join(repoRoot, 'android'),
@@ -896,6 +896,7 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
         const db = await new Promise((resolve, reject) => {
           const req = indexedDB.open('budget-app-db');
           req.onsuccess = () => resolve(req.result);
+          req.onblocked = () => reject(new Error('IndexedDB upgrade blocked'));
           req.onerror = () => reject(req.error || new Error('Failed to open budget-app-db'));
         });
         try {
@@ -926,6 +927,47 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       })()`);
     }
 
+    async function writeSnapshot(snapshot) {
+      const payload = JSON.stringify(snapshot);
+      await evalExpr(`(async () => {
+        const db = await new Promise((resolve, reject) => {
+          const req = indexedDB.open('budget-app-db', 2);
+          req.onupgradeneeded = () => {
+            const d = req.result;
+            if (!d.objectStoreNames.contains('snapshots')) d.createObjectStore('snapshots');
+            if (!d.objectStoreNames.contains('sync_cursors')) d.createObjectStore('sync_cursors');
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onblocked = () => reject(new Error('IndexedDB upgrade blocked'));
+          req.onerror = () => reject(req.error || new Error('Failed to open budget-app-db'));
+        });
+        try {
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction('snapshots', 'readwrite');
+            tx.objectStore('snapshots').put(${payload}, 'budget-app-local-snapshot-v1');
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error || new Error('Failed to write snapshot to IndexedDB'));
+            tx.onabort = () => reject(tx.error || new Error('IndexedDB snapshot write aborted'));
+          });
+        } finally {
+          db.close();
+        }
+        return true;
+      })()`);
+    }
+
+    async function waitForModalOpen(titleText, opts = {}) {
+      return waitForText('ion-modal.show-modal ion-title', titleText, { timeoutMs: 10000, ...opts });
+    }
+
+    async function waitForModalsClosed(opts = {}) {
+      return waitFor('document.querySelectorAll("ion-modal.show-modal").length === 0', {
+        timeoutMs: 10000,
+        label: 'all modals to close',
+        ...opts,
+      });
+    }
+
     return {
       jsExceptions,
       firestoreRequests,
@@ -934,12 +976,15 @@ export async function connectWebViewCdp(device, { timeoutMs = 25000 } = {}) {
       click,
       clickText,
       waitForText,
+      waitForModalOpen,
+      waitForModalsClosed,
       fillIonInput,
       getScreenBounds,
       clearToasts,
       waitForToast,
       assertNoToast,
       readStorageState,
+      writeSnapshot,
       disconnect,
     };
   } catch (err) {

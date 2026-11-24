@@ -27,7 +27,20 @@ export const E2E_DEFAULT_CATEGORIES = [
 
 export const CATEGORY_ID_FOOD = '3c3d9f8c-af23-49ed-946c-0d72a2191008';
 const CATEGORY_ID_HOUSING = 'f4ac3532-3870-4f85-a9d8-4dc1e24a4d97';
-const CATEGORY_ID_TRANSPORTATION = '2fe6596b-6292-4d8c-826d-5f4d3d99f543';
+export const CATEGORY_ID_TRANSPORTATION = '2fe6596b-6292-4d8c-826d-5f4d3d99f543';
+
+export function buildSeedSnapshot(transactions = [], now = new Date()) {
+  return {
+    version: 1,
+    updatedAt: now.toISOString(),
+    categories: E2E_DEFAULT_CATEGORIES.map((category) => ({
+      ...category,
+      updatedAt: DEFAULT_SEED_EPOCH,
+      deletedAt: null,
+    })),
+    transactions,
+  };
+}
 
 export function buildValidBackupFixture({
   now = new Date(),
@@ -97,14 +110,5 @@ export function buildValidBackupFixture({
     });
   }
 
-  return {
-    version: 1,
-    updatedAt: now.toISOString(),
-    categories: E2E_DEFAULT_CATEGORIES.map((category) => ({
-      ...category,
-      updatedAt: DEFAULT_SEED_EPOCH,
-      deletedAt: null,
-    })),
-    transactions,
-  };
+  return buildSeedSnapshot(transactions, now);
 }
