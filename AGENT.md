@@ -64,7 +64,7 @@ The application runs autonomously in local-first mode with no required environme
 
 ### SDLC workflow
 
-Start every task with `using-agent-skills` to route work through its **Skill Discovery** tree and **Lifecycle Sequence** (`interview-me` / `idea-refine` / `spec-driven-development` → `planning-and-task-breakdown` → `incremental-implementation` + `test-driven-development` → `code-review-and-quality` → `code-simplification` → `git-workflow-and-versioning` + `pr`), applying this repository's skill bindings. See `docs/agents/sdlc.md`.
+Start every task with `using-agent-skills` to route work through its **Skill Discovery** tree and **Lifecycle Sequence** (`interview-me` / `idea-refine` / `spec-driven-development` → `planning-and-task-breakdown` → `incremental-implementation` + `test-driven-development` → `code-review-and-quality` → `code-simplification` → `git-workflow-and-versioning` + `pr`), applying this repository's skill bindings. Use the `sdlc` skill (`.agents/skills/sdlc/SKILL.md`).
 
 ### Issue tracker
 

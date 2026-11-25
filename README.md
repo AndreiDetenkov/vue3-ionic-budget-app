@@ -342,7 +342,7 @@ Physical deletes are disabled in favor of `deletedAt` tombstones, and backend ac
 
 - [GLOSSARY.md](./GLOSSARY.md) — Ubiquitous domain language and terminology definitions.
 - [AGENT.md](./AGENT.md) — Development guidelines, conventions, and agent workflow specifications.
-- [docs/agents/sdlc.md](./docs/agents/sdlc.md) — SDLC workflow phases and agent skill bindings.
+- [.agents/skills/sdlc/SKILL.md](./.agents/skills/sdlc/SKILL.md) — SDLC workflow phases and agent skill bindings.
 - [docs/adr/0001-domain-storage-seam.md](./docs/adr/0001-domain-storage-seam.md) — Architecture Decision Record on domain-storage seam.
 - [docs/design-system.md](./docs/design-system.md) — Design system v2 tokens, layout rules, and component audit.
 - [docs/features/toast-notifications.md](./docs/features/toast-notifications.md) — Programmatic toast notification system architecture.
