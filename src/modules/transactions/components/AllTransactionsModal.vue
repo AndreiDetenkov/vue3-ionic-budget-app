@@ -4,7 +4,7 @@ import { IonModal, IonContent, IonButtons, IonChip, IonList, IonItemGroup, IonIt
 import { useTransactionStore } from '@/modules/transactions';
 import { formatDate } from '@/core/utils';
 import BaseHeader from '@/core/components/BaseHeader.vue';
-import TransactionListItem from '@/modules/transactions/components/TransactionListItem.vue';
+import SlideListItem from '@/modules/transactions/components/SlideTransaction/SlideListItem.vue';
 
 const model = defineModel<boolean>({ default: false });
 
@@ -27,13 +27,15 @@ const closeModal = () => {
     </BaseHeader>
 
     <ion-content fullscreen>
-      <ion-list lines="full" class="ion-no-padding">
+      <ion-list lines="none" class="ion-no-padding">
         <ion-item-group v-for="(transactions, date) in transactionsByDate" :key="date">
           <ion-item-divider mode="md" sticky>
             <ion-label> {{ formatDate(date.toString(), 'DD.MM.YYYY dddd') }} </ion-label>
           </ion-item-divider>
 
-          <TransactionListItem v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
+          <div class="group-items">
+            <SlideListItem v-for="transaction in transactions" :key="transaction.id" :transaction="transaction" />
+          </div>
         </ion-item-group>
       </ion-list>
     </ion-content>
@@ -41,6 +43,14 @@ const closeModal = () => {
 </template>
 
 <style scoped>
+ion-content {
+  --background: var(--ion-color-bg-light-grey);
+}
+
+ion-list {
+  background: var(--ion-color-bg-light-grey);
+}
+
 ion-button {
   text-transform: capitalize;
   letter-spacing: 0;
@@ -51,5 +61,9 @@ ion-item-divider {
   background: var(--ion-color-bg-light-grey);
   color: var(--ion-color-primary);
   font-weight: 500;
+}
+
+.group-items {
+  padding: 0.5rem 1rem 0;
 }
 </style>
