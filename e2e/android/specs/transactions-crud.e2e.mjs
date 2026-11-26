@@ -7,6 +7,11 @@ export async function run(ctx) {
   const { device } = ctx;
   const deviceClock = device.getDeviceDate();
   const seedTs = deviceClock.date.toISOString();
+  const olderDate = new Date(deviceClock.date);
+  if (olderDate.getUTCDate() > 2) {
+    olderDate.setUTCDate(olderDate.getUTCDate() - 2);
+  }
+  const olderTs = olderDate.toISOString();
 
   const cdp = await ctx.seedSnapshot(
     buildSeedSnapshot(
@@ -20,13 +25,22 @@ export async function run(ctx) {
           deletedAt: null,
           categoryId: CATEGORY_ID_FOOD,
         },
+        {
+          id: 'e2e-tx-seed-older',
+          name: 'E2E Older',
+          value: 500,
+          createdAt: olderTs,
+          updatedAt: olderTs,
+          deletedAt: null,
+          categoryId: CATEGORY_ID_FOOD,
+        },
       ],
       deviceClock.date,
     ),
   );
 
   await cdp.waitForText('[data-testid="transaction-slide-item"] .title', 'E2E Persist');
-  await cdp.waitForText('[data-testid="transactions-total-amount"]', '1 000');
+  await cdp.waitForText('[data-testid="transactions-total-amount"]', '1 500');
 
   // Validation on Add tab
   await cdp.click('[data-testid="tab-add"]');
@@ -42,7 +56,7 @@ export async function run(ctx) {
   await cdp.waitForToast({ text: 'There are fields that are not filled in!', color: 'danger' });
 
   const afterInvalidStorage = await cdp.readStorageState();
-  assert.equal(afterInvalidStorage.snapshot.transactions.length, 1);
+  assert.equal(afterInvalidStorage.snapshot.transactions.length, 2);
 
   // Create Transaction
   await cdp.fillIonInput('[data-testid="add-amount-input"]', '1200');
@@ -51,7 +65,7 @@ export async function run(ctx) {
   await cdp.click('[data-testid="add-submit-btn"]');
 
   await cdp.waitForText('[data-testid="transaction-slide-item"] .title', 'E2E Coffee');
-  await cdp.waitForText('[data-testid="transactions-total-amount"]', '2 200');
+  await cdp.waitForText('[data-testid="transactions-total-amount"]', '2 700');
 
   // Swipe left-to-right -> Edit -> UpdateItemModal
   const editBox = await cdp.getScreenBounds('[data-testid="transaction-slide-item"]', 'E2E Coffee');
@@ -91,15 +105,76 @@ export async function run(ctx) {
 
   await cdp.waitForText('[data-testid="transaction-slide-item"] .title', 'E2E Dinner');
   await cdp.waitForText('[data-testid="transaction-slide-item"] .category', 'Transportation');
-  await cdp.waitForText('[data-testid="transactions-total-amount"]', '3 500');
+  await cdp.waitForText('[data-testid="transactions-total-amount"]', '4 000');
 
-  // AllTransactionsModal
+  // AllTransactionsModal: verify older transaction + swipe Edit & Remove inside modal
   await cdp.click('[data-testid="view-all-transactions-btn"]');
   await cdp.waitForModalOpen('Transaction List');
   await cdp.waitForText('[data-testid="all-transactions-modal"].show-modal .title', 'E2E Dinner');
   await cdp.waitForText('[data-testid="all-transactions-modal"].show-modal .title', 'E2E Persist');
+  await cdp.waitForText('[data-testid="all-transactions-modal"].show-modal .title', 'E2E Older');
+
+  // Swipe left-to-right -> Edit older transaction inside AllTransactionsModal
+  const modalEditBox = await cdp.getScreenBounds(
+    '[data-testid="all-transactions-modal"].show-modal [data-testid="transaction-slide-item"]',
+    'E2E Older',
+  );
+  device.swipe(
+    modalEditBox.left + Math.round(modalEditBox.width * 0.15),
+    modalEditBox.cy,
+    modalEditBox.left + Math.round(modalEditBox.width * 0.78),
+    modalEditBox.cy,
+    300,
+  );
+  await cdp.click(
+    '[data-testid="all-transactions-modal"].show-modal [data-testid="transaction-slide-item"].item-sliding-active-options-start [data-testid="transaction-edit-option"]',
+  );
+  await cdp.waitForModalOpen('Update transaction');
+
+  await cdp.fillIonInput('[data-testid="update-name-input"]', 'E2E Older Edited');
+  await cdp.fillIonInput('[data-testid="update-amount-input"]', '800');
+  await cdp.clearToasts();
+  await cdp.click('[data-testid="update-submit-btn"]');
+  await cdp.waitForToast({ text: 'Successfully updated!', color: 'success' });
+  await cdp.waitFor(
+    `document.querySelectorAll("ion-modal.show-modal").length === 1 && Boolean(document.querySelector('[data-testid="all-transactions-modal"].show-modal'))`,
+    { timeoutMs: 10000, label: 'UpdateItemModal closes while AllTransactionsModal stays open' },
+  );
+  await cdp.waitForText('[data-testid="all-transactions-modal"].show-modal .title', 'E2E Older Edited');
+
+  // Swipe right-to-left -> Remove older transaction inside AllTransactionsModal
+  const modalDeleteBox = await cdp.getScreenBounds(
+    '[data-testid="all-transactions-modal"].show-modal [data-testid="transaction-slide-item"]',
+    'E2E Older Edited',
+  );
+  device.swipe(
+    modalDeleteBox.right - Math.round(modalDeleteBox.width * 0.15),
+    modalDeleteBox.cy,
+    modalDeleteBox.left + Math.round(modalDeleteBox.width * 0.15),
+    modalDeleteBox.cy,
+    300,
+  );
+  await cdp.click(
+    '[data-testid="all-transactions-modal"].show-modal [data-testid="transaction-slide-item"].item-sliding-active-options-end [data-testid="transaction-remove-option"]',
+  );
+  await cdp.waitForText('ion-alert', /E2E Older Edited will be removed/);
+  await cdp.clickText('ion-alert button', 'Remove');
+  await cdp.waitFor(
+    `!Array.from(document.querySelectorAll('[data-testid="all-transactions-modal"].show-modal [data-testid="transaction-slide-item"] .title')).some((el) => (el.textContent ?? '').trim() === 'E2E Older Edited')`,
+    { label: 'E2E Older Edited removal from AllTransactionsModal' },
+  );
+  await cdp.waitFor(`Boolean(document.querySelector('[data-testid="all-transactions-modal"].show-modal'))`, {
+    label: 'AllTransactionsModal remains open after removal',
+  });
+
+  const afterModalDeleteStorage = await cdp.readStorageState();
+  const deletedOlderRecord = afterModalDeleteStorage.snapshot.transactions.find((t) => t.id === 'e2e-tx-seed-older');
+  assert.ok(deletedOlderRecord, 'Removed older transaction should still exist in IndexedDB snapshot');
+  assert.ok(deletedOlderRecord.deletedAt, 'Removed older transaction should have non-null deletedAt tombstone');
+
   await cdp.click('[data-testid="close-all-transactions-btn"]');
   await cdp.waitForModalsClosed();
+  await cdp.waitForText('[data-testid="transactions-total-amount"]', '3 500');
 
   // Pull-to-refresh (BaseRefresher)
   await cdp.eval(`(async () => {
