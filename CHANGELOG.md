@@ -1,6 +1,62 @@
 # Changelog
 
 
+## v1.3.1
+
+[compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.2.0...v1.3.1)
+
+### 🚀 Enhancements
+
+- **sync:** Auto-sync Firebase on launch, resume, online, and pull-to-refresh ([d8ce535](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d8ce535))
+- **sync:** Auto-sync Firebase on launch, resume, online, and pull-to-refresh ([#25](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/pull/25))
+- **e2e:** Add automated Android emulator E2E runner and scenarios ([d99278a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d99278a))
+- **transactions:** Enable swipe Edit and Remove in AllTransactionsModal ([3a2411d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3a2411d))
+
+### 🩹 Fixes
+
+- **auth:** Use native Google Sign-In on Android instead of web redirect ([8fe81d9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8fe81d9))
+- **sync:** Prevent inFlight deadlock on sync throw and harden auto-sync tests ([66e30be](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/66e30be))
+- **android:** Export backup via native Filesystem/Share, relax file picker accept, and clear native Google auth on sign-out ([bf9ec6d](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/bf9ec6d))
+- **sync:** Set initial lastPulledAt after empty-remote push and store snapshots and sync cursors in IndexedDB ([d6ee41a](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/d6ee41a))
+- **e2e:** Harden Android E2E target guard, logcat audit, timezone handling, and CDP checks ([590ee62](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/590ee62))
+- **e2e:** Ignore paired expected Capacitor bridge rejections in logcat audit ([3e62c19](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3e62c19))
+- Replace __dirname with import.meta.dirname and drop duplicate E2E build ([7982d7f](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7982d7f))
+- **e2e:** Eliminate seedSnapshot race, validate CLI flags, and clean up runner ([7f7f335](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/7f7f335))
+
+### 💅 Refactors
+
+- **storage:** Remove unused CSV import and dev auto-seeding ([9d27bc9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/9d27bc9))
+- **e2e:** Split Android E2E suite into independent specs and lib ([8710191](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/8710191))
+
+### 📖 Documentation
+
+- Document Firebase env and Android Google Sign-In setup ([fcffd03](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/fcffd03))
+- **sdlc:** Add Android Capacitor WebView checks to SPEC and REVIEW phases ([f08f5ed](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/f08f5ed))
+- Remove obsolete capability map and CSV import references ([c24a5cd](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/c24a5cd))
+- **e2e:** Document Android emulator E2E test runner ([72403e9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/72403e9))
+- Update readme file ([5711099](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/5711099))
+
+### 🏡 Chore
+
+- **android:** Bump versionCode to 3 and versionName to 1.3.0 ([47a716b](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/47a716b))
+- Update build.gradle ([e72abe8](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/e72abe8))
+- **android:** Bump versionCode to 4 and versionName to 1.3.1 ([ea02183](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/ea02183))
+- Remove obsolete transactions_rows.csv entry from .gitignore ([cc3fae9](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/cc3fae9))
+- Update pnpm dependencies ([76bedc4](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/76bedc4))
+- **skills:** Convert docs/agents/sdlc.md into sdlc workspace skill ([2036c83](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/2036c83))
+- **ios:** Bump MARKETING_VERSION to 1.3.1 ([3c6b245](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/3c6b245))
+
+### ✅ Tests
+
+- **e2e:** Add Android E2E helper parsers, fixtures, and unit tests ([264d381](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/264d381))
+- **ui:** Add data-testid attributes for Android E2E selectors ([56431af](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/56431af))
+- **e2e:** Cover swipe Edit and Remove in AllTransactionsModal ([b66c711](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/commit/b66c711))
+
+### ❤️ Contributors
+
+- Andrei.detenkov <a.detenkov@gmail.com>
+- Andrei Detenkov ([@AndreiDetenkov](https://github.com/AndreiDetenkov))
+
 ## v1.2.0
 
 [compare changes](https://github.com/AndreiDetenkov/vue3-ionic-budget-app/compare/v1.1.0...v1.2.0)
